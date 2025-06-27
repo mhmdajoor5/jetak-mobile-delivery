@@ -30,7 +30,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               margin: EdgeInsets.only(top: 14),
               padding: EdgeInsets.only(top: 20, bottom: 5),
               decoration: BoxDecoration(
-                color: Colors.black54.withOpacity(0.9),
+                // color: Colors.black54.withOpacity(0.9),
                 boxShadow: [
                   BoxShadow(
                       color: Theme.of(context).focusColor.withOpacity(0.1),
@@ -43,34 +43,46 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 child: ExpansionTile(
                   initiallyExpanded: widget.expanded,
                   title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Text('${S.of(context).order_id}: #${widget.order.id}'),
                       Text(
-                        DateFormat('dd-MM-yyyy | HH:mm')
-                            .format(widget.order.dateTime!),
+                        '${S.of(context).order_id}: #${widget.order.id ?? '-'}',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      Text(
+                        widget.order.dateTime != null
+                            ? DateFormat('dd-MM-yyyy | HH:mm').format(widget.order.dateTime!)
+                            : '-',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
                   ),
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Helper.getPrice(
-                          Helper.getTotalOrdersPrice(widget.order), context,
-                          style: Theme.of(context).textTheme.displayLarge),
-                      Text(
-                        '${widget.order.payment?.method}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      )
-                    ],
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        (widget.order.foodOrders != null && widget.order.foodOrders!.isNotEmpty)
+                            ? Helper.getPrice(
+                                Helper.getTotalOrdersPrice(widget.order),
+                                context,
+                                style: Theme.of(context).textTheme.displayLarge)
+                            : Text('-', style: Theme.of(context).textTheme.bodyLarge),
+                        Text(
+                          widget.order.payment?.method ?? '-',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        )
+                      ],
+                    ),
                   ),
                   children: <Widget>[
                     Column(
                         children: List.generate(
-                      widget.order.foodOrders!.length,
+                      widget.order.foodOrders?.length ?? 0,
                       (indexFood) {
                         return FoodOrderItemWidget(
                             heroTag: 'mywidget.orders',
@@ -102,13 +114,13 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                               Expanded(
                                 child: Text(
                                   '${S.of(context).tax} (${widget.order.tax}%)',
-                                  style:
-                                      Theme.of(context).textTheme.displaySmall,
+                                  // style: Theme.of(context).textTheme.displaySmall, // <-- غيّرها
                                 ),
                               ),
                               Helper.getPrice(
                                   Helper.getTaxOrder(widget.order), context,
-                                  style: Theme.of(context).textTheme.bodyLarge)
+                                  // style: Theme.of(context).textTheme.displaySmall
+                              )
                             ],
                           ),
                           Row(
@@ -116,8 +128,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                               Expanded(
                                 child: Text(
                                   S.of(context).total,
-                                  style:
-                                      Theme.of(context).textTheme.displaySmall,
+                                  // style:
+                                  //     Theme.of(context).textTheme.displaySmall,
                                 ),
                               ),
                               Helper.getPrice(
@@ -169,9 +181,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               color: Colors.black54),
           alignment: AlignmentDirectional.center,
           child: Text(
-            '${widget.order.orderStatus?.status}',
+            '${widget.order.orderStatus?.status ?? '-'}',
             maxLines: 1,
-            style: TextStyle(height: 1, color: Colors.black54),
+            style: TextStyle(height: 1, color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ],
