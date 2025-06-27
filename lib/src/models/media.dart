@@ -1,6 +1,7 @@
 import 'package:global_configuration/global_configuration.dart';
 
 import '../helpers/custom_trace.dart';
+import '../helpers/helper.dart';
 
 class Media {
   String? id;
@@ -20,9 +21,9 @@ class Media {
     try {
       id = jsonMap['id'].toString();
       name = jsonMap['name'];
-      url = jsonMap['url'];
-      thumb = jsonMap['thumb'];
-      icon = jsonMap['icon'];
+      url = Helper.fixImageUrl(jsonMap['url']);
+      thumb = Helper.fixImageUrl(jsonMap['thumb']);
+      icon = Helper.fixImageUrl(jsonMap['icon']);
       size = jsonMap['formated_size'];
     } catch (e) {
       url = "${GlobalConfiguration().getString('base_url')}images/image_default.png";

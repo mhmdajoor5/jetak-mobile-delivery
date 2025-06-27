@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/helper.dart';
 import '../models/food_order.dart';
 import '../models/order.dart';
 import '../models/route_argument.dart';
+import 'SafeNetworkImage.dart';
 
 class FoodOrderItemWidget extends StatelessWidget {
   final String? heroTag;
@@ -32,21 +32,12 @@ class FoodOrderItemWidget extends StatelessWidget {
           children: <Widget>[
             Hero(
               tag: '${heroTag}${foodOrder?.id ?? ''}',
-              child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                child: CachedNetworkImage(
-                  height: 60,
-                  width: 60,
-                  fit: BoxFit.cover,
-                  imageUrl: foodOrder?.food?.image?.thumb ??"",
-                  placeholder: (context, url) => Image.asset(
-                    'assets/img/loading.gif',
-                    fit: BoxFit.cover,
-                    height: 60,
-                    width: 60,
-                  ),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                ),
+              child: SafeNetworkImage(
+                height: 60,
+                width: 60,
+                fit: BoxFit.cover,
+                imageUrl: foodOrder?.food?.image?.thumb,
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
             SizedBox(width: 15),

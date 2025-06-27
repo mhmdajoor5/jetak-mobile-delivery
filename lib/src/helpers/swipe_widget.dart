@@ -35,7 +35,7 @@ class _OnSlideState extends State<OnSlide> {
   ScrollController controller = new ScrollController();
   bool isOpen = false;
 
-  late Size childSize;
+  Size? childSize;
 
   @override
   void initState() {
@@ -77,8 +77,8 @@ class _OnSlideState extends State<OnSlide> {
 
     List<Widget> above = <Widget>[
       new Container(
-        width: childSize.width,
-        height: childSize.height,
+        width: childSize!.width,
+        height: childSize!.height,
         color: widget.backgroundColor,
         child: widget.child,
       ),
@@ -90,7 +90,7 @@ class _OnSlideState extends State<OnSlide> {
         alignment: Alignment.center,
         color: item.backgroudColor,
         width: 60.0,
-        height: childSize.height,
+        height: childSize!.height,
         child: item.icon,
       ));
 
@@ -98,7 +98,7 @@ class _OnSlideState extends State<OnSlide> {
           child: new Container(
             alignment: Alignment.center,
             width: 60.0,
-            height: childSize.height,
+            height: childSize!.height,
           ),
           onTap: () {
             controller.jumpTo(2.0);
@@ -107,8 +107,8 @@ class _OnSlideState extends State<OnSlide> {
     }
 
     Widget items = new Container(
-      width: childSize.width,
-      height: childSize.height,
+      width: childSize!.width,
+      height: childSize!.height,
       color: widget.backgroundColor,
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.end,

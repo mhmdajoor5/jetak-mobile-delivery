@@ -365,6 +365,28 @@ class Helper {
     return uri;
   }
 
+  static String? fixImageUrl(String? url) {
+    if (url == null || url.isEmpty) {
+      return "${GlobalConfiguration().getString('base_url')}images/image_default.png";
+    }
+    
+    // Fix malformed URLs like 'localhoststorage' to 'http://localhost/storage/'
+    if (url.startsWith('localhoststorage')) {
+      return url.replaceFirst('localhoststorage', 'http://localhost/storage/');
+    }
+    
+    // If URL doesn't start with http/https, prepend the base URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      String baseUrl = GlobalConfiguration().getString('base_url');
+      if (!baseUrl.endsWith('/') && !url.startsWith('/')) {
+        baseUrl += '/';
+      }
+      return baseUrl + url;
+    }
+    
+    return url;
+  }
+
   String trans(String text) {
     switch (text) {
       case "App\\Notifications\\StatusChangedOrder":
