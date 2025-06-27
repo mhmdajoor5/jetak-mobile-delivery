@@ -29,8 +29,9 @@ class SplashScreenState extends StateMVC<SplashScreen> {
       double progress = 0;
       _con.progress.value.values.forEach((_progress) {
         progress += _progress;
+        print("mElkerm : progress : ${progress}");
       });
-      if (progress == 100) {
+      if (progress == 59) {
         try {
           if (currentUser.value.apiToken == null) {
             Navigator.of(context).pushReplacementNamed('/Login');
