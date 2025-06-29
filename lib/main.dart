@@ -20,8 +20,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
-  // await NotificationController.initializeLocalNotifications();
+  await NotificationController.initializeLocalNotifications();
   await NotificationController.initializeIsolateReceivePort();
+  await NotificationController.getDeviceToken(); // ← Add this
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(MyApp());
@@ -37,12 +39,49 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    // NotificationController.createNewNotification(
+    //   RemoteMessage(
+    //     senderId: "123456789",
+    //     messageId: "619045",
+    //     data: {
+    //       "key": "value",
+    //       'order_id': "123",
+    //     },
+    //     notification: RemoteNotification(
+    //       title: "Test Notification",
+    //       body: "This is a test notification",
+    //     ),
+    //   ),
+    // );
+
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
     userRepo.getCurrentUser();
     NotificationController.startListeningNotificationEvents();
+    // Listen to messages when app is in foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📩 onMessage: ${message.notification?.title}');
+      showLocalNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('📲 App opened from notification: ${message.data}');
+    });
     super.initState();
   }
+
+  void showLocalNotification(RemoteMessage message) {
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        channelKey: 'alerts',
+        title: message.notification?.title ?? 'No title',
+        body: message.notification?.body ?? 'No body',
+        // payload: message.data,
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +107,7 @@ class _MyAppState extends State<MyApp> {
                   ? ThemeData(
                 fontFamily: 'Poppins',
                 primaryColor: Colors.white,
-                floatingActionButtonTheme:
-                FloatingActionButtonThemeData(
+                floatingActionButtonTheme: FloatingActionButtonThemeData(
                     elevation: 0, foregroundColor: Colors.white),
                 brightness: Brightness.light,
                 // accentColor: config.Colors().mainColor(1),
@@ -187,7 +225,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-
 // TODO: Define the background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -203,6 +240,5 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void _showNotificationWithButton(RemoteMessage message) {
-  // NotificationController.createNewNotification(message);
+  NotificationController.createNewNotification(message);
 }
-

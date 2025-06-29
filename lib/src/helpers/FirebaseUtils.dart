@@ -24,9 +24,27 @@ class FirebaseUtil {
     return await userRepo.getCurrentUser();
   }
 
+  /// Get FCM device token
+  static Future<String> getDeviceToken() async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        print('🔑 FCM Token: $token');
+        return token;
+        // You can send this token to your backend or save it
+      } else {
+        print('❌ Failed to get FCM token');
+        return '';
+      }
+    } catch (e) {
+      print('❌ Error getting FCM token: $e');
+      return '';
+    }
+  }
+
   static Future<void> registerFCM(User user) async {
     try {
-      String? deviceToken = await _firebaseMessaging.getToken();
+      String? deviceToken = await getDeviceToken();
       print('Notification: $deviceToken');
 
       if (deviceToken != null) {

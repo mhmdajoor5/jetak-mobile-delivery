@@ -38,8 +38,9 @@ class NotificationController {
         debug: true);
 
     // Get initial notification action is optional
-    initialAction = (await AwesomeNotifications()
-        .getInitialNotificationAction(removeFromActionEvents: false))!;
+    initialAction = await AwesomeNotifications()
+        .getInitialNotificationAction(removeFromActionEvents: false);
+
   }
 
   static late  ReceivePort receivePort;
@@ -200,6 +201,22 @@ class NotificationController {
           payload: {'orderId': message.data['order_id']}),
     );
   }
+
+  /// Get FCM device token
+  static Future<void> getDeviceToken() async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        print('🔑 FCM Token: $token');
+        // You can send this token to your backend or save it
+      } else {
+        print('❌ Failed to get FCM token');
+      }
+    } catch (e) {
+      print('❌ Error getting FCM token: $e');
+    }
+  }
+
 
   static Future<void> resetBadgeCounter() async {
     await AwesomeNotifications().resetGlobalBadge();
