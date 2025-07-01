@@ -367,7 +367,11 @@ class Helper {
 
   static String? fixImageUrl(String? url) {
     if (url == null || url.isEmpty) {
-      return "${GlobalConfiguration().getString('base_url')}images/image_default.png";
+      String baseUrl = GlobalConfiguration().getString('base_url');
+      if (!baseUrl.endsWith('/')) {
+        baseUrl += '/';
+      }
+      return baseUrl + "images/image_default.png";
     }
     
     // Fix malformed URLs like 'localhoststorage' to 'http://localhost/storage/'

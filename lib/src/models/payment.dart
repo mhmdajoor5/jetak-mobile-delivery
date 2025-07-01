@@ -11,7 +11,7 @@ class Payment {
 
   Payment.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
+      id = jsonMap['id']?.toString() ?? '';
       status = jsonMap['status'] ?? '';
       method = jsonMap['method'] ?? '';
     } catch (e) {

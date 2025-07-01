@@ -32,7 +32,7 @@ class User {
 
   User.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
+      id = jsonMap['id']?.toString() ?? '';
       document1 = jsonMap['document1'].toString();
       document2 = jsonMap['document2'].toString();
       document3 = jsonMap['document3'].toString();

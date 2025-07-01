@@ -14,7 +14,7 @@ class Extra {
 
   Extra.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
+      id = jsonMap['id']?.toString() ?? '';
       extraGroupId = jsonMap['extra_group_id'] != null ? jsonMap['extra_group_id'].toString() : '0';
       name = jsonMap['name'].toString();
       price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0;

@@ -18,9 +18,9 @@ import '../helpers/helper.dart';
 import '../models/route_argument.dart';
 
 class OrderWidget extends StatefulWidget {
-  final RouteArgument routeArgument;
+  final RouteArgument? routeArgument;
 
-  OrderWidget({super.key, required this.routeArgument}) ;
+  OrderWidget({Key? key, this.routeArgument}) : super(key: key);
 
   @override
   _OrderWidgetState createState() {
@@ -28,35 +28,58 @@ class OrderWidget extends StatefulWidget {
   }
 }
 
-class _OrderWidgetState extends StateMVC<OrderWidget>
-    with SingleTickerProviderStateMixin {
- late TabController _tabController;
-  int _tabIndex = 0;
+class _OrderWidgetState extends StateMVC<OrderWidget> {
   late OrderDetailsController _con;
 
   _OrderWidgetState() : super(OrderDetailsController()) {
-    _con = (controller as OrderDetailsController?)!;
+    _con = controller as OrderDetailsController;
   }
 
   @override
   void initState() {
-    _con.listenForOrder(id: widget.routeArgument.id!);
-    _tabController =
-        TabController(length: 2, initialIndex: _tabIndex, vsync: this);
-    _tabController.addListener(_handleTabSelection);
+    _con.listenForOrder(id: widget.routeArgument?.id);
     super.initState();
   }
 
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<Position?> _getCurrentPosition() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied || 
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition();
+    } catch (e) {
+      print('Error getting location: $e');
+      return null;
+    }
   }
 
-  _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      setState(() {
-        _tabIndex = _tabController.index;
-      });
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+      case 'order received':
+        return Colors.orange[600]!;
+      case 'preparing':
+      case 'in preparation':
+        return Colors.blue[600]!;
+      case 'ready for pickup':
+      case 'ready':
+        return Colors.purple[600]!;
+      case 'on the way':
+      case 'in delivery':
+        return Colors.indigo[600]!;
+      case 'delivered':
+      case 'completed':
+        return Colors.green[600]!;
+      case 'cancelled':
+      case 'rejected':
+        return Colors.red[600]!;
+      default:
+        return Colors.grey[600]!;
     }
   }
 
@@ -64,593 +87,841 @@ class _OrderWidgetState extends StateMVC<OrderWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       key: _con.scaffoldKey,
-      drawer: DrawerWidget(),
-      bottomNavigationBar: _con.order == null
-          ? Container(
-              height: 193,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Theme.of(context).focusColor.withOpacity(0.15),
-                        offset: Offset(0, -2),
-                        blurRadius: 5.0)
-                  ]),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width - 40,
-              ),
-            )
-          : Container(
-              height: _con.order.orderStatus!.id == '5' ? 190 : 250,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Theme.of(context).focusColor.withOpacity(0.15),
-                        offset: Offset(0, -2),
-                        blurRadius: 5.0)
-                  ]),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width - 40,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
+      backgroundColor: Colors.grey[50],
+      body: _con.order == null
+          ? CircularLoadingWidget(height: 400)
+          : CustomScrollView(
+              slivers: <Widget>[
+                // Enhanced Modern App Bar
+                SliverAppBar(
+                  expandedHeight: 160,
+                  floating: false,
+                  pinned: true,
+                  elevation: 0,
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.white,
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.parallax,
+                    titlePadding: EdgeInsets.only(left: 72, bottom: 16),
+                    title: Container(
                           child: Text(
-                            S.of(context).subtotal,
-                            style: Theme.of(context).textTheme.displayLarge,
-                          ),
+                        '',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 1),
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 3,
+                            ),
+                          ],
                         ),
-                        Helper.getPrice(
-                            Helper.getSubTotalOrdersPrice(_con.order), context,
-                            style: Theme.of(context).textTheme. bodySmall)
-                      ],
+                      ),
                     ),
-                    SizedBox(height: 5),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            S.of(context).delivery_fee,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF4A90E2),
+                            Color(0xFF357ABD),
+                            Color(0xFF2E6DA4),
+                          ],
                         ),
-                        Helper.getPrice(_con.order.deliveryFee ??0.0, context,
-                            style: Theme.of(context).textTheme.bodySmall)
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            '${S.of(context).tax} (${_con.order.tax}%)',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(24),
+                          bottomRight: Radius.circular(24),
                         ),
-                        Helper.getPrice(Helper.getTaxOrder(_con.order), context,
-                            style: Theme.of(context).textTheme.bodySmall)
-                      ],
-                    ),
-                    Divider(height: 30),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            S.of(context).total,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                        Helper.getPrice(
-                            Helper.getTotalOrdersPrice(_con.order), context,
-                            style: Theme.of(context).textTheme.bodySmall)
-                      ],
-                    ),
-                    _con.order.orderStatus!.id != '5'
-                        ? SizedBox(height: 20)
-                        : SizedBox(height: 0),
-                    _con.order.orderStatus!.id != '5'
-                        ? SizedBox(
-                            width: MediaQuery.of(context).size.width - 40,
-                            child: MaterialButton(
-                              elevation: 0,
-                              focusElevation: 0,
-                              highlightElevation: 0,
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: Text(S
-                                            .of(context)
-                                            .delivery_confirmation),
-                                        content: Text(S
-                                            .of(context)
-                                            .would_you_please_confirm_if_you_have_delivered_all_meals),
-                                        actions: <Widget>[
-                                          // usually buttons at the bottom of the dialog
-                                          MaterialButton(
-                                            elevation: 0,
-                                            focusElevation: 0,
-                                            highlightElevation: 0,
-                                            child:
-                                                new Text(S.of(context).confirm),
-                                            onPressed: () {
-                                              if (_con.order.orderStatus!.id ==
-                                                  "3") {
-                                                _con.doOnTheWayOrder(
-                                                    _con.order);
-                                              } else {
-                                                _con.doDeliveredOrder(
-                                                    _con.order);
-                                              }
-                                              Navigator.of(context).pop();
-                                            },
+                      ),
+                      child: SafeArea(
+                        child: Container(
+                          padding: EdgeInsets.fromLTRB(20, 50, 20, 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Order Title Section
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      Icons.receipt_long,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Order Details',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
                                           ),
-                                          MaterialButton(
-                                            elevation: 0,
-                                            focusElevation: 0,
-                                            highlightElevation: 0,
-                                            child:
-                                                new Text(S.of(context).dismiss),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
+                                        ),
+                                        Text(
+                                          '#${_con.order?.id ?? 'N/A'}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            shadows: [
+                                              Shadow(
+                                                offset: Offset(0, 1),
+                                                color: Colors.black.withOpacity(0.3),
+                                                blurRadius: 3,
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      );
-                                    });
-                              },
-                              padding: EdgeInsets.symmetric(vertical: 14),
-                              color: Colors.black54,
-                              shape: StadiumBorder(),
-                              child: Text(
-                                _con.order.orderStatus!.id == "3"
-                                    ? "Mark as on The way"
-                                    : S.of(context).delivered,
-                                textAlign: TextAlign.start,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Payment Method Badge
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _con.order?.payment?.method?.toLowerCase() == 'cash' 
+                                            ? Icons.money 
+                                            : Icons.credit_card,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          _con.order?.payment?.method ?? 'Cash',
                                 style: TextStyle(
-                                    color: Colors.black54),
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
                               ),
                             ),
-                          )
-                        : SizedBox(height: 0),
-                    SizedBox(height: 10),
                   ],
                 ),
               ),
-            ),
-      body: _con.order == null
-          ? CircularLoadingWidget(height: 400)
-          : CustomScrollView(slivers: <Widget>[
-              SliverAppBar(
-                snap: true,
-                floating: true,
-                automaticallyImplyLeading: false,
-                leading: new IconButton(
-                  icon:
-                      new Icon(Icons.sort, color: Theme.of(context).hintColor),
-                  onPressed: () => _con.scaffoldKey?.currentState?.openDrawer(),
-                ),
-                centerTitle: true,
-                title: Text(
-                  S.of(context).order_details,
-                  style:  TextStyle(letterSpacing: 1.3) ,
-                ),
-                actions: <Widget>[
-                  new ShoppingCartButtonWidget(
-                      iconColor: Theme.of(context).hintColor,
-                      labelColor: Colors.black54),
-                ],
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                expandedHeight: 230,
-                elevation: 0,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    margin: EdgeInsets.only(top: 95, bottom: 65),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                ],
+                              ),
+                              
+                              SizedBox(height: 12),
+                              
+                              // Status and Date Row
+                              Row(
+                                children: [
+                                  // Status Badge
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.black54.withOpacity(0.9),
+                                      color: _getStatusColor(_con.order?.orderStatus?.status ?? ""),
+                                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                            color:
-                                Theme.of(context).focusColor.withOpacity(0.1),
-                            blurRadius: 5,
-                            offset: Offset(0, 2)),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      S.of(context).order_id +
-                                          ": #${_con.order.id}",
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      _con.order.orderStatus?.status ??"",
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                                    child: Text(
+                                      _con.order?.orderStatus?.status ?? "Unknown",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    Text(
-                                      DateFormat('yyyy-MM-dd HH:mm')
-                                          .format(_con.order.dateTime!),
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  
+                                  SizedBox(width: 12),
+                                  
+                                  // Date and Time
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time,
+                                          color: Colors.white70,
+                                          size: 14,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            _con.order?.dateTime != null 
+                                              ? DateFormat('MMM dd, yyyy • HH:mm').format(_con.order!.dateTime!)
+                                              : 'N/A',
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              SizedBox(width: 8),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: <Widget>[
-                                  Helper.getPrice(
-                                      Helper.getTotalOrdersPrice(_con.order),
-                                      context,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall),
-                                  Text(
-                                    _con.order.payment?.method ??
-                                        S.of(context).cash_on_delivery,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                  Text(
-                                    '${S.of(context).items}: ${_con.order?.foodOrders?.length ?? 0}',
-                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                        )
-                      ],
+                        ),
+                      ),
                     ),
                   ),
-                  collapseMode: CollapseMode.pin,
+                  leading: Container(
+                    margin: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  actions: [
+                    Container(
+                      margin: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.refresh, color: Colors.white, size: 20),
+                        onPressed: () {
+                          _con.listenForOrder(id: widget.routeArgument?.id);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                bottom: TabBar(
-                    controller: _tabController,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 10),
-                    unselectedLabelColor: Colors.black54,
-                    labelColor: Colors.black54,
-                    indicator: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: Colors.black54),
-                    tabs: [
-                      Tab(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              border: Border.all(
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.2),
-                                  width: 1)),
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(S.of(context).ordered_foods),
-                          ),
-                        ),
-                      ),
-                      Tab(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              border: Border.all(
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.2),
-                                  width: 1)),
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(S.of(context).customer),
-                          ),
-                        ),
-                      ),
-                    ]),
-              ),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Offstage(
-                    offstage: 0 != _tabIndex,
-                    child: ListView.separated(
-                      padding: EdgeInsets.only(top: 20, bottom: 50),
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      primary: false,
-                      itemCount: _con.order.foodOrders?.length ?? 0,
-                      separatorBuilder: (context, index) {
-                        return SizedBox(height: 15);
-                      },
-                      itemBuilder: (context, index) {
-                        return FoodOrderItemWidget(
-                            heroTag: 'my_orders',
-                            order: _con.order,
-                            foodOrder: _con.order.foodOrders!.elementAt(index));
-                      },
-                    ),
+
+                // Content
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 10),
+                      
+                      // Order Items Section
+                      _buildOrderItemsSection(),
+                      SizedBox(height: 16),
+                      
+                      // Customer Info Section
+                      _buildCustomerInfoSection(),
+                      SizedBox(height: 16),
+                      
+                      // Pricing Section
+                      _buildPricingSection(),
+                      SizedBox(height: 100), // Space for bottom button
+                    ],
                   ),
-                  Offstage(
-                    offstage: 1 != _tabIndex,
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 7),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Expanded(
+                ),
+              ],
+            ),
+      
+      // Modern Bottom Action Button
+      bottomNavigationBar: _con.order == null 
+          ? null 
+          : _buildBottomActionButton(),
+    );
+  }
+
+  Widget _buildOrderItemsSection() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.restaurant_menu,
+                    color: Colors.orange[700],
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
                                     Text(
-                                      S.of(context).fullName,
-                                      overflow: TextOverflow.ellipsis,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                    Text(
-                                      _con.order.user?.name ?? "",
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                  'Ordered Items',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                Spacer(),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_con.order?.foodOrders?.length ?? 0} items',
+                    style: TextStyle(
+                      color: Colors.blue[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 20),
-                              SizedBox(
-                                width: 42,
-                                height: 42,
-                                child: MaterialButton(
-                                  elevation: 0,
-                                  focusElevation: 0,
-                                  highlightElevation: 0,
-                                  padding: EdgeInsets.all(0),
-                                  disabledColor: Theme.of(context)
-                                      .focusColor
-                                      .withOpacity(0.4),
-                                  //onPressed: () {
-//                                    Navigator.of(context).pushNamed('/Profile',
-//                                        arguments: new RouteArgument(param: _con.order.deliveryAddress));
-                                  //},
+          
+          Divider(height: 0, color: Colors.grey[200]),
+          
+          // Food Items List
+          ListView.separated(
+            padding: EdgeInsets.all(16),
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _con.order?.foodOrders?.length ?? 0,
+            separatorBuilder: (context, index) => SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final foodOrder = _con.order?.foodOrders?.elementAt(index);
+              return Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                                   child: Icon(
-                                    Icons.person,
-                                    color: Colors.black54,
-                                    size: 24,
-                                  ),
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.9),
-                                  shape: StadiumBorder(), onPressed: () {  },
+                        Icons.fastfood,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            foodOrder?.food?.name ?? 'Unknown Item',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Qty: ${foodOrder?.quantity?.toInt() ?? 0}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 7),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Expanded(
+                    Helper.getPrice(foodOrder?.price ?? 0.0, context, 
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      )
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerInfoSection() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.green[700],
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
                                     Text(
-                                      S.of(context).deliveryAddress,
-                                      overflow: TextOverflow.ellipsis,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                    Text(
-                                      _con.order.deliveryAddress?.address ??
-                                          S
-                                              .of(context)
-                                              .address_not_provided_please_call_the_client,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                  'Customer Information',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 20),
-                              SizedBox(
-                                width: 42,
-                                height: 42,
-                                child: MaterialButton(
-                                  elevation: 0,
-                                  focusElevation: 0,
-                                  highlightElevation: 0,
-                                  padding: EdgeInsets.all(0),
-                                  disabledColor: Theme.of(context)
-                                      .focusColor
-                                      .withOpacity(0.4),
+          
+          Divider(height: 0, color: Colors.grey[200]),
+          
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Customer Name
+                _buildInfoRow(
+                  icon: Icons.person_outline,
+                  title: 'Customer Name',
+                  value: _con.order?.user?.name ?? 'N/A',
+                  color: Colors.blue,
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Phone Number with Call Button
+                _buildInfoRow(
+                  icon: Icons.phone_outlined,
+                  title: 'Phone Number',
+                  value: _con.order?.user?.phone ?? 'N/A',
+                  color: Colors.green,
+                  action: _con.order?.user?.phone != null && _con.order!.user!.phone!.isNotEmpty 
+                    ? IconButton(
+                        icon: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.green[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.call, color: Colors.green[700], size: 18),
+                        ),
+                        onPressed: () {
+                          launch("tel:${_con.order!.user!.phone}");
+                        },
+                      )
+                    : null,
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Delivery Address with Map Button
+                _buildInfoRow(
+                  icon: Icons.location_on_outlined,
+                  title: 'Delivery Address',
+                  value: _con.order?.deliveryAddress?.address ?? 'Address not provided',
+                  color: Colors.orange,
+                  maxLines: 3,
+                  action: _con.order?.deliveryAddress?.latitude != null && 
+                         _con.order?.deliveryAddress?.longitude != null
+                    ? IconButton(
+                        icon: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.directions, color: Colors.blue[700], size: 18),
+                        ),
                                   onPressed: () async {
                                     Position? position = await _getCurrentPosition();
                                     if(position == null) return;
                                     MapLauncher.showDirections(
                                         mapType: MapType.waze,
                                         destination: Coords(
-                                            _con.order.deliveryAddress?.latitude ?? 0.0,
-                                            _con.order.deliveryAddress?.longitude ?? 0.0),
-                                    origin: Coords(position.latitude, position.longitude));
-                                  },
-                                  child: Icon(
-                                    Icons.directions,
-                                    color: Colors.black54,
-                                    size: 24,
-                                  ),
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.9),
-                                  shape: StadiumBorder(),
+                              _con.order!.deliveryAddress!.latitude ?? 0.0,
+                              _con.order!.deliveryAddress!.longitude ?? 0.0
+                            ),
+                            origin: Coords(position.latitude, position.longitude)
+                          );
+                        },
+                      )
+                    : null,
+                ),
+              ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 7),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+    Widget? action,
+    int maxLines = 2,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, color: color, size: 16),
+        ),
+        SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
+            children: [
                                     Text(
-                                      S.of(context).phoneNumber,
-                                      overflow: TextOverflow.ellipsis,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 2),
                                     Text(
-                                      _con.order.user?.phone ?? "",
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: maxLines,
                                       overflow: TextOverflow.ellipsis,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 10),
-                              SizedBox(
-                                width: 42,
-                                height: 42,
-                                child: MaterialButton(
-                                  elevation: 0,
-                                  focusElevation: 0,
-                                  highlightElevation: 0,
-                                  padding: EdgeInsets.all(0),
-                                  onPressed: () {
-                                    launch("tel:${_con.order.user?.phone}");
-                                  },
+        if (action != null) action,
+      ],
+    );
+  }
+
+  Widget _buildPricingSection() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                                   child: Icon(
-                                    Icons.call,
-                                    color: Colors.black54,
-                                    size: 24,
-                                  ),
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.9),
-                                  shape: StadiumBorder(),
+                    Icons.receipt_long,
+                    color: Colors.purple[700],
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Order Summary',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
+          
+          Divider(height: 0, color: Colors.grey[200]),
+          
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildPriceRow(
+                  'Subtotal',
+                  Helper.getSubTotalOrdersPrice(_con.order!),
+                ),
+                SizedBox(height: 12),
+                _buildPriceRow(
+                  'Delivery Fee',
+                  _con.order!.deliveryFee ?? 0.0,
+                ),
+                SizedBox(height: 12),
+                _buildPriceRow(
+                  'Tax (${_con.order!.tax}%)',
+                  Helper.getTaxOrder(_con.order!),
+                ),
+                SizedBox(height: 16),
+                Divider(color: Colors.grey[300]),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                ]),
-              )
-            ]),
+                    Helper.getPrice(Helper.getTotalOrdersPrice(_con.order!), context, 
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.green[600],
+                      )
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  void launchWaze(double lat, double lng) async {
-    var url = 'waze://?ll=${lat.toString()},${lng.toString()}';
-    var fallbackUrl =
-        'https://waze.com/ul?ll=${lat.toString()},${lng.toString()}&navigate=yes';
-    try {
-      bool launched =
-          await launch(url, forceSafariVC: false, forceWebView: false);
-      if (!launched) {
-        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
-      }
-    } catch (e) {
-      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
-    }
+  Widget _buildPriceRow(String label, double amount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[700],
+          ),
+        ),
+        Helper.getPrice(amount, context, 
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          )
+        ),
+      ],
+    );
   }
 
-
-  Future<Position?> _getCurrentPosition() async {
-    final hasPermission = await _handlePermission();
-
-    if (!(hasPermission == true)) {
-      return null;
-    }
-    final position = await _geolocatorPlatform.getCurrentPosition();
-    try {
-      await updateDriverLocation(
-          position.latitude, position.longitude);
-    } catch (e) {
-      print(e);
-    }
-
-    return position;
-  }
-
-  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
-
-  Future<bool> _handlePermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await _geolocatorPlatform.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-
-      return false;
-    }
-
-    permission = await _geolocatorPlatform.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await _geolocatorPlatform.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-
-        return false;
-      }
+  Widget _buildBottomActionButton() {
+    if (_con.order?.orderStatus?.id == '5') {
+      // Order Delivered
+      return Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green[200]!),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green[600], size: 24),
+              SizedBox(width: 12),
+              Text(
+                '✅ Order Delivered Successfully',
+                style: TextStyle(
+                  color: Colors.green[700],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      return false;
-    }
-
-    return true;
+    // Active Order - Show Action Button
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        icon: Icon(
+          (_con.order?.orderStatus?.id == "3") 
+              ? Icons.directions_car 
+              : Icons.check_circle,
+          color: Colors.white,
+          size: 20,
+        ),
+        label: Text(
+          (_con.order?.orderStatus?.id == "3")
+              ? "🚗 Start Delivery"
+              : "✅ Mark as Delivered",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        onPressed: () {
+          String title = (_con.order?.orderStatus?.id == "3")
+              ? "Start Delivery?"
+              : "Confirm Delivery?";
+          String message = (_con.order?.orderStatus?.id == "3")
+              ? "Mark this order as 'On The Way' to customer?"
+              : "Confirm that you have delivered all items to the customer?";
+              
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                content: Text(message),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text(
+                      "Cancel", 
+                      style: TextStyle(color: Colors.grey[600])
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (_con.order?.orderStatus?.id == "3") 
+                          ? Colors.blue[600] 
+                          : Colors.green[600],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      (_con.order?.orderStatus?.id == "3") 
+                          ? "Start" 
+                          : "Confirm",
+                      style: TextStyle(color: Colors.white)
+                    ),
+                    onPressed: () {
+                      if (_con.order?.orderStatus?.id == "3") {
+                        _con.doOnTheWayOrder(_con.order!);
+                      } else {
+                        _con.doDeliveredOrder(_con.order!);
+                      }
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            }
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: (_con.order?.orderStatus?.id == "3") 
+              ? Colors.blue[600] 
+              : Colors.green[600],
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+      ),
+    );
   }
 }

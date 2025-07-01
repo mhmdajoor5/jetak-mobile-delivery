@@ -118,54 +118,206 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         key: widget.scaffoldKey,
         drawer: DrawerWidget(),
         body: widget.currentPage,
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.black54,
-          selectedFontSize: 0,
-          unselectedFontSize: 0,
-          iconSize: 22,
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          selectedIconTheme: IconThemeData(size: 28),
-          unselectedItemColor: Theme.of(context).focusColor.withOpacity(1),
-          currentIndex: widget.currentTab,
-          onTap: (int i) {
-            print(i);
-            this._selectTab(i);
-          },
-          // this will be set when a new tab is tapped
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: "",
+        bottomNavigationBar: Container(
+          height: 85,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white,
+                Colors.grey[50]!,
+              ],
             ),
-            BottomNavigationBarItem(
-                label: "",
-                icon: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(50),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black54.withOpacity(0.4),
-                          blurRadius: 40,
-                          offset: Offset(0, 15)),
-                      BoxShadow(
-                          color: Colors.black54.withOpacity(0.4),
-                          blurRadius: 13,
-                          offset: Offset(0, 3))
-                    ],
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: Offset(0, -5),
+                spreadRadius: 5,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+            child: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: Colors.transparent,
+              selectedFontSize: 0,
+              unselectedFontSize: 0,
+              iconSize: 26,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              unselectedItemColor: Colors.transparent,
+              currentIndex: widget.currentTab,
+              onTap: (int i) {
+                print(i);
+                this._selectTab(i);
+              },
+              items: [
+                // Profile Tab
+                BottomNavigationBarItem(
+                  icon: _buildNavItem(
+                    icon: Icons.person_rounded,
+                    isSelected: widget.currentTab == 0,
+                    color: Colors.purple[600]!,
+                    label: 'Profile',
                   ),
-                  child: new Icon(Icons.home,
-                      color: Colors.black54),
-                )),
-            BottomNavigationBarItem(
-              icon: new Icon(Icons.history),
-              label: "",
+                  label: "",
+                ),
+                // Home Tab (Center with special design)
+                BottomNavigationBarItem(
+                  label: "",
+                  icon: _buildCenterNavItem(
+                    isSelected: widget.currentTab == 1,
+                  ),
+                ),
+                // History Tab
+                BottomNavigationBarItem(
+                  icon: _buildNavItem(
+                    icon: Icons.history_rounded,
+                    isSelected: widget.currentTab == 2,
+                    color: Colors.orange[600]!,
+                    label: 'History',
+                  ),
+                  label: "",
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build regular nav items
+  Widget _buildNavItem({
+    required IconData icon,
+    required bool isSelected,
+    required Color color,
+    required String label,
+  }) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(isSelected ? 12 : 8),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Icon(
+              icon,
+              color: isSelected ? color : Colors.grey[500],
+              size: isSelected ? 26 : 22,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isSelected ? 11 : 10,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? color : Colors.grey[500],
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build center nav item (Home)
+  Widget _buildCenterNavItem({required bool isSelected}) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(top: isSelected ? 0 : 5),
+      child: Container(
+        width: isSelected ? 55 : 50,
+        height: isSelected ? 55 : 50,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isSelected
+                ? [
+                    Color(0xFF4A90E2),
+                    Color(0xFF357ABD),
+                    Color(0xFF2E6DA4),
+                  ]
+                : [
+                    Colors.grey[400]!,
+                    Colors.grey[500]!,
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(isSelected ? 18 : 15),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? Colors.blue.withOpacity(0.4)
+                  : Colors.grey.withOpacity(0.2),
+              blurRadius: isSelected ? 15 : 8,
+              offset: Offset(0, isSelected ? 8 : 4),
+              spreadRadius: isSelected ? 2 : 0,
+            ),
+            if (isSelected)
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.2),
+                blurRadius: 25,
+                offset: Offset(0, 12),
+              ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background pulse effect when selected
+            if (isSelected)
+              AnimatedContainer(
+                duration: Duration(milliseconds: 600),
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            Icon(
+              Icons.home_rounded,
+              color: Colors.white,
+              size: isSelected ? 28 : 24,
             ),
           ],
         ),

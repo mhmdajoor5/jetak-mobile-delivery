@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'src/models/route_argument.dart';
 import 'src/pages/complete_your_profile.dart';
+import 'src/pages/debug.dart';
 import 'src/pages/forget_password.dart';
 import 'src/pages/help.dart';
 import 'src/pages/languages.dart';
@@ -47,6 +48,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => SettingsWidget());
       case '/Complete-profile':
         return MaterialPageRoute(builder: (_) => CompleteYourProfileWidget());
+      case '/Debug':
+        return MaterialPageRoute(builder: (_) => DebugScreen());
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return MaterialPageRoute(builder: (_) => Scaffold(body: SafeArea(child: Text('Route Error'))));

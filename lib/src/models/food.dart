@@ -31,7 +31,7 @@ class Food {
 
   Food.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
+      id = jsonMap['id']?.toString() ?? '';
       name = jsonMap['name'];
       price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0.0;
       discountPrice = jsonMap['discount_price'] != null ? jsonMap['discount_price'].toDouble() : 0.0;

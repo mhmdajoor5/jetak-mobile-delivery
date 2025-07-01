@@ -13,19 +13,19 @@ class FoodOrder {
 
   FoodOrder.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
+      id = jsonMap['id']?.toString() ?? '';
       price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0.0;
       quantity = jsonMap['quantity'] != null ? jsonMap['quantity'].toDouble() : 0.0;
-      food = (jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : []) as Food?;
-      dateTime = DateTime.parse(jsonMap['updated_at']);
-      extras = jsonMap['extras'] != null ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toList() : null;
+      food = (jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food()) as Food?;
+      dateTime = jsonMap['updated_at'] != null ? DateTime.parse(jsonMap['updated_at']) : DateTime.now();
+      extras = jsonMap['extras'] != null ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toList() : <Extra>[];
     } catch (e) {
       id = '';
       price = 0.0;
       quantity = 0.0;
-      food = new Food();
-      dateTime = DateTime(0);
-      extras = [];
+      food = Food();
+      dateTime = DateTime.now();
+      extras = <Extra>[];
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }

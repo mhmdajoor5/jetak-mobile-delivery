@@ -8,8 +8,8 @@ class OrderStatus {
 
   OrderStatus.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'].toString();
-      status = jsonMap['status'] != null ? jsonMap['status'] : '';
+      id = jsonMap['id']?.toString() ?? '';
+      status = jsonMap['status']?.toString() ?? '';
     } catch (e) {
       id = '';
       status = '';

@@ -12,9 +12,9 @@ class Media {
   String? size;
 
   Media() {
-    url = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
-    thumb = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
-    icon = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
+    url = Helper.fixImageUrl("images/image_default.png");
+    thumb = Helper.fixImageUrl("images/image_default.png");
+    icon = Helper.fixImageUrl("images/image_default.png");
   }
 
   Media.fromJSON(Map<String, dynamic> jsonMap) {
@@ -26,9 +26,9 @@ class Media {
       icon = Helper.fixImageUrl(jsonMap['icon']);
       size = jsonMap['formated_size'];
     } catch (e) {
-      url = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
-      thumb = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
-      icon = "${GlobalConfiguration().getString('base_url')}images/image_default.png";
+      url = Helper.fixImageUrl("images/image_default.png");
+      thumb = Helper.fixImageUrl("images/image_default.png");
+      icon = Helper.fixImageUrl("images/image_default.png");
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }
