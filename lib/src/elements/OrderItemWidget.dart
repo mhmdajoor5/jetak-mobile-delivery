@@ -13,7 +13,12 @@ class OrderItemWidget extends StatefulWidget {
   final Order order;
   final OrderController? orderController;
 
-  OrderItemWidget({super.key, required this.expanded, required this.order, this.orderController});
+  OrderItemWidget({
+    super.key,
+    required this.expanded,
+    required this.order,
+    this.orderController,
+  });
 
   @override
   _OrderItemWidgetState createState() => _OrderItemWidgetState();
@@ -25,10 +30,11 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
-    final isNewOrder = widget.order.orderStatus?.id == '1' || 
-                      widget.order.orderStatus?.id == '2' || 
-                      widget.order.orderStatus?.id == '3';
-    
+    final isNewOrder =
+        widget.order.orderStatus?.id == '1' ||
+        widget.order.orderStatus?.id == '2' ||
+        widget.order.orderStatus?.id == '3';
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -47,12 +53,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
             offset: Offset(0, 4),
           ),
         ],
-        border: isNewOrder 
-          ? Border.all(
-              color: Colors.green[400]!,
-              width: 2.5,
-            ) 
-          : null,
+        border:
+            isNewOrder
+                ? Border.all(color: Colors.green[400]!, width: 2.5)
+                : null,
       ),
       child: Column(
         children: [
@@ -132,36 +136,35 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 ],
               ),
             ),
-          
+
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Order ID and Date
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                      Text(
+                    Text(
                       'Order ID: #${widget.order.id ?? '-'}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
-                      ),
-                      Text(
-                        widget.order.dateTime != null
-                            ? DateFormat('dd-MM-yyyy | HH:mm').format(widget.order.dateTime!)
-                            : '-',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                      ),
-                    ],
-                  ),
-                
+                    ),
+                    Text(
+                      widget.order.dateTime != null
+                          ? DateFormat(
+                            'dd-MM-yyyy | HH:mm',
+                          ).format(widget.order.dateTime!)
+                          : '-',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+
                 // Price and Payment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,10 +173,11 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        if (widget.order.foodOrders != null && widget.order.foodOrders!.isNotEmpty)
+                        if (widget.order.foodOrders != null &&
+                            widget.order.foodOrders!.isNotEmpty)
                           Helper.getPrice(
-                                Helper.getTotalOrdersPrice(widget.order),
-                                context,
+                            Helper.getTotalOrdersPrice(widget.order),
+                            context,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -181,7 +185,13 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                             ),
                           )
                         else
-                          Text('-', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(
+                            '-',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         Text(
                           widget.order.payment?.method ?? 'Cash',
                           style: TextStyle(
@@ -193,83 +203,131 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     ),
                   ],
                 ),
-                
+
                 SizedBox(height: 12),
                 Divider(height: 1, color: Colors.grey[300]),
                 SizedBox(height: 12),
-                
+
                 // Food Items
-                if (widget.order.foodOrders != null && widget.order.foodOrders!.isNotEmpty)
-                    Column(
+                if (widget.order.foodOrders != null &&
+                    widget.order.foodOrders!.isNotEmpty)
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ...widget.order.foodOrders!.map((foodOrder) => 
-                    Padding(
-                          padding: EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  shape: BoxShape.circle,
-                                ),
+                      ...widget.order.foodOrders!
+                          .map(
+                            (foodOrder) => Padding(
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${foodOrder.quantity}x ${foodOrder.food?.name ?? 'Unknown'}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: Helper.getPrice(
+                                      foodOrder.price ?? 0.0,
+                                      context,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${foodOrder.quantity}x ${foodOrder.food?.name ?? 'Unknown'}',
-                                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              Flexible(
-                                child: Helper.getPrice(foodOrder.price ?? 0.0, context, 
-                                  style: TextStyle(fontSize: 12, color: Colors.grey[600])
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ).toList(),
-                      
+                            ),
+                          )
+                          .toList(),
+
                       SizedBox(height: 12),
                       Divider(height: 1, color: Colors.grey[300]),
                       SizedBox(height: 8),
-                      
+
                       // Pricing Details
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Delivery Fee:', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                          Helper.getPrice(widget.order.deliveryFee ?? 0.0, context, 
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                          Text(
+                            'Delivery Fee:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Helper.getPrice(
+                            widget.order.deliveryFee ?? 0.0,
+                            context,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ],
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Tax (${widget.order.tax}%):', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                          Helper.getPrice(Helper.getTaxOrder(widget.order), context,
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                          Text(
+                            'Tax (${widget.order.tax}%):',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Helper.getPrice(
+                            Helper.getTaxOrder(widget.order),
+                            context,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Total:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                          Helper.getPrice(Helper.getTotalOrdersPrice(widget.order), context,
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green[700])),
+                          Text(
+                            'Total:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Helper.getPrice(
+                            Helper.getTotalOrdersPrice(widget.order),
+                            context,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[700],
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
-                
+
                 SizedBox(height: 16),
-                
+
                 // Customer Information
                 Container(
                   padding: EdgeInsets.all(12),
@@ -288,7 +346,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                           Expanded(
                             child: Text(
                               'Customer: ${widget.order.user?.name ?? 'Unknown'}',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
@@ -299,11 +360,18 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.phone, size: 16, color: Colors.green[600]),
+                            Icon(
+                              Icons.phone,
+                              size: 16,
+                              color: Colors.green[600],
+                            ),
                             SizedBox(width: 6),
                             Text(
                               widget.order.user!.phone!,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
                             ),
                           ],
                         ),
@@ -313,28 +381,43 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.location_on, size: 16, color: Colors.red[600]),
+                            Icon(
+                              Icons.location_on,
+                              size: 16,
+                              color: Colors.red[600],
+                            ),
                             SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 widget.order.deliveryAddress!.address!,
-                                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ],
-                      if (widget.order.hint != null && widget.order.hint!.isNotEmpty) ...[
+                      if (widget.order.hint != null &&
+                          widget.order.hint!.isNotEmpty) ...[
                         SizedBox(height: 4),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.note, size: 16, color: Colors.orange[600]),
+                            Icon(
+                              Icons.note,
+                              size: 16,
+                              color: Colors.orange[600],
+                            ),
                             SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 'Note: ${widget.order.hint}',
-                                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
                               ),
                             ),
                           ],
@@ -343,9 +426,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     ],
                   ),
                 ),
-                
+
                 SizedBox(height: 16),
-                
+
                 // Enhanced Action Buttons
                 if (isNewOrder) ...[
                   Container(
@@ -380,62 +463,112 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: _isProcessing ? null : () async {
-                                  try {
-                                    setState(() => _isProcessing = true);
-                                    if (widget.orderController != null) {
-                                      int orderId = int.tryParse(widget.order.id ?? '0') ?? 0;
-                                      if (orderId > 0) {
-                                        widget.orderController!.rejectOrder(orderId);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Row(
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.all(6),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white.withOpacity(0.2),
-                                                    shape: BoxShape.circle,
+                                onTap:
+                                    _isProcessing
+                                        ? null
+                                        : () async {
+                                          try {
+                                            setState(
+                                              () => _isProcessing = true,
+                                            );
+                                            if (widget.orderController !=
+                                                null) {
+                                              int orderId =
+                                                  int.tryParse(
+                                                    widget.order.id ?? '0',
+                                                  ) ??
+                                                  0;
+                                              if (orderId > 0) {
+                                                widget.orderController!
+                                                    .rejectOrder(orderId);
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Row(
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              EdgeInsets.all(6),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                color: Colors
+                                                                    .white
+                                                                    .withOpacity(
+                                                                      0.2,
+                                                                    ),
+                                                                shape:
+                                                                    BoxShape
+                                                                        .circle,
+                                                              ),
+                                                          child: Icon(
+                                                            Icons
+                                                                .cancel_rounded,
+                                                            color: Colors.white,
+                                                            size: 16,
+                                                          ),
+                                                        ),
+                                                        SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: Text(
+                                                            '❌ Order #${widget.order.id} Rejected',
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    backgroundColor: Color(
+                                                      0xFFD32F2F,
+                                                    ),
+                                                    duration: Duration(
+                                                      seconds: 3,
+                                                    ),
+                                                    behavior:
+                                                        SnackBarBehavior
+                                                            .floating,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
                                                   ),
-                                                  child: Icon(Icons.cancel_rounded, color: Colors.white, size: 16),
+                                                );
+                                              } else {
+                                                throw Exception(
+                                                  'Invalid order ID',
+                                                );
+                                              }
+                                            }
+                                          } catch (e) {
+                                            print('Error rejecting order: $e');
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '❌ Error rejecting order',
                                                 ),
-                                                SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                                    '❌ Order #${widget.order.id} Rejected',
-                                                    style: TextStyle(fontWeight: FontWeight.w500),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            backgroundColor: Color(0xFFD32F2F),
-                                            duration: Duration(seconds: 3),
-                                            behavior: SnackBarBehavior.floating,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        throw Exception('Invalid order ID');
-                                      }
-                                    }
-                                  } catch (e) {
-                                    print('Error rejecting order: $e');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('❌ Error rejecting order'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  } finally {
-                                    if (mounted) {
-                                      setState(() => _isProcessing = false);
-                                    }
-                                  }
-                                },
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          } finally {
+                                            if (mounted) {
+                                              setState(
+                                                () => _isProcessing = false,
+                                              );
+                                            }
+                                          }
+                                        },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -468,9 +601,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                             ),
                           ),
                         ),
-                        
+
                         SizedBox(width: 16),
-                        
+
                         // Modern Accept Button
                         Expanded(
                           child: Container(
@@ -499,69 +632,127 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: _isProcessing ? null : () async {
-                                  try {
-                                    setState(() => _isProcessing = true);
-                                    if (widget.orderController != null) {
-                                      int orderId = int.tryParse(widget.order.id ?? '0') ?? 0;
-                                      if (orderId > 0) {
-                                        widget.orderController!.acceptOrder(orderId);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Row(
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.all(6),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white.withOpacity(0.2),
-                                                    shape: BoxShape.circle,
+                                onTap:
+                                    _isProcessing
+                                        ? null
+                                        : () async {
+                                          try {
+                                            setState(
+                                              () => _isProcessing = true,
+                                            );
+                                            if (widget.orderController !=
+                                                null) {
+                                              int orderId =
+                                                  int.tryParse(
+                                                    widget.order.id ?? '0',
+                                                  ) ??
+                                                  0;
+                                              if (orderId > 0) {
+                                                widget.orderController!
+                                                    .acceptOrder(orderId);
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Row(
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              EdgeInsets.all(6),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                color: Colors
+                                                                    .white
+                                                                    .withOpacity(
+                                                                      0.2,
+                                                                    ),
+                                                                shape:
+                                                                    BoxShape
+                                                                        .circle,
+                                                              ),
+                                                          child: Icon(
+                                                            Icons
+                                                                .check_circle_rounded,
+                                                            color: Colors.white,
+                                                            size: 16,
+                                                          ),
+                                                        ),
+                                                        SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: Text(
+                                                            '✅ Order #${widget.order.id} Accepted Successfully!',
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    backgroundColor: Color(
+                                                      0xFF388E3C,
+                                                    ),
+                                                    duration: Duration(
+                                                      seconds: 3,
+                                                    ),
+                                                    behavior:
+                                                        SnackBarBehavior
+                                                            .floating,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
                                                   ),
-                                                  child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+                                                );
+                                                // Navigate to order details after successful accept
+                                                await Future.delayed(
+                                                  Duration(milliseconds: 800),
+                                                );
+                                                if (mounted) {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushNamed(
+                                                    '/OrderDetails',
+                                                    arguments: RouteArgument(
+                                                      id: widget.order.id,
+                                                    ),
+                                                  );
+                                                }
+                                              } else {
+                                                throw Exception(
+                                                  'Invalid order ID',
+                                                );
+                                              }
+                                            }
+                                          } catch (e) {
+                                            print('Error accepting order: $e');
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '❌ Error accepting order: ${e.toString()}',
                                                 ),
-                                                SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                                    '✅ Order #${widget.order.id} Accepted Successfully!',
-                                                    style: TextStyle(fontWeight: FontWeight.w500),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            backgroundColor: Color(0xFF388E3C),
-                                            duration: Duration(seconds: 3),
-                                            behavior: SnackBarBehavior.floating,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                        );
-                                        // Navigate to order details after successful accept
-                                        await Future.delayed(Duration(milliseconds: 800));
-                                        if (mounted) {
-                                          Navigator.of(context).pushNamed('/OrderDetails',
-                                              arguments: RouteArgument(id: widget.order.id));
-                                        }
-                                      } else {
-                                        throw Exception('Invalid order ID');
-                                      }
-                                    }
-                                  } catch (e) {
-                                    print('Error accepting order: $e');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('❌ Error accepting order: ${e.toString()}'),
-                                        backgroundColor: Colors.red,
-                                        duration: Duration(seconds: 3),
-                                      ),
-                                    );
-                                  } finally {
-                                    if (mounted) {
-                                      setState(() => _isProcessing = false);
-                                    }
-                                  }
-                                },
+                                                backgroundColor: Colors.red,
+                                                duration: Duration(seconds: 3),
+                                              ),
+                                            );
+                                          } finally {
+                                            if (mounted) {
+                                              setState(
+                                                () => _isProcessing = false,
+                                              );
+                                            }
+                                          }
+                                        },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
@@ -572,26 +763,32 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                                           color: Colors.white.withOpacity(0.15),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: _isProcessing 
-                                          ? SizedBox(
-                                              width: 16, 
-                                              height: 16, 
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2, 
-                                                color: Colors.white,
-                                                backgroundColor: Colors.white.withOpacity(0.3),
-                                              )
-                                            )
-                                          : Icon(
-                                              Icons.check_circle_rounded,
-                                              color: Colors.white,
-                                              size: 16,
-                                            )
+                                        child:
+                                            _isProcessing
+                                                ? SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: Colors.white,
+                                                        backgroundColor: Colors
+                                                            .white
+                                                            .withOpacity(0.3),
+                                                      ),
+                                                )
+                                                : Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
                                       ),
                                       SizedBox(width: 6),
                                       Flexible(
                                         child: Text(
-                                          _isProcessing ? 'ACCEPTING...' : 'ACCEPT',
+                                          _isProcessing
+                                              ? 'ACCEPTING...'
+                                              : 'ACCEPT',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 13,
@@ -642,11 +839,16 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: () {
-                            Navigator.of(context).pushNamed('/OrderDetails',
-                                arguments: RouteArgument(id: widget.order.id));
+                            Navigator.of(context).pushNamed(
+                              '/OrderDetails',
+                              arguments: RouteArgument(id: widget.order.id),
+                            );
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
@@ -682,10 +884,10 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                                   color: Colors.white,
                                   size: 12,
                                 ),
-                  ],
-                ),
-              ),
-            ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -693,7 +895,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               ],
             ),
           ),
-          
+
           // Enhanced Status Badge at bottom
           Container(
             width: double.infinity,
@@ -702,7 +904,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               gradient: LinearGradient(
                 colors: [
                   _getStatusColor(widget.order.orderStatus?.id),
-                  _getStatusColor(widget.order.orderStatus?.id).withOpacity(0.8),
+                  _getStatusColor(
+                    widget.order.orderStatus?.id,
+                  ).withOpacity(0.8),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -713,19 +917,21 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: _getStatusColor(widget.order.orderStatus?.id).withOpacity(0.3),
+                  color: _getStatusColor(
+                    widget.order.orderStatus?.id,
+                  ).withOpacity(0.3),
                   blurRadius: 8,
                   offset: Offset(0, 4),
+                ),
+              ],
             ),
-          ],
-        ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-        Container(
+                Container(
                   padding: EdgeInsets.all(3),
-          decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
@@ -737,7 +943,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 ),
                 SizedBox(width: 6),
                 Flexible(
-          child: Text(
+                  child: Text(
                     '${widget.order.orderStatus?.status ?? 'Unknown'}',
                     style: TextStyle(
                       color: Colors.white,
@@ -747,16 +953,16 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     ),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-          ),
-        ),
-      ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-  
+
   Color _getStatusColor(String? statusId) {
     switch (statusId) {
       case '1':

@@ -56,8 +56,7 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                 child: Container(
                   width: config.App(context).appWidth(100),
                   height: config.App(context).appHeight(29.5),
-                  decoration:
-                      BoxDecoration(color: Colors.black54),
+                  decoration: BoxDecoration(color: Colors.black54),
                 ),
               ),
               Positioned(
@@ -68,7 +67,8 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                   child: Text(
                     "You have a new order!",
                     style: Theme.of(context).textTheme.displaySmall!.merge(
-                        TextStyle(color: Colors.black54)),
+                      TextStyle(color: Colors.black54),
+                    ),
                   ),
                 ),
               ),
@@ -77,39 +77,33 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                 child: Container(
                   height: size.height * 0.80,
                   decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 50,
-                          color: Theme.of(context).hintColor.withOpacity(0.2),
-                        )
-                      ]),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 20,
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 50,
+                        color: Theme.of(context).hintColor.withOpacity(0.2),
+                      ),
+                    ],
                   ),
+                  margin: EdgeInsets.symmetric(horizontal: 20),
                   padding: EdgeInsets.symmetric(vertical: 40, horizontal: 27),
                   width: config.App(context).appWidth(88),
                   child: Form(
                     child: Column(
                       children: [
-                        SizedBox(
-                          height: 60,
+                        SizedBox(height: 60),
+                        Text(
+                          argsMap['title'],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black54),
                         ),
-                        Text(argsMap['title'],
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.black54)),
                         SizedBox(height: 16),
                         Text(
                           argsMap['text'],
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.merge(TextStyle(
-                                color: Colors.black54,
-                              )),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.merge(TextStyle(color: Colors.black54)),
                         ),
                         Expanded(child: SizedBox()),
                         Row(
@@ -118,7 +112,9 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                             Expanded(
                               child: BlockButtonWidget(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                                 text: Text(
                                   "Reject",
                                   overflow: TextOverflow.ellipsis,
@@ -128,21 +124,23 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                                 onPressed: () async {
                                   try {
                                     // await _con.scc(orderID);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(
-                                          "The order #${argsMap['id']} was rejected"),
-                                    ));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "The order #${argsMap['id']} was rejected",
+                                        ),
+                                      ),
+                                    );
 
                                     Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/Pages',
-                                        (Route<dynamic> route) => false);
+                                      context,
+                                      '/Pages',
+                                      (Route<dynamic> route) => false,
+                                    );
                                   } catch (e) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(e.toString()),
-                                    ));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())),
+                                    );
                                   }
                                 },
                               ),
@@ -151,45 +149,50 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                             Expanded(
                               child: BlockButtonWidget(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                                 text: Text(
                                   "Accept",
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: Colors.black54),
+                                  style: TextStyle(color: Colors.black54),
                                 ),
                                 color: Colors.green,
                                 onPressed: () async {
                                   try {
                                     print("argsMap['id']: ${argsMap['id']}");
                                     // await _con.acceptOrder(argsMap['id']);
-                                      _con.acceptOrder(argsMap['id']);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(
-                                          "The order #${argsMap['id']} was accepted"),
-                                    ));
+                                    _con.acceptOrder(argsMap['id']);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "The order #${argsMap['id']} was accepted",
+                                        ),
+                                      ),
+                                    );
                                     Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/Pages',
-                                        (Route<dynamic> route) => false);
+                                      context,
+                                      '/Pages',
+                                      (Route<dynamic> route) => false,
+                                    );
                                     Navigator.of(context).pushNamed(
-                                        '/OrderDetails',
-                                        arguments:
-                                            RouteArgument(id: argsMap['id']));
+                                      '/OrderDetails',
+                                      arguments: RouteArgument(
+                                        id: argsMap['id'],
+                                      ),
+                                    );
                                   } catch (e) {
                                     print("Err: $e");
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(e.toString()),
-                                    ));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())),
+                                    );
                                   }
                                 },
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 128)
+                        SizedBox(height: 128),
                       ],
                     ),
                   ),

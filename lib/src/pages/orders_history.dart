@@ -10,14 +10,14 @@ import '../elements/ShoppingCartButtonWidget.dart';
 class OrdersHistoryWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState> parentScaffoldKey;
 
-  OrdersHistoryWidget({super.key, required this.parentScaffoldKey})  ;
+  const OrdersHistoryWidget({super.key, required this.parentScaffoldKey});
 
   @override
   _OrdersHistoryWidgetState createState() => _OrdersHistoryWidgetState();
 }
 
 class _OrdersHistoryWidgetState extends StateMVC<OrdersHistoryWidget> {
-  late OrderController  _con;
+  late OrderController _con;
 
   _OrdersHistoryWidgetState() : super(OrderController()) {
     _con = (controller as OrderController?)!;
@@ -35,22 +35,25 @@ class _OrdersHistoryWidgetState extends StateMVC<OrdersHistoryWidget> {
     return Scaffold(
       key: _con.scaffoldKey,
       appBar: AppBar(
-        leading: new IconButton(
-          icon: new Icon(Icons.sort, color: Theme.of(context).hintColor),
+        leading: IconButton(
+          icon: Icon(Icons.sort, color: Theme.of(context).hintColor),
           onPressed: () => widget.parentScaffoldKey.currentState!.openDrawer(),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: <Widget>[
-          new ShoppingCartButtonWidget(iconColor: Theme.of(context).hintColor, labelColor: Colors.black54),
+          ShoppingCartButtonWidget(
+            iconColor: Theme.of(context).hintColor,
+            labelColor: Colors.black54,
+          ),
         ],
         centerTitle: true,
         title: Text(
           S.of(context).orders_history,
-          style:  TextStyle(letterSpacing: 1.3)),
+          style: TextStyle(letterSpacing: 1.3),
         ),
-
+      ),
 
       body: RefreshIndicator(
         onRefresh: _con.refreshOrdersHistory,
@@ -62,18 +65,26 @@ class _OrdersHistoryWidgetState extends StateMVC<OrdersHistoryWidget> {
             _con.orders.isEmpty
                 ? EmptyOrdersWidget()
                 : ListView.separated(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    primary: false,
-                    itemCount: _con.orders.length,
-                    itemBuilder: (context, index) {
-                      var _order = _con.orders.elementAt(index);
-                      return OrderItemWidget(expanded: index == 0 ? true : false, order: _order);
-                    },
-                    separatorBuilder: (context, index) {
-                      return SizedBox(height: 20);
-                    },
-                  ),
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  primary: false,
+                  itemCount:
+                      _con.orders
+                          .where((e) => e.orderStatus?.status == 'Delivered')
+                          .length,
+                  itemBuilder: (context, index) {
+                    var _order = _con.orders
+                        .where((e) => e.orderStatus?.status == 'Delivered')
+                        .elementAt(index);
+                    return OrderItemWidget(
+                      expanded: index == 0 ? true : false,
+                      order: _order,
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return SizedBox(height: 20);
+                  },
+                ),
           ],
         ),
       ),

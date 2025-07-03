@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:global_configuration/global_configuration.dart';
 
 import '../helpers/custom_trace.dart';
@@ -46,6 +47,6 @@ class Media {
 
   @override
   String toString() {
-    return this.toMap().toString();
+    return 'Media(id: $id, name: $name, url: $url, thumb: $thumb, icon: $icon, size: $size)';
   }
 }

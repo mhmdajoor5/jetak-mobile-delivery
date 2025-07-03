@@ -22,7 +22,8 @@ Future<Stream<Order>> getOrders() async {
   _queryParams['api_token'] = _user.apiToken;
   _queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] = 'driver.id:${_user.id};order_status_id:$orderStatusId;delivery_address_id:null';
+  _queryParams['search'] =
+      'driver.id:${_user.id};order_status_id:$orderStatusId;delivery_address_id:null';
   _queryParams['searchFields'] =
       'driver.id:=;order_status_id:<>;delivery_address_id:<>';
   _queryParams['searchJoin'] = 'and';
@@ -35,11 +36,11 @@ Future<Stream<Order>> getOrders() async {
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String,dynamic>))
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
         .expand((data) => (data as List))
         .map((data) {
-      return Order.fromJSON(data);
-    });
+          return Order.fromJSON(data);
+        });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return new Stream.value(new Order.fromJSON({}));
@@ -47,7 +48,9 @@ Future<Stream<Order>> getOrders() async {
 }
 
 Future<Stream<Order>> getNearOrders(
-    Address myAddress, Address areaAddress) async {
+  Address myAddress,
+  Address areaAddress,
+) async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> _queryParams = {};
   User _user = userRepo.currentUser.value;
@@ -70,11 +73,11 @@ Future<Stream<Order>> getNearOrders(
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String,dynamic>))
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
         .expand((data) => (data as List))
         .map((data) {
-      return Order.fromJSON(data);
-    });
+          return Order.fromJSON(data);
+        });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return new Stream.value(new Order.fromJSON({}));
@@ -106,11 +109,11 @@ Future<Stream<Order>> getOrdersHistory() async {
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String,dynamic>))
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
         .expand((data) => (data as List))
         .map((data) {
-      return Order.fromJSON(data);
-    });
+          return Order.fromJSON(data);
+        });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return new Stream.value(new Order.fromJSON({}));
@@ -120,10 +123,10 @@ Future<Stream<Order>> getOrdersHistory() async {
 Future<Stream<Order>> getOrder(orderId) async {
   // **MOCK DATA للتجربة - احذف هذا عند ربط الباك إند**
   print('🔄 Loading order details for ID: $orderId');
-  
+
   // بيانات وهمية حسب الـ order ID
   Map<String, dynamic> orderData = {};
-  
+
   if (orderId == '2047') {
     orderData = {
       "id": "2047",
@@ -136,35 +139,36 @@ Future<Stream<Order>> getOrder(orderId) async {
         "id": "456",
         "name": "أحمد محمد العلي",
         "phone": "+970599123456",
-        "email": "ahmed.ali@example.com"
+        "email": "ahmed.ali@example.com",
       },
       "food_orders": [
         {
           "id": "1001",
           "quantity": 2,
           "price": 30.0,
-          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0}
+          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0},
         },
         {
-          "id": "1002", 
+          "id": "1002",
           "quantity": 1,
           "price": 8.0,
-          "food": {"id": "302", "name": "بطاطس مقلية كبيرة", "price": 8.0}
+          "food": {"id": "302", "name": "بطاطس مقلية كبيرة", "price": 8.0},
         },
         {
-          "id": "1003", 
+          "id": "1003",
           "quantity": 2,
           "price": 6.0,
-          "food": {"id": "303", "name": "مشروب غازي", "price": 3.0}
-        }
+          "food": {"id": "303", "name": "مشروب غازي", "price": 3.0},
+        },
       ],
       "delivery_address": {
         "id": "789",
-        "address": "شارع عمر المختار، مقابل البنك الأهلي، العمارة رقم 15، الطابق الثالث",
+        "address":
+            "شارع عمر المختار، مقابل البنك الأهلي، العمارة رقم 15، الطابق الثالث",
         "latitude": 31.5017,
-        "longitude": 34.4668
+        "longitude": 34.4668,
       },
-      "payment": {"method": "Cash on Delivery", "status": "Pending"}
+      "payment": {"method": "Cash on Delivery", "status": "Pending"},
     };
   } else if (orderId == '2048') {
     orderData = {
@@ -172,35 +176,36 @@ Future<Stream<Order>> getOrder(orderId) async {
       "tax": 4.5,
       "delivery_fee": 7.0,
       "hint": "البناية الزرقاء بجانب الصيدلية، شقة 4ب",
-      "updated_at": DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
+      "updated_at":
+          DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
       "order_status": {"id": "3", "status": "Ready for Pickup"},
       "user": {
         "id": "457",
         "name": "فاطمة سالم قاسم",
         "phone": "+970598987654",
-        "email": "fatima.salem@example.com"
+        "email": "fatima.salem@example.com",
       },
       "food_orders": [
         {
           "id": "1004",
           "quantity": 1,
           "price": 35.0,
-          "food": {"id": "304", "name": "بيتزا مارجريتا كبيرة", "price": 35.0}
+          "food": {"id": "304", "name": "بيتزا مارجريتا كبيرة", "price": 35.0},
         },
         {
           "id": "1005",
           "quantity": 1,
           "price": 15.0,
-          "food": {"id": "305", "name": "سلطة يونانية", "price": 15.0}
-        }
+          "food": {"id": "305", "name": "سلطة يونانية", "price": 15.0},
+        },
       ],
       "delivery_address": {
         "id": "790",
         "address": "حي الشيخ رضوان، شارع صلاح الدين، مجمع النور، شقة 4ب",
         "latitude": 31.5203,
-        "longitude": 34.4776
+        "longitude": 34.4776,
       },
-      "payment": {"method": "Credit Card", "status": "Paid"}
+      "payment": {"method": "Credit Card", "status": "Paid"},
     };
   } else if (orderId == '2049') {
     orderData = {
@@ -208,35 +213,37 @@ Future<Stream<Order>> getOrder(orderId) async {
       "tax": 2.5,
       "delivery_fee": 4.0,
       "hint": "",
-      "updated_at": DateTime.now().subtract(Duration(minutes: 2)).toIso8601String(),
+      "updated_at":
+          DateTime.now().subtract(Duration(minutes: 2)).toIso8601String(),
       "order_status": {"id": "3", "status": "Ready for Pickup"},
       "user": {
         "id": "458",
         "name": "محمد عبدالله حسن",
         "phone": "+970567891234",
-        "email": "mohammed.hassan@example.com"
+        "email": "mohammed.hassan@example.com",
       },
       "food_orders": [
         {
           "id": "1006",
           "quantity": 3,
           "price": 24.0,
-          "food": {"id": "306", "name": "شاورما لحم", "price": 8.0}
+          "food": {"id": "306", "name": "شاورما لحم", "price": 8.0},
         },
         {
           "id": "1007",
           "quantity": 1,
           "price": 12.0,
-          "food": {"id": "307", "name": "حمص بالطحينة", "price": 12.0}
-        }
+          "food": {"id": "307", "name": "حمص بالطحينة", "price": 12.0},
+        },
       ],
       "delivery_address": {
         "id": "791",
-        "address": "شارع الجلاء، بجانب مسجد النور، العمارة رقم 12، الطابق الأول",
+        "address":
+            "شارع الجلاء، بجانب مسجد النور، العمارة رقم 12، الطابق الأول",
         "latitude": 31.4969,
-        "longitude": 34.4532
+        "longitude": 34.4532,
       },
-      "payment": {"method": "PayPal", "status": "Paid"}
+      "payment": {"method": "PayPal", "status": "Paid"},
     };
   } else {
     // Default mock order للـ IDs الأخرى
@@ -247,16 +254,21 @@ Future<Stream<Order>> getOrder(orderId) async {
       "hint": "",
       "updated_at": DateTime.now().toIso8601String(),
       "order_status": {"id": "1", "status": "Pending"},
-      "user": {"id": "999", "name": "Unknown Customer", "phone": "", "email": ""},
+      "user": {
+        "id": "999",
+        "name": "Unknown Customer",
+        "phone": "",
+        "email": "",
+      },
       "food_orders": [],
       "delivery_address": {"id": "999", "address": "Address not available"},
-      "payment": {"method": "Unknown", "status": "Unknown"}
+      "payment": {"method": "Unknown", "status": "Unknown"},
     };
   }
-  
+
   await Future.delayed(Duration(milliseconds: 500)); // محاكاة تأخير الشبكة
   return Stream.value(Order.fromJSON(orderData));
-  
+
   // **الكود الأصلي - فعّله عند ربط الباك إند**
   /*
   User _user = userRepo.currentUser.value;
@@ -302,11 +314,11 @@ Future<Stream<Order>> getRecentOrders() async {
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String,dynamic>))
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
         .expand((data) => (data as List))
         .map((data) {
-      return Order.fromJSON(data);
-    });
+          return Order.fromJSON(data);
+        });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return new Stream.value(new Order.fromJSON({}));
@@ -328,14 +340,12 @@ Future<Stream<OrderStatus>> getOrderStatus() async {
   return streamedRest.stream
       .transform(utf8.decoder)
       .transform(json.decoder)
-      .map((data) => Helper.getData(data as Map<String,dynamic>))
+      .map((data) => Helper.getData(data as Map<String, dynamic>))
       .expand((data) => (data as List))
       .map((data) {
-    return OrderStatus.fromJSON(data);
-  });
+        return OrderStatus.fromJSON(data);
+      });
 }
-
-
 
 Future<Order> onTheWayOrder(Order order) async {
   User _user = userRepo.currentUser.value;
@@ -377,57 +387,60 @@ Future<Stream<Order>> getNewPendingOrders() async {
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] = 'foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment;user';
-  _queryParams['search'] = 'driver_id:null;order_status_id:1,2,3'; // طلبات غير معينة
+  _queryParams['with'] =
+      'foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment;user';
+  _queryParams['search'] =
+      'driver_id:null;order_status_id:1,2,3'; // طلبات غير معينة
   _queryParams['searchFields'] = 'driver_id:=;order_status_id:in';
   _queryParams['searchJoin'] = 'and';
   _queryParams['orderBy'] = 'id';
   _queryParams['sortedBy'] = 'desc';
   _queryParams['limit'] = '20';
-  
+
   uri = uri.replace(queryParameters: _queryParams);
-  
+
   try {
     final client = new http.Client();
     final response = await client.get(uri);
-    
+
     print('🔍 API Response Status: ${response.statusCode}');
     print('🔍 API Response Headers: ${response.headers}');
-    print('🔍 API Response Body (first 200 chars): ${response.body.substring(0, Math.min<int>(200, response.body.length))}');
-    
+    print(
+      '🔍 API Response Body (first 200 chars): ${response.body.substring(0, Math.min<int>(200, response.body.length))}',
+    );
+
     // التحقق من Content-Type
     String? contentType = response.headers['content-type'];
     if (contentType != null && !contentType.contains('application/json')) {
       print('❌ Wrong Content-Type: $contentType');
       print('❌ Response is not JSON: ${response.body}');
-      
+
       // إرجاع بيانات وهمية للاختبار
       return _getMockOrdersStream();
     }
-    
+
     // التحقق من Status Code
     if (response.statusCode != 200) {
       print('❌ HTTP Error ${response.statusCode}: ${response.body}');
       return _getMockOrdersStream();
     }
-    
+
     // التحقق من أن الـ response يبدأ بـ JSON
     String trimmedBody = response.body.trim();
     if (!trimmedBody.startsWith('{') && !trimmedBody.startsWith('[')) {
       print('❌ Response is not JSON format: $trimmedBody');
       return _getMockOrdersStream();
     }
-    
+
     // محاولة parse الـ JSON
     Map<String, dynamic> jsonData = json.decode(response.body);
     List<dynamic> ordersData = Helper.getData(jsonData);
-    
+
     return Stream.fromIterable(ordersData.map((data) => Order.fromJSON(data)));
-    
   } catch (e) {
     print('❌ Error in getNewPendingOrders: $e');
     print('🔍 URI: $uri');
-    
+
     // إرجاع بيانات وهمية في حالة الخطأ
     return _getMockOrdersStream();
   }
@@ -436,7 +449,7 @@ Future<Stream<Order>> getNewPendingOrders() async {
 // دالة مساعدة للبيانات الوهمية
 Stream<Order> _getMockOrdersStream() {
   print('🔄 Using mock data for testing...');
-  
+
   List<Order> mockOrders = [
     Order.fromJSON({
       "id": "2047",
@@ -449,33 +462,34 @@ Stream<Order> _getMockOrdersStream() {
         "id": "456",
         "name": "أحمد محمد العلي",
         "phone": "+970599123456",
-        "email": "ahmed.ali@example.com"
+        "email": "ahmed.ali@example.com",
       },
       "food_orders": [
         {
           "id": "1001",
           "quantity": 2,
           "price": 30.0,
-          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0}
-        }
+          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0},
+        },
       ],
       "delivery_address": {
         "id": "789",
         "address": "شارع عمر المختار، مقابل البنك الأهلي، العمارة رقم 15",
         "latitude": 31.5017,
-        "longitude": 34.4668
+        "longitude": 34.4668,
       },
-      "payment": {"method": "Cash on Delivery", "status": "Pending"}
-    })
+      "payment": {"method": "Cash on Delivery", "status": "Pending"},
+    }),
   ];
-  
+
   return Stream.fromIterable(mockOrders);
 }
 
 Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
-  Uri uri = Helper.getUri('api/orders/$orderId/accept');
+  Uri uri = Helper.getUri('api/driver/accept-order-by-driver');
+  // api/driver/accept-order-by-driver
   User _user = userRepo.currentUser.value;
-  
+
   try {
     final client = new http.Client();
     final response = await client.post(
@@ -487,27 +501,31 @@ Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
       body: json.encode({
         'api_token': _user.apiToken,
         'driver_id': _user.id,
+        'order_id': orderId,
       }),
     );
-    
+
     print('🔍 Accept Order Response Status: ${response.statusCode}');
-    print('🔍 Accept Order Response Body: ${response.body.substring(0, Math.min<int>(200, response.body.length))}');
-    
+    print(
+      '🔍 Accept Order Response Body: ${response.body.substring(0, Math.min<int>(200, response.body.length))}',
+    );
+
     // التحقق من Content-Type
     String? contentType = response.headers['content-type'];
     if (contentType != null && !contentType.contains('application/json')) {
       print('❌ Wrong Content-Type for accept: $contentType');
-      
+
       // إذا كان الـ response HTML، يعني في مشكلة في الـ endpoint
       if (response.body.contains('<!DOCTYPE html>')) {
         return {
           'success': false,
-          'message': 'API endpoint not found. Response is HTML instead of JSON.',
-          'debug_info': 'URL: $uri, Status: ${response.statusCode}'
+          'message':
+              'API endpoint not found. Response is HTML instead of JSON.',
+          'debug_info': 'URL: $uri, Status: ${response.statusCode}',
         };
       }
     }
-    
+
     if (response.statusCode == 200 || response.statusCode == 201) {
       // محاولة parse الـ JSON
       try {
@@ -515,21 +533,27 @@ Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
         return {
           'success': true,
           'message': 'Order accepted successfully',
-          'data': responseData
+          'data': responseData,
         };
       } catch (parseError) {
         print('❌ JSON Parse Error: $parseError');
         return {
           'success': false,
           'message': 'Invalid JSON response from server',
-          'raw_response': response.body.substring(0, Math.min<int>(500, response.body.length))
+          'raw_response': response.body.substring(
+            0,
+            Math.min<int>(500, response.body.length),
+          ),
         };
       }
     } else {
       return {
         'success': false,
         'message': 'Failed to accept order: HTTP ${response.statusCode}',
-        'error_body': response.body.substring(0, Math.min<int>(200, response.body.length))
+        'error_body': response.body.substring(
+          0,
+          Math.min<int>(200, response.body.length),
+        ),
       };
     }
   } catch (e) {
@@ -538,15 +562,18 @@ Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
     return {
       'success': false,
       'message': 'Network error: $e',
-      'debug_info': 'Check if the API endpoint exists and is accessible'
+      'debug_info': 'Check if the API endpoint exists and is accessible',
     };
   }
 }
 
-Future<Map<String, dynamic>> rejectOrderWithId(String orderId, {String? reason}) async {
+Future<Map<String, dynamic>> rejectOrderWithId(
+  String orderId, {
+  String? reason,
+}) async {
   Uri uri = Helper.getUri('api/orders/$orderId/reject');
   User _user = userRepo.currentUser.value;
-  
+
   try {
     final client = new http.Client();
     final response = await client.post(
@@ -561,12 +588,9 @@ Future<Map<String, dynamic>> rejectOrderWithId(String orderId, {String? reason})
         'reason': reason ?? 'Driver unavailable',
       }),
     );
-    
+
     if (response.statusCode == 200) {
-      return {
-        'success': true,
-        'message': 'Order rejected successfully',
-      };
+      return {'success': true, 'message': 'Order rejected successfully'};
     } else {
       return {
         'success': false,
@@ -575,17 +599,17 @@ Future<Map<String, dynamic>> rejectOrderWithId(String orderId, {String? reason})
     }
   } catch (e) {
     print('Error rejecting order: $e');
-    return {
-      'success': false,
-      'message': 'Network error: $e',
-    };
+    return {'success': false, 'message': 'Network error: $e'};
   }
 }
 
-Future<Map<String, dynamic>> updateDriverLocation(double latitude, double longitude) async {
+Future<Map<String, dynamic>> updateDriverLocation(
+  double latitude,
+  double longitude,
+) async {
   Uri uri = Helper.getUri('api/driver/location');
   User _user = userRepo.currentUser.value;
-  
+
   try {
     final client = new http.Client();
     final response = await client.post(
@@ -600,7 +624,7 @@ Future<Map<String, dynamic>> updateDriverLocation(double latitude, double longit
         'longitude': longitude,
       }),
     );
-    
+
     if (response.statusCode == 200) {
       return {'success': true, 'message': 'Location updated successfully'};
     } else {
@@ -615,7 +639,7 @@ Future<Map<String, dynamic>> updateDriverLocation(double latitude, double longit
 Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
   Uri uri = Helper.getUri('api/driver/availability');
   User _user = userRepo.currentUser.value;
-  
+
   try {
     final client = new http.Client();
     final response = await client.post(
@@ -629,7 +653,7 @@ Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
         'is_available': isAvailable,
       }),
     );
-    
+
     if (response.statusCode == 200) {
       return {'success': true, 'message': 'Availability updated successfully'};
     } else {
@@ -644,11 +668,11 @@ Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
 // **TEST FUNCTION: اختبار الاتصال مع الباك إند**
 Future<Map<String, dynamic>> testConnection() async {
   print('🔄 Testing API connection...');
-  
+
   // اختبار الـ base URL أولاً
   String baseUrl = GlobalConfiguration().getString('base_url');
   print('🔍 Base URL: $baseUrl');
-  
+
   // فحص الـ User والـ Token
   User _user = userRepo.currentUser.value;
   print('🔍 Current User Info:');
@@ -656,10 +680,12 @@ Future<Map<String, dynamic>> testConnection() async {
   print('   - User Name: ${_user.name}');
   print('   - User Email: ${_user.email}');
   print('   - API Token Length: ${_user.apiToken?.length ?? 0}');
-  print('   - API Token (first 20 chars): ${_user.apiToken?.substring(0, Math.min<int>(20, _user.apiToken?.length ?? 0))}...');
+  print(
+    '   - API Token (first 20 chars): ${_user.apiToken?.substring(0, Math.min<int>(20, _user.apiToken?.length ?? 0))}...',
+  );
   print('   - Token is null: ${_user.apiToken == null}');
   print('   - Token is empty: ${_user.apiToken?.isEmpty ?? true}');
-  
+
   if (_user.apiToken == null || _user.apiToken!.isEmpty) {
     return {
       'success': false,
@@ -670,42 +696,47 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. User needs to login again',
         '2. Check login functionality',
         '3. Verify token storage in SharedPreferences',
-        '4. Check user authentication flow'
-      ]
+        '4. Check user authentication flow',
+      ],
     };
   }
-  
+
   Uri uri = Helper.getUri('api/orders');
-  
+
   Map<String, dynamic> _queryParams = {};
   _queryParams['api_token'] = _user.apiToken;
   _queryParams['limit'] = '1';
   uri = uri.replace(queryParameters: _queryParams);
-  
+
   print('🔍 Full URL: $uri');
-  
+
   try {
     final client = new http.Client();
-    
+
     // اختبار 1: بدون Token
     Uri uriWithoutToken = Helper.getUri('api/orders');
     print('🧪 Testing WITHOUT token...');
     final responseWithoutToken = await client.get(uriWithoutToken);
     print('🔍 Response WITHOUT token: ${responseWithoutToken.statusCode}');
-    
+
     // اختبار 2: مع Token
     print('🧪 Testing WITH token...');
     final response = await client.get(uri);
-    
+
     print('🔍 Response Status: ${response.statusCode}');
     print('🔍 Response Headers: ${response.headers}');
-    print('🔍 Response Body (first 500 chars): ${response.body.substring(0, Math.min<int>(500, response.body.length))}');
-    
+    print(
+      '🔍 Response Body (first 500 chars): ${response.body.substring(0, Math.min<int>(500, response.body.length))}',
+    );
+
     // فحص نوع المحتوى
     String? contentType = response.headers['content-type'];
-    bool isJson = contentType != null && contentType.contains('application/json');
-    bool isHtml = response.body.trim().startsWith('<!DOCTYPE html>') || response.body.contains('<html>');
-    
+    bool isJson =
+        contentType != null && contentType.contains('application/json');
+    bool isHtml =
+        response.body.trim().startsWith('<!DOCTYPE html>') ||
+        response.body.contains('<html>');
+
     Map<String, dynamic> result = {
       'success': response.statusCode == 200,
       'status_code': response.statusCode,
@@ -713,11 +744,14 @@ Future<Map<String, dynamic>> testConnection() async {
       'is_json': isJson,
       'is_html': isHtml,
       'url': uri.toString(),
-      'response_preview': response.body.substring(0, Math.min<int>(200, response.body.length)),
+      'response_preview': response.body.substring(
+        0,
+        Math.min<int>(200, response.body.length),
+      ),
       'token_length': _user.apiToken?.length ?? 0,
-      'user_id': _user.id
+      'user_id': _user.id,
     };
-    
+
     // تحليل نوع المشكلة
     if (response.statusCode == 401) {
       result['issue'] = 'authentication';
@@ -726,7 +760,7 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. Token is expired or invalid',
         '2. User needs to login again',
         '3. Backend token validation issue',
-        '4. Check token format requirements'
+        '4. Check token format requirements',
       ];
     } else if (response.statusCode == 404) {
       result['issue'] = 'endpoint';
@@ -735,7 +769,7 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. Wrong API URL in configurations.json',
         '2. Backend API routes not configured',
         '3. Server not running or deployed incorrectly',
-        '4. Check with backend developer for correct URLs'
+        '4. Check with backend developer for correct URLs',
       ];
     } else if (isHtml) {
       result['issue'] = 'backend_config';
@@ -744,7 +778,7 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. API not properly configured on backend',
         '2. Laravel/Framework routing issue',
         '3. Middleware not working correctly',
-        '4. Check backend logs for errors'
+        '4. Check backend logs for errors',
       ];
     } else if (response.statusCode == 500) {
       result['issue'] = 'backend_error';
@@ -753,10 +787,10 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. Database connection issue',
         '2. Backend code error',
         '3. Check backend server logs',
-        '4. Contact backend developer'
+        '4. Contact backend developer',
       ];
     }
-    
+
     if (response.statusCode == 200 && isJson) {
       try {
         result['parsed_data'] = json.decode(response.body);
@@ -768,9 +802,8 @@ Future<Map<String, dynamic>> testConnection() async {
         result['issue'] = 'json_format';
       }
     }
-    
+
     return result;
-    
   } catch (e) {
     print('❌ Network Error: $e');
     return {
@@ -782,8 +815,8 @@ Future<Map<String, dynamic>> testConnection() async {
         '1. Check internet connection',
         '2. Verify base URL in configurations.json',
         '3. Check if server is running and accessible',
-        '4. Try ping/curl to test server connectivity'
-      ]
+        '4. Try ping/curl to test server connectivity',
+      ],
     };
   }
 }

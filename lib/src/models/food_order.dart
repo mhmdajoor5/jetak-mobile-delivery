@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../helpers/custom_trace.dart';
 import '../models/extra.dart';
 import '../models/food.dart';
@@ -15,10 +16,21 @@ class FoodOrder {
     try {
       id = jsonMap['id']?.toString() ?? '';
       price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0.0;
-      quantity = jsonMap['quantity'] != null ? jsonMap['quantity'].toDouble() : 0.0;
-      food = (jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food()) as Food?;
-      dateTime = jsonMap['updated_at'] != null ? DateTime.parse(jsonMap['updated_at']) : DateTime.now();
-      extras = jsonMap['extras'] != null ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toList() : <Extra>[];
+      quantity =
+          jsonMap['quantity'] != null ? jsonMap['quantity'].toDouble() : 0.0;
+      food =
+          (jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food())
+              as Food?;
+      dateTime =
+          jsonMap['updated_at'] != null
+              ? DateTime.parse(jsonMap['updated_at'])
+              : DateTime.now();
+      extras =
+          jsonMap['extras'] != null
+              ? List.from(
+                jsonMap['extras'],
+              ).map((element) => Extra.fromJSON(element)).toList()
+              : <Extra>[];
     } catch (e) {
       id = '';
       price = 0.0;
@@ -38,5 +50,10 @@ class FoodOrder {
     map["food_id"] = food?.id;
     map["extras"] = extras?.map((element) => element.id).toList();
     return map;
+  }
+
+  @override
+  String toString() {
+    return 'FoodOrder(id: $id, price: $price, quantity: $quantity, extras: $extras, food: $food, dateTime: $dateTime)';
   }
 }

@@ -18,25 +18,33 @@ class OrderDetailsController extends ControllerMVC {
       print('⚠️ Warning: Order ID is null or empty');
       return;
     }
-    
+
     try {
       final Stream<Order> stream = await getOrder(id);
-      stream.listen((Order _order) {
-        setState(() => order = _order);
-      }, onError: (a) {
-        print('❌ Error loading order: $a');
-        if (scaffoldKey.currentContext != null) {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-            content: Text(S.of(state!.context).verify_your_internet_connection),
-          ));
-        }
-      }, onDone: () {
-        if (message != null && scaffoldKey.currentContext != null) {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-            content: Text(message),
-          ));
-        }
-      });
+      stream.listen(
+        (Order _order) {
+          setState(() => order = _order);
+        },
+        onError: (a) {
+          print('❌ Error loading order: $a');
+          if (scaffoldKey.currentContext != null) {
+            ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+              SnackBar(
+                content: Text(
+                  S.of(state!.context).verify_your_internet_connection,
+                ),
+              ),
+            );
+          }
+        },
+        onDone: () {
+          if (message != null && scaffoldKey.currentContext != null) {
+            ScaffoldMessenger.of(
+              scaffoldKey.currentContext!,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          }
+        },
+      );
     } catch (e) {
       print('❌ Error in listenForOrder: $e');
     }
@@ -44,7 +52,10 @@ class OrderDetailsController extends ControllerMVC {
 
   Future<void> refreshOrder() async {
     if (order?.id != null) {
-      listenForOrder(id: order!.id, message: S.of(state!.context).order_refreshed_successfuly);
+      listenForOrder(
+        id: order!.id,
+        message: S.of(state!.context).order_refreshed_successfuly,
+      );
     }
   }
 
@@ -53,9 +64,9 @@ class OrderDetailsController extends ControllerMVC {
       setState(() {
         this.order!.orderStatus?.id = '4';
       });
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-        content: Text('The order is On The Way to the client'),
-      ));
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(content: Text('The order is On The Way to the client')),
+      );
     });
   }
 
@@ -64,9 +75,9 @@ class OrderDetailsController extends ControllerMVC {
       setState(() {
         this.order!.orderStatus?.id = '5';
       });
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-        content: Text('The order deliverd successfully to client'),
-      ));
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(content: Text('The order deliverd successfully to client')),
+      );
     });
   }
 }

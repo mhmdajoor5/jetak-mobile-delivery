@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../helpers/custom_trace.dart';
 import '../models/media.dart';
 
@@ -15,12 +16,18 @@ class Extra {
   Extra.fromJSON(Map<String, dynamic> jsonMap) {
     try {
       id = jsonMap['id']?.toString() ?? '';
-      extraGroupId = jsonMap['extra_group_id'] != null ? jsonMap['extra_group_id'].toString() : '0';
+      extraGroupId =
+          jsonMap['extra_group_id'] != null
+              ? jsonMap['extra_group_id'].toString()
+              : '0';
       name = jsonMap['name'].toString();
       price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0;
       description = jsonMap['description'];
       checked = false;
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).length > 0 ? Media.fromJSON(jsonMap['media'][0]) : new Media();
+      image =
+          jsonMap['media'] != null && (jsonMap['media'] as List).length > 0
+              ? Media.fromJSON(jsonMap['media'][0])
+              : new Media();
     } catch (e) {
       id = '';
       extraGroupId = '0';
@@ -49,4 +56,9 @@ class Extra {
 
   @override
   int get hashCode => this.id.hashCode;
+
+  @override
+  String toString() {
+    return 'Extra(id: $id, extraGroupId: $extraGroupId, name: $name, price: $price, image: $image, description: $description, checked: $checked)';
+  }
 }

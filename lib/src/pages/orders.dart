@@ -56,7 +56,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
   String _getTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
@@ -97,10 +97,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: Colors.grey[200],
-          ),
+          child: Container(height: 1, color: Colors.grey[200]),
         ),
       ),
       body: RefreshIndicator(
@@ -134,11 +131,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.person,
-                          color: Colors.blue[600],
-                          size: 20,
-                        ),
+                        Icon(Icons.person, color: Colors.blue[600], size: 20),
                         SizedBox(width: 8),
                         Text(
                           "Driver Status",
@@ -150,9 +143,15 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                         ),
                         Spacer(),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: _con.driverAvailability ? Colors.green : Colors.red,
+                            color:
+                                _con.driverAvailability
+                                    ? Colors.green
+                                    : Colors.red,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -170,16 +169,21 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                     Row(
                       children: [
                         Icon(
-                          _con.driverAvailability ? Icons.check_circle : Icons.cancel,
-                          color: _con.driverAvailability ? Colors.green : Colors.red,
+                          _con.driverAvailability
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color:
+                              _con.driverAvailability
+                                  ? Colors.green
+                                  : Colors.red,
                           size: 16,
                         ),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            _con.driverAvailability 
-                              ? "You're online and ready to receive orders"
-                              : "You're offline and won't receive new orders",
+                            _con.driverAvailability
+                                ? "You're online and ready to receive orders"
+                                : "You're offline and won't receive new orders",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -213,7 +217,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.notifications_active, color: Colors.green, size: 20),
+                          Icon(
+                            Icons.notifications_active,
+                            color: Colors.green,
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             "${_con.orders.length} New Order${_con.orders.length > 1 ? 's' : ''} Available",
@@ -225,7 +233,10 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           ),
                           Spacer(),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.green,
                               borderRadius: BorderRadius.circular(12),
@@ -271,39 +282,42 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
               _con.orders.isEmpty
                   ? EmptyOrdersWidget()
                   : Column(
-                      children: [
-                        SizedBox(height: 16),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: _con.orders.length,
-                          itemBuilder: (context, index) {
-                            var _order = _con.orders.elementAt(index);
-                            return OrderItemWidget(
-                              expanded: index == 0 ? true : false,
-                              order: _order,
-                              orderController: _con,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 100), // Space for bottom navigation
-                      ],
-                    ),
+                    children: [
+                      SizedBox(height: 16),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: _con.orders.length,
+                        itemBuilder: (context, index) {
+                          var _order = _con.orders.elementAt(index);
+                          return OrderItemWidget(
+                            expanded: index == 0 ? true : false,
+                            order: _order,
+                            orderController: _con,
+                          );
+                        },
+                      ),
+                      SizedBox(height: 100), // Space for bottom navigation
+                    ],
+                  ),
             ],
           ),
         ),
       ),
-      floatingActionButton: _con.orders.isEmpty ? null : FloatingActionButton(
-        onPressed: () {
-          _con.refreshOrders();
-          setState(() {
-            _lastRefresh = DateTime.now();
-          });
-        },
-        backgroundColor: Colors.green,
-        child: Icon(Icons.refresh, color: Colors.white),
-        tooltip: 'Refresh Orders',
-      ),
+      floatingActionButton:
+          _con.orders.isEmpty
+              ? null
+              : FloatingActionButton(
+                onPressed: () {
+                  _con.refreshOrders();
+                  setState(() {
+                    _lastRefresh = DateTime.now();
+                  });
+                },
+                backgroundColor: Colors.green,
+                child: Icon(Icons.refresh, color: Colors.white),
+                tooltip: 'Refresh Orders',
+              ),
     );
   }
 }
