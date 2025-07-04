@@ -14,38 +14,45 @@ class FoodController extends ControllerMVC {
   Cart? cart;
   Favorite? favorite;
   bool loadCart = false;
-   late GlobalKey<ScaffoldState> scaffoldKey;
+  late GlobalKey<ScaffoldState> scaffoldKey;
 
   FoodController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
   }
 
   void listenForFood({String? foodId, String? message}) async {
     final Stream<Food> stream = await getFood(foodId!);
-    stream.listen((Food _food) {
-      setState(() => food = _food);
-    }, onError: (a) {
-      print(a);
-      // scaffoldKey.currentState?.showSnackBar(SnackBar(
-      //   content: Text(S.of(state!.context).verify_your_internet_connection),
-      // ));
-    }, onDone: () {
-      calculateTotal();
-      if (message != null) {
+    stream.listen(
+      (Food food) {
+        setState(() => food = food);
+      },
+      onError: (a) {
+        print(a);
         // scaffoldKey.currentState?.showSnackBar(SnackBar(
-        //   content: Text(message),
+        //   content: Text(S.of(state!.context).verify_your_internet_connection),
         // ));
-      }
-    });
+      },
+      onDone: () {
+        calculateTotal();
+        if (message != null) {
+          // scaffoldKey.currentState?.showSnackBar(SnackBar(
+          //   content: Text(message),
+          // ));
+        }
+      },
+    );
   }
 
   void listenForFavorite({String? foodId}) async {
     final Stream<Favorite> stream = await isFavoriteFood(foodId!);
-    stream.listen((Favorite _favorite) {
-      setState(() => favorite = _favorite);
-    }, onError: (a) {
-      print(a);
-    });
+    stream.listen(
+      (Favorite favorite) {
+        setState(() => favorite = favorite);
+      },
+      onError: (a) {
+        print(a);
+      },
+    );
   }
 
   bool isSameRestaurants(Food food) {
@@ -56,37 +63,38 @@ class FoodController extends ControllerMVC {
   }
 
   void addToFavorite(Food food) async {
-    var _favorite = new Favorite();
-    _favorite.food = food;
-    _favorite.extras = food.extras?.where((Extra _extra) {
-      return _extra.checked!;
-    }).toList();
-    addFavorite(_favorite).then((value) {
+    var favorite = Favorite();
+    favorite.food = food;
+    favorite.extras =
+        food.extras?.where((Extra extra) {
+          return extra.checked!;
+        }).toList();
+    addFavorite(favorite).then((value) {
       setState(() {
-        this.favorite = value;
+        favorite = value;
       });
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-        content: Text('This food was added to favorite'),
-      ));
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(content: Text('This food was added to favorite')),
+      );
     });
   }
 
-  void removeFromFavorite(Favorite _favorite) async {
-    removeFavorite(_favorite).then((value) {
+  void removeFromFavorite(Favorite favorite) async {
+    removeFavorite(favorite).then((value) {
       setState(() {
-        this.favorite = new Favorite();
+        favorite = Favorite();
       });
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
-        content: Text('This food was removed from favorites'),
-      ));
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(content: Text('This food was removed from favorites')),
+      );
     });
   }
 
   Future<void> refreshFood() async {
-    var _id = food!.id;
-    food = new Food();
-    listenForFavorite(foodId: _id);
-    listenForFood(foodId: _id, message: 'Food refreshed successfuly');
+    var id = food!.id;
+    food = Food();
+    listenForFavorite(foodId: id);
+    listenForFood(foodId: id, message: 'Food refreshed successfuly');
   }
 
   void calculateTotal() {
@@ -99,15 +107,15 @@ class FoodController extends ControllerMVC {
   }
 
   incrementQuantity() {
-    if (this.quantity <= 99) {
-      ++this.quantity;
+    if (quantity <= 99) {
+      ++quantity;
       calculateTotal();
     }
   }
 
   decrementQuantity() {
-    if (this.quantity > 1) {
-      --this.quantity;
+    if (quantity > 1) {
+      --quantity;
       calculateTotal();
     }
   }
