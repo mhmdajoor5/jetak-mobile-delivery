@@ -382,57 +382,53 @@ Future<Order> deliveredOrder(Order order) async {
 }
 
 Future<Stream<Order>> getNewPendingOrders() async {
-  Uri uri = Helper.getUri('api/orders'); // أو حسب وثائق الباك إند
-  Map<String, dynamic> _queryParams = {};
+  // Construct the new base URI
+  Uri uri = Uri.parse('https://carrytechnologies.co/api/orders');
+
   User _user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] =
-      'foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment;user';
-  _queryParams['search'] =
-      'driver_id:null;order_status_id:1,2,3'; // طلبات غير معينة
-  _queryParams['searchFields'] = 'driver_id:=;order_status_id:in';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  _queryParams['limit'] = '20';
+  // Build query parameters
+  Map<String, dynamic> _queryParams = {
+    'api_token': "OuMsmU903WMcMhzAbuSFtxBekZVdXz66afifRo3YRCINi38jkXJ8rpN0FcfS",
+    // 'with': 'foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment;user',
+    // 'search': 'driver_id:null;order_status_id:1,2,3',
+    // 'searchFields': 'driver_id:=;order_status_id:in',
+    // 'searchJoin': 'and',
+    // 'orderBy': 'id',
+    // 'sortedBy': 'desc',
+    // 'limit': '20',
+  };
 
   uri = uri.replace(queryParameters: _queryParams);
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.get(uri);
 
     print('🔍 API Response Status: ${response.statusCode}');
     print('🔍 API Response Headers: ${response.headers}');
     print(
-      '🔍 API Response Body (first 200 chars): ${response.body.substring(0, Math.min<int>(200, response.body.length))}',
+      '🔍 API Response Body (first 200 chars): ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}',
     );
 
-    // التحقق من Content-Type
     String? contentType = response.headers['content-type'];
     if (contentType != null && !contentType.contains('application/json')) {
       print('❌ Wrong Content-Type: $contentType');
       print('❌ Response is not JSON: ${response.body}');
-
-      // إرجاع بيانات وهمية للاختبار
       return _getMockOrdersStream();
     }
 
-    // التحقق من Status Code
     if (response.statusCode != 200) {
       print('❌ HTTP Error ${response.statusCode}: ${response.body}');
       return _getMockOrdersStream();
     }
 
-    // التحقق من أن الـ response يبدأ بـ JSON
     String trimmedBody = response.body.trim();
     if (!trimmedBody.startsWith('{') && !trimmedBody.startsWith('[')) {
       print('❌ Response is not JSON format: $trimmedBody');
       return _getMockOrdersStream();
     }
 
-    // محاولة parse الـ JSON
     Map<String, dynamic> jsonData = json.decode(response.body);
     List<dynamic> ordersData = Helper.getData(jsonData);
 
@@ -440,8 +436,6 @@ Future<Stream<Order>> getNewPendingOrders() async {
   } catch (e) {
     print('❌ Error in getNewPendingOrders: $e');
     print('🔍 URI: $uri');
-
-    // إرجاع بيانات وهمية في حالة الخطأ
     return _getMockOrdersStream();
   }
 }
