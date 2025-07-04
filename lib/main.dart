@@ -1,4 +1,4 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
+// // import 'package:awesome_notifications/awesome_notifications.dart';
 import 'src/notification_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -15,12 +15,12 @@ import 'src/models/setting.dart';
 import 'src/repository/settings_repository.dart' as settingRepo;
 import 'src/repository/user_repository.dart' as userRepo;
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
   await NotificationController.initializeLocalNotifications();
-  await NotificationController.initializeIsolateReceivePort();
+  // await NotificationController.initializeIsolateReceivePort();
   await NotificationController.getDeviceToken(); // ← Add this
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -56,7 +56,8 @@ class _MyAppState extends State<MyApp> {
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
     userRepo.getCurrentUser();
-    NotificationController.startListeningNotificationEvents();
+    // NotificationController.startListeningNotificationEvents();
+
     // Listen to messages when app is in foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('📩 onMessage: ${message.notification?.title}');
@@ -70,15 +71,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void showLocalNotification(RemoteMessage message) {
-    AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        channelKey: 'alerts',
-        title: message.notification?.title ?? 'No title',
-        body: message.notification?.body ?? 'No body',
-        // payload: message.data,
-      ),
-    );
+    // AwesomeNotifications().createNotification(
+    //   content: NotificationContent(
+    //     id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    //     channelKey: 'alerts',
+    //     title: message.notification?.title ?? 'No title',
+    //     body: message.notification?.body ?? 'No body',
+    //     // payload: message.data,
+    //   ),
+    // );
   }
 
   @override
