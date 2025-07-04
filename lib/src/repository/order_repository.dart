@@ -382,7 +382,7 @@ Future<Order> deliveredOrder(Order order) async {
 }
 
 Future<Stream<Order>> getNewPendingOrders() async {
-  Uri uri = Helper.getUri('api/orders/pending'); // أو حسب وثائق الباك إند
+  Uri uri = Helper.getUri('api/orders'); // أو حسب وثائق الباك إند
   Map<String, dynamic> _queryParams = {};
   User _user = userRepo.currentUser.value;
 

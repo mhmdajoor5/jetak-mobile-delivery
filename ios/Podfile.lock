@@ -138,7 +138,6 @@ PODS:
   - image_picker_ios (0.0.1):
     - Flutter
   - IosAwnCore (0.10.0)
-  - IOSSecuritySuite (2.1.0)
   - location (0.0.1):
     - Flutter
   - map_launcher (0.0.1):
@@ -180,7 +179,6 @@ DEPENDENCIES:
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - IOSSecuritySuite (~> 2.1.0)
   - location (from `.symlinks/plugins/location/ios`)
   - map_launcher (from `.symlinks/plugins/map_launcher/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -208,7 +206,6 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMSessionFetcher
     - IosAwnCore
-    - IOSSecuritySuite
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
@@ -282,7 +279,6 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: fc75fc972958dceedee61cb662ae1da7a83a91cf
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
   IosAwnCore: 653786a911089012092ce831f2945cd339855a89
-  IOSSecuritySuite: 45e8531b05ffa72b5661cbdb5b5b5648a8de1a84
   location: 155caecf9da4f280ab5fe4a55f94ceccfab838f8
   map_launcher: fe43bda6720bb73c12fcc1bdd86123ff49a4d4d6
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
@@ -296,6 +292,6 @@ SPEC CHECKSUMS:
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
 
-PODFILE CHECKSUM: a6fef8eb42746437e3ebe2c2b9c9b3b3c955889e
+PODFILE CHECKSUM: a069421faf45dcc91b123e23f83667dcb67d58e0
 
 COCOAPODS: 1.16.2
