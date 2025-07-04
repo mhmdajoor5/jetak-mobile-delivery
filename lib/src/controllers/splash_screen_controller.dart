@@ -8,6 +8,7 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 import '../../generated/l10n.dart';
 import '../helpers/FirebaseUtils.dart';
 import '../helpers/custom_trace.dart';
+import '../notification_controller.dart';
 import '../repository/settings_repository.dart' as settingRepo;
 import '../repository/user_repository.dart' as userRepo;
 
@@ -209,5 +210,16 @@ class SplashScreenController extends ControllerMVC {
     //     payload: {'orderId': message.data['order_id']},
     //   ),
     // );
+    NotificationController.createNewNotification(
+      RemoteMessage(
+        senderId: "123456789",
+        messageId: "619045",
+        data: {"key": "value", 'order_id': message.data['order_id']},
+        notification: RemoteNotification(
+          title: message.data['title'],
+          body: message.data['body'],
+        ),
+      ),
+    );
   }
 }
