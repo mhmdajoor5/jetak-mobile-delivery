@@ -63,7 +63,7 @@
 			<string>whatsapp</string>
 			<string>mailto</string>
 			<string>googlechromes</string>
-    		<string>comgooglemaps</string>
+			<string>comgooglemaps</string>
 			<string>undecimus</string>
 			<string>sileo</string>
 			<string>zbra</string>
@@ -108,7 +108,7 @@
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
 		<key>UIStatusBarHidden</key>
-		<true/>
+		<false/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
 	</dict>
