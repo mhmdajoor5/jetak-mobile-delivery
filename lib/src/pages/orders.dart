@@ -81,7 +81,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          '🚚 Delivery Orders',
+          '🚚 Delivery pendingOrdersModel',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -182,8 +182,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                         Expanded(
                           child: Text(
                             _con.driverAvailability
-                                ? "You're online and ready to receive orders"
-                                : "You're offline and won't receive new orders",
+                                ? "You're online and ready to receive pendingOrdersModel"
+                                : "You're offline and won't receive new pendingOrdersModel",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -203,8 +203,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                 ),
               ),
 
-              // Orders Count Header
-              if (_con.orders.isNotEmpty)
+              // pendingOrdersModel Count Header
+              if (_con.pendingOrdersModel.isNotEmpty)
                 Container(
                   margin: EdgeInsets.symmetric(horizontal: 16),
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -224,7 +224,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            "${_con.orders.length} New Order${_con.orders.length > 1 ? 's' : ''} Available",
+                            "${_con.pendingOrdersModel.length} New Order${_con.pendingOrdersModel.length > 1 ? 's' : ''} Available",
                             style: TextStyle(
                               color: Colors.green[700],
                               fontWeight: FontWeight.bold,
@@ -278,8 +278,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                   ),
                 ),
 
-              // Orders List
-              _con.orders.isEmpty
+              // pendingOrdersModel List
+              _con.pendingOrdersModel.isEmpty
                   ? EmptyOrdersWidget()
                   : Column(
                     children: [
@@ -287,12 +287,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                       ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: _con.orders.length,
+                        itemCount: _con.pendingOrdersModel.length,
                         itemBuilder: (context, index) {
-                          var _order = _con.orders.elementAt(index);
-                          return OrderItemWidget(
+                          return OrderItemWidget2(
                             expanded: index == 0 ? true : false,
-                            order: _order,
+                            pendingOrderModel: _con.pendingOrdersModel[index],
                             orderController: _con,
                           );
                         },
@@ -305,7 +304,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         ),
       ),
       floatingActionButton:
-          _con.orders.isEmpty
+          _con.pendingOrdersModel.isEmpty
               ? null
               : FloatingActionButton(
                 onPressed: () {
@@ -316,7 +315,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                 },
                 backgroundColor: Colors.green,
                 child: Icon(Icons.refresh, color: Colors.white),
-                tooltip: 'Refresh Orders',
+                tooltip: 'Refresh pendingOrdersModel',
               ),
     );
   }

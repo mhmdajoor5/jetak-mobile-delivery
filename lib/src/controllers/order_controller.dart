@@ -6,11 +6,14 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 import '../../generated/l10n.dart';
 import '../helpers/driver_status_helper.dart';
 import '../models/order.dart';
+import '../models/pending_order_model.dart';
 import '../repository/order_repository.dart' as orderRepo;
+import '../repository/orders/pending_order_repo.dart';
 import '../repository/user_repository.dart' as userRepo;
 
 class OrderController extends ControllerMVC {
   List<Order> orders = <Order>[];
+  List<PendingOrderModel> pendingOrdersModel = <PendingOrderModel>[];
   bool driverAvailability = false;
   late GlobalKey<ScaffoldState> scaffoldKey;
 
@@ -33,8 +36,9 @@ class OrderController extends ControllerMVC {
     await DriverStatusUtil.updateDriverStatus(value);
   }
 
+
+
   void listenForOrders({String? message}) async {
-    // **DEBUG: فحص حالة المستخدم والتوكن**
     print('🔍 Checking user authentication status...');
     User currentUser = userRepo.currentUser.value;
 
@@ -43,9 +47,7 @@ class OrderController extends ControllerMVC {
     print('   - User Email: ${currentUser.email}');
     print('   - Has API Token: ${currentUser.apiToken != null}');
     print('   - Token Length: ${currentUser.apiToken?.length ?? 0}');
-    print(
-      '   - Is User Logged In: ${currentUser.id != null && currentUser.apiToken != null}',
-    );
+    print('   - Is User Logged In: ${currentUser.id != null && currentUser.apiToken != null}');
 
     if (currentUser.apiToken == null || currentUser.apiToken!.isEmpty) {
       print('❌ CRITICAL: User has no API token!');
@@ -59,7 +61,7 @@ class OrderController extends ControllerMVC {
       return;
     }
 
-    // **DEBUG: اختبار الاتصال أولاً**
+    // Test connection
     print('🔍 Running API connection test...');
     try {
       final testResult = await orderRepo.testConnection();
@@ -70,10 +72,6 @@ class OrderController extends ControllerMVC {
       print('   - Status Code: ${testResult['status_code']}');
 
       if (!testResult['success']) {
-        print('❌ API Connection Test Failed:');
-        print('   Issue: ${testResult['issue']}');
-
-        // عرض رسالة مناسبة للمستخدم حسب نوع المشكلة
         String userMessage = '';
         Color messageColor = Colors.red;
 
@@ -108,9 +106,7 @@ class OrderController extends ControllerMVC {
           ),
         );
 
-        // إذا كانت مشكلة authentication، ما نكمل
-        if (testResult['issue'] == 'authentication' ||
-            testResult['issue'] == 'mobile_app') {
+        if (testResult['issue'] == 'authentication' || testResult['issue'] == 'mobile_app') {
           return;
         }
       }
@@ -118,30 +114,37 @@ class OrderController extends ControllerMVC {
       print('❌ Test Connection Error: $testError');
     }
 
-    final Stream<Order> stream = await orderRepo.getNewPendingOrders();
-    stream.listen(
-      (Order _order) {
-        setState(() {
-          orders.add(_order);
-        });
-      },
-      onError: (a) {
-        print('❌ Stream Error: $a');
+
+    // Fetch pending orders using new repo
+    try {
+      print('🔍 Fetching pending orders...');
+      final response = await getPendingOrders(driverId: currentUser.id.toString());
+
+      // Parse response into PendingOrdersModel
+      final parsedOrders = PendingOrdersModel.fromJson(response as Map<String, dynamic>);
+
+      // Update your list
+      setState(() {
+        pendingOrdersModel = parsedOrders.orders;
+      });
+
+      print('mElkerm ✅ Loaded ${pendingOrdersModel.length} pending orders');
+
+      if (message != null) {
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
-          SnackBar(
-            content: Text('Connection Error: ${a.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message)),
         );
-      },
-      onDone: () {
-        if (message != null) {
-          ScaffoldMessenger.of(
-            scaffoldKey.currentContext!,
-          ).showSnackBar(SnackBar(content: Text(message)));
-        }
-      },
-    );
+      }
+
+    } catch (err) {
+      print('❌ Error fetching pending orders: $err');
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(
+          content: Text('❌ Failed to fetch pending orders: ${err.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void acceptOrder(int orderID) async {
