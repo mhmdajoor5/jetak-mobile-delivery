@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
@@ -34,6 +36,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
         widget.order.orderStatus?.id == '1' ||
         widget.order.orderStatus?.id == '2' ||
         widget.order.orderStatus?.id == '3';
+
+    // log(widget.order.toString());
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -944,7 +948,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    '${widget.order.orderStatus?.status ?? 'Unknown'}',
+                    '${widget.order.orderStatus?.status ?? 'New order'}',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -994,6 +998,23 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
         return Icons.check_circle; // Delivered
       default:
         return Icons.info;
+    }
+  }
+
+  String _getStatusValue(String? statusId) {
+    switch (statusId) {
+      case '1':
+        return "Pending";
+      case '2':
+        return "Preparing"; // Preparing
+      case '3':
+        return "Ready for pickup";
+      case '4':
+        return "On the way";
+      case '5':
+        return "Delivered";
+      default:
+        return "Unknown";
     }
   }
 }

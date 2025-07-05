@@ -18,17 +18,20 @@ class Order {
   Payment? payment;
   Address? deliveryAddress;
 
+  int? orderStatusId;
+
   Order();
 
   Order.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id']?.toString() ?? '';
+      id = (jsonMap['order_id'] ?? jsonMap['id'])?.toString() ?? '';
       tax = jsonMap['tax'] != null ? jsonMap['tax'].toDouble() : 0.0;
       deliveryFee =
           jsonMap['delivery_fee'] != null
               ? jsonMap['delivery_fee'].toDouble()
               : 0.0;
       hint = jsonMap['hint']?.toString() ?? '';
+      // orderStatus = OrderStatus(id: jsonMap['order_status_id'].toString());
       orderStatus =
           jsonMap['order_status'] != null
               ? OrderStatus.fromJSON(jsonMap['order_status'])

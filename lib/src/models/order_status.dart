@@ -4,8 +4,7 @@ import '../helpers/custom_trace.dart';
 class OrderStatus {
   String? id;
   String? status;
-
-  OrderStatus();
+  OrderStatus({this.id, this.status});
 
   OrderStatus.fromJSON(Map<String, dynamic> jsonMap) {
     try {
