@@ -99,7 +99,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
           break;
         case 2:
           widget.currentPage =
-              OrdersHistoryWidget(parentScaffoldKey: widget.scaffoldKey);
+                 OrderHistoryPage();
           break;
         case 3:
           widget.currentPage = MapWidget(

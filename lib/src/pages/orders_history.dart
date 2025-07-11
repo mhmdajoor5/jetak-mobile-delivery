@@ -1,91 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:mvc_pattern/mvc_pattern.dart';
+import '../controllers/order_history_controller.dart';
+import '../models/order_history_model.dart';
 
-import '../../generated/l10n.dart';
-import '../controllers/order_controller.dart';
-import '../elements/EmptyOrdersWidget.dart';
-import '../elements/OrderItemWidget.dart';
-import '../elements/ShoppingCartButtonWidget.dart';
+class OrderHistoryPage extends StatelessWidget {
+  final OrderHistoryController controller = OrderHistoryController();
 
-class OrdersHistoryWidget extends StatefulWidget {
-  final GlobalKey<ScaffoldState> parentScaffoldKey;
-
-  const OrdersHistoryWidget({super.key, required this.parentScaffoldKey});
-
-  @override
-  _OrdersHistoryWidgetState createState() => _OrdersHistoryWidgetState();
-}
-
-class _OrdersHistoryWidgetState extends StateMVC<OrdersHistoryWidget> {
-  late OrderController _con;
-
-  _OrdersHistoryWidgetState() : super(OrderController()) {
-    _con = (controller as OrderController?)!;
-  }
-
-  @override
-  void initState() {
-    _con.listenForOrdersHistory();
-    super.initState();
-  }
+  OrderHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
-    return Scaffold(
-      key: _con.scaffoldKey,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.sort, color: Theme.of(context).hintColor),
-          onPressed: () => widget.parentScaffoldKey.currentState!.openDrawer(),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('سجل الطلبات'),
         ),
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: <Widget>[
-          ShoppingCartButtonWidget(
-            iconColor: Theme.of(context).hintColor,
-            labelColor: Colors.black54,
-          ),
-        ],
-        centerTitle: true,
-        title: Text(
-          S.of(context).orders_history,
-          style: TextStyle(letterSpacing: 1.3),
-        ),
-      ),
-
-      body: RefreshIndicator(
-        onRefresh: _con.refreshOrdersHistory,
-        child: ListView(
-          shrinkWrap: true,
-          primary: true,
-          padding: EdgeInsets.symmetric(vertical: 10),
-          children: <Widget>[
-            _con.orders.isEmpty
-                ? EmptyOrdersWidget()
-                : ListView.separated(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  primary: false,
-                  itemCount:
-                      _con.orders
-                          .where((e) => e.orderStatus?.status == 'Delivered')
-                          .length,
-                  itemBuilder: (context, index) {
-                    var _order = _con.orders
-                        .where((e) => e.orderStatus?.status == 'Delivered')
-                        .elementAt(index);
-                    return OrderItemWidget(
-                      expanded: index == 0 ? true : false,
-                      order: _order,
-                    );
-                  },
-                  separatorBuilder: (context, index) {
-                    return SizedBox(height: 20);
-                  },
-                ),
-          ],
+        body: FutureBuilder<List<OrderHistoryModel>>(
+          future: controller.getOrdersHistory(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('حدث خطأ أثناء جلب البيانات'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('لا يوجد طلبات'));
+            }
+            final orders = snapshot.data!;
+            return ListView.builder(
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                final order = orders[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(order.orderId.replaceAll('#', '')),
+                    ),
+                    title: Text(order.client),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('رقم الهاتف: ${order.phone}'),
+                        Text('حالة الطلب: ${order.status}'),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
