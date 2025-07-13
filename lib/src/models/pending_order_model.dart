@@ -34,7 +34,7 @@ class PendingOrderModel {
   String? hint;
   String updatedAt;
   OrderStatus orderStatus;
-  User user;
+  OrderUser user;
   List<FoodOrder> foodOrders;
   DeliveryAddress? deliveryAddress;
 
@@ -58,7 +58,7 @@ class PendingOrderModel {
         hint: json["hint"],
         updatedAt: json["updated_at"] ?? "",
         orderStatus: OrderStatus.fromJson(json["order_status"] ?? {}),
-        user: User.fromJson(json["user"] ?? {}),
+        user: OrderUser.fromJson(json["user"] ?? {}),
         foodOrders: List<FoodOrder>.from((json["food_orders"] ?? []).map((x) => FoodOrder.fromJson(x))),
         deliveryAddress: json["delivery_address"] != null ? DeliveryAddress.fromJson(json["delivery_address"]) : null,
       );
@@ -103,21 +103,21 @@ class OrderStatus {
   };
 }
 
-class User {
+class OrderUser {
   int id;
   String name;
   String? phone;
   String email;
 
-  User({
+  OrderUser({
     required this.id,
     required this.name,
     this.phone,
     required this.email,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) =>
-      User(
+  factory OrderUser.fromJson(Map<String, dynamic> json) =>
+      OrderUser(
         id: json["id"] ?? 0,
         name: json["name"] ?? "Unknown Customer",
         phone: json["phone"], // Can be null
