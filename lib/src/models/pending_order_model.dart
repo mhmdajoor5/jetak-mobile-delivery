@@ -44,11 +44,11 @@ class PendingOrderModel {
 
   factory PendingOrderModel.fromJson(Map<String, dynamic> json) =>
       PendingOrderModel(
-        orderId: json["order_id"],
-        customerName: json["customer_name"],
-        address: json["address"],
-        latitude: json["latitude"]?.toDouble(),
-        longitude: json["longitude"]?.toDouble(),
+        orderId: json["order_id"] ?? 0,
+        customerName: json["customer_name"] ?? "Unknown Customer",
+        address: json["address"] ?? "Address not provided",
+        latitude: (json["latitude"] ?? 0.0).toDouble(),
+        longitude: (json["longitude"] ?? 0.0).toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
