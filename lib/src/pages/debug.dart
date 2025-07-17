@@ -380,13 +380,13 @@ class _DebugScreenState extends State<DebugScreen> {
     });
 
     try {
-      String baseUrl = GlobalConfiguration().getString('base_url');
-      String apiBaseUrl = GlobalConfiguration().getString('api_base_url');
+      String baseUrl = GlobalConfiguration().getValue('base_url');
+      String apiBaseUrl = GlobalConfiguration().getValue('api_base_url');
       
       List<String> loginUrls = [
-        '${baseUrl}api/login',
-        '${apiBaseUrl}login',
-        '${baseUrl}api/driver/login',
+        '${baseUrl}/api/login',
+        '${apiBaseUrl}/login',
+        '${baseUrl}/api/driver/login',
       ];
 
       Map<String, dynamic> testResults = {

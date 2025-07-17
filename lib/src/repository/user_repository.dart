@@ -27,9 +27,9 @@ final HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
 Future<UserModel.User> login(UserModel.User user) async {
   // تجربة URLs مختلفة للـ login
   List<String> possibleUrls = [
-    '${GlobalConfiguration().getString('base_url')}api/login', // Standard Laravel API
-    '${GlobalConfiguration().getString('api_base_url')}login', // Driver specific
-    '${GlobalConfiguration().getString('base_url')}api/driver/login', // Explicit driver login
+    '${GlobalConfiguration().getValue('base_url')}/api/login', // Standard Laravel API
+    '${GlobalConfiguration().getValue('api_base_url')}/login', // Driver specific
+    '${GlobalConfiguration().getValue('base_url')}/api/login', // Explicit driver login
   ];
 
   final client = http.Client();
@@ -41,12 +41,12 @@ Future<UserModel.User> login(UserModel.User user) async {
       final response = await client.post(
         Uri.parse(url),
         headers: {
-          HttpHeaders.contentTypeHeader: 'application/json',
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         body: json.encode(user.toMap()),
       );
-
+      
       print('🔍 Login Response Status: ${response.statusCode}');
       print('🔍 Login Response Headers: ${response.headers}');
       print(

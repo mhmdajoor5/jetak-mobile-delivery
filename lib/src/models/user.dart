@@ -39,8 +39,8 @@ class User {
       document4 = jsonMap['document4'].toString();
       document5 = jsonMap['document5'].toString();
       available = jsonMap['available'];
-      name = jsonMap['name'] != null ? jsonMap['name'] : '';
-      email = jsonMap['email'] != null ? jsonMap['email'] : '';
+      name = jsonMap['name'] ?? '';
+      email = jsonMap['email'] ?? '';
       apiToken = jsonMap['api_token'];
       deviceToken = jsonMap['device_token'];
       try {
@@ -65,16 +65,16 @@ class User {
       } catch (e) {
         bio = "";
       }
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).length > 0
+      image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty
           ? Media.fromJSON(jsonMap['media'][0])
-          : new Media();
+          :   Media();
     } catch (e) {
       print(e);
     }
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["document1"] = document1;
     map["document2"] = document2;
@@ -94,14 +94,14 @@ class User {
     map["address"] = address;
     map["bio"] = bio;
     map["media"] = image?.toMap();
-    if (this.image != null && image?.id != null && Helper.isUuid(image!.id!)) {
-      map['avatar'] = this.image?.id;
+    if (image != null && image?.id != null && Helper.isUuid(image!.id!)) {
+      map['avatar'] = image?.id;
     }
     return map;
   }
 
   Map toRestrictMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["document1"] = document1;
     map["document2"] = document2;
@@ -118,8 +118,8 @@ class User {
 
   @override
   String toString() {
-    var map = this.toMap();
-    map["auth"] = this.auth;
+    var map = toMap();
+    map["auth"] = auth;
     return map.toString();
   }
 
