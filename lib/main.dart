@@ -68,15 +68,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void showLocalNotification(RemoteMessage message) {
-    // AwesomeNotifications().createNotification(
-    //   content: NotificationContent(
-    //     id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-    //     channelKey: 'alerts',
-    //     title: message.notification?.title ?? 'No title',
-    //     body: message.notification?.body ?? 'No body',
-    //     // payload: message.data,
-    //   ),
-    // );
+    // استخدام NotificationController لعرض التنبيه مع الصوت
+    NotificationController.createNewNotification(message);
   }
 
   @override

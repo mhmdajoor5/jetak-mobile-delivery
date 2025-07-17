@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-import '../models/user.dart';
+import '../models/user.dart' as UserModel;
 import '../repository/user_repository.dart' as userRepo;
 
 class FirebaseUtil {
@@ -20,7 +20,7 @@ class FirebaseUtil {
     return _singleton;
   }
 
-  static Future<User> getUser() async {
+  static Future<UserModel.User> getUser() async {
     return await userRepo.getCurrentUser();
   }
 
@@ -42,14 +42,17 @@ class FirebaseUtil {
     }
   }
 
-  static Future<void> registerFCM(User user) async {
+  static Future<void> registerFCM() async {
     try {
       String? deviceToken = await getDeviceToken();
       print('Notification: $deviceToken');
 
       if (deviceToken != null) {
-        user.deviceToken = deviceToken;
-        await userRepo.update(user);
+        UserModel.User? currentUser = await userRepo.getCurrentUserAsync();
+        if (currentUser != null) {
+          currentUser.deviceToken = deviceToken;
+          await userRepo.update(currentUser);
+        }
       } else {
         print('Failed to get FCM token');
       }

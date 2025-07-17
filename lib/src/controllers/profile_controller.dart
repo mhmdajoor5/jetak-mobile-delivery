@@ -26,7 +26,7 @@ class ProfileController extends ControllerMVC {
   }
 
   void listenForRecentOrders({String? message}) async {
-    final Stream<Order> stream = await getRecentOrders();
+    final Stream<Order> stream = await getOrdersHistory();
     stream.listen((Order _order) {
       setState(() {
         recentOrders.add(_order);

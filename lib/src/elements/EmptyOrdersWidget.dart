@@ -53,181 +53,206 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        // Loading indicator
-        loading
-            ? Container(
-                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (loading) ...[
+            // Loading State with animation
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _pulseAnimation.value,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.blue[400]!, Colors.blue[600]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'Looking for new orders...',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : SizedBox(),
-        
-        // Main content
-        Container(
-          alignment: AlignmentDirectional.center,
-          padding: EdgeInsets.symmetric(horizontal: 30),
-          height: loading ? config.App(context).appHeight(60) : config.App(context).appHeight(70),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              // Animated icon
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.green.withOpacity(0.8),
-                            Colors.green.withOpacity(0.3),
-                          ],
+                      borderRadius: BorderRadius.circular(60),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green.withOpacity(0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.delivery_dining,
-                        color: Colors.white,
-                        size: 60,
-                      ),
+                      ],
                     ),
-                  );
-                },
+                    child: Icon(
+                      Icons.search,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 24),
+            Text(
+              'جاري البحث عن الطلبات...',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue[700],
               ),
-              
-              SizedBox(height: 24),
-              
-              // Main message
-              Text(
-                loading ? 'Searching for New Orders...' : 'No New Orders Available',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'يرجى الانتظار بينما نجلب آخر الطلبات',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else ...[
+            // Empty State with modern design
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange[400]!, Colors.orange[600]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                textAlign: TextAlign.center,
+                borderRadius: BorderRadius.circular(60),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.orange.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
-              
-              SizedBox(height: 12),
-              
-              // Description
-              Text(
-                loading 
-                  ? 'Please wait while we check for delivery requests...'
-                  : 'Waiting for new delivery requests...\nPull down to refresh or check your availability status.',
-                textAlign: TextAlign.center,
+              child: Icon(
+                Icons.inbox_outlined,
+                size: 50,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              '🎉 لا توجد طلبات جديدة الآن',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Text(
+                'أنت متاح لاستقبال طلبات جديدة',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
-                  height: 1.4,
+                  color: Colors.green[700],
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              
-              if (!loading) ...[
-                SizedBox(height: 32),
-                
-                // Status indicators
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: Column(
+            ),
+            SizedBox(height: 16),
+            Text(
+              'ستحصل على إشعار فور وصول طلب جديد',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24),
+            
+            // Action Cards
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
                     children: [
-                      // GPS Status
-                      _buildStatusRow(
-                        Icons.location_on,
-                        'GPS Location',
-                        'Active',
-                        Colors.green,
-                      ),
-                      SizedBox(height: 8),
-                      // Internet Status
-                      _buildStatusRow(
-                        Icons.wifi,
-                        'Internet Connection',
-                        'Connected',
-                        Colors.green,
-                      ),
-                      SizedBox(height: 8),
-                      // Notification Status
-                      _buildStatusRow(
-                        Icons.notifications,
-                        'Push Notifications',
-                        'Enabled',
-                        Colors.green,
+                      Icon(Icons.tips_and_updates, color: Colors.blue[600], size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'نصائح للحصول على المزيد من الطلبات:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue[800],
+                        ),
                       ),
                     ],
                   ),
-                ),
-                
-                SizedBox(height: 24),
-                
-                // Refresh button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      loading = true;
-                    });
-                    Timer(Duration(seconds: 3), () {
-                      if (mounted) {
-                        setState(() {
-                          loading = false;
-                        });
-                      }
-                    });
-                  },
-                  icon: Icon(Icons.refresh, size: 20),
-                  label: Text('Refresh Orders'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.blue[500], size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'تأكد من تحديث موقعك بانتظام',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
+                  SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.notifications_active, color: Colors.blue[500], size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'فعّل الإشعارات لتلقي الطلبات فوراً',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule, color: Colors.blue[500], size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'كن متاحاً في أوقات الذروة (12-3 ظهراً، 6-9 مساءً)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
   

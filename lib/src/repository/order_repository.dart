@@ -10,6 +10,7 @@ import '../helpers/helper.dart';
 import '../models/address.dart';
 import '../models/order.dart';
 import '../models/order_status.dart';
+import '../models/order_status_history.dart';
 import '../models/user.dart';
 import '../repository/user_repository.dart' as userRepo;
 
@@ -87,14 +88,13 @@ Future<Stream<Order>> getNearOrders(
 Future<Stream<Order>> getOrdersHistory() async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> _queryParams = {};
-  final String orderStatusId = "5"; // for delivered status
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
   _queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
   _queryParams['search'] =
-      'driver.id:${_user.id};order_status_id:$orderStatusId;delivery_address_id:null';
+      'driver.id:${_user.id};order_status_id:5;delivery_address_id:null'; // Use 5 for delivered but add debug
   _queryParams['searchFields'] =
       'driver.id:=;order_status_id:=;delivery_address_id:<>';
   _queryParams['searchJoin'] = 'and';
@@ -102,260 +102,112 @@ Future<Stream<Order>> getOrdersHistory() async {
   _queryParams['sortedBy'] = 'desc';
   uri = uri.replace(queryParameters: _queryParams);
 
-  //final String url = '${GlobalConfiguration().getString('api_base_url')}orders?${_apiToken}with=driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress&search=driver.id:${_user.id};order_status_id:$orderStatusId&searchFields=driver.id:=;order_status_id:=&searchJoin=and&orderBy=id&sortedBy=desc';
+  print('🔍 Order History API Request:');
+  print('   - URL: $uri');
+  print('   - Driver ID: ${_user.id}');
+  print('   - Looking for status ID: 5 (delivered)');
+
   try {
     final client = new http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
+    
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String, dynamic>))
+        .map((data) {
+          final result = Helper.getData(data as Map<String, dynamic>);
+          print('📋 Order History Response:');
+          print('   - Number of orders found: ${(result as List).length}');
+          
+          // Log details of first order for debugging
+          if (result.isNotEmpty) {
+            final firstOrder = result[0];
+            print('   - First order status: ${firstOrder['order_status']}');
+            print('   - First order ID: ${firstOrder['id']}');
+            print('   - First order delivery address: ${firstOrder['delivery_address'] != null}');
+          }
+          
+          return result;
+        })
         .expand((data) => (data as List))
         .map((data) {
           return Order.fromJSON(data);
         });
   } catch (e) {
+    print('❌ Error in getOrdersHistory: $e');
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
     return new Stream.value(new Order.fromJSON({}));
   }
 }
 
-Future<Stream<Order>> getOrder(orderId) async {
-  // **MOCK DATA للتجربة - احذف هذا عند ربط الباك إند**
-  print('🔄 Loading order details for ID: $orderId');
-
-  // بيانات وهمية حسب الـ order ID
-  Map<String, dynamic> orderData = {};
-
-  if (orderId == '2047') {
-    orderData = {
-      "id": "2047",
-      "tax": 3.0,
-      "delivery_fee": 5.0,
-      "hint": "الطابق الثالث، الباب الأيمن - يرجى الرنين مرتين",
-      "updated_at": DateTime.now().toIso8601String(),
-      "order_status": {"id": "3", "status": "Ready for Pickup"},
-      "user": {
-        "id": "456",
-        "name": "أحمد محمد العلي",
-        "phone": "+970599123456",
-        "email": "ahmed.ali@example.com",
-      },
-      "food_orders": [
-        {
-          "id": "1001",
-          "quantity": 2,
-          "price": 30.0,
-          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0},
-        },
-        {
-          "id": "1002",
-          "quantity": 1,
-          "price": 8.0,
-          "food": {"id": "302", "name": "بطاطس مقلية كبيرة", "price": 8.0},
-        },
-        {
-          "id": "1003",
-          "quantity": 2,
-          "price": 6.0,
-          "food": {"id": "303", "name": "مشروب غازي", "price": 3.0},
-        },
-      ],
-      "delivery_address": {
-        "id": "789",
-        "address":
-            "شارع عمر المختار، مقابل البنك الأهلي، العمارة رقم 15، الطابق الثالث",
-        "latitude": 31.5017,
-        "longitude": 34.4668,
-      },
-      "payment": {"method": "Cash on Delivery", "status": "Pending"},
-    };
-  } else if (orderId == '2048') {
-    orderData = {
-      "id": "2048",
-      "tax": 4.5,
-      "delivery_fee": 7.0,
-      "hint": "البناية الزرقاء بجانب الصيدلية، شقة 4ب",
-      "updated_at":
-          DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
-      "order_status": {"id": "3", "status": "Ready for Pickup"},
-      "user": {
-        "id": "457",
-        "name": "فاطمة سالم قاسم",
-        "phone": "+970598987654",
-        "email": "fatima.salem@example.com",
-      },
-      "food_orders": [
-        {
-          "id": "1004",
-          "quantity": 1,
-          "price": 35.0,
-          "food": {"id": "304", "name": "بيتزا مارجريتا كبيرة", "price": 35.0},
-        },
-        {
-          "id": "1005",
-          "quantity": 1,
-          "price": 15.0,
-          "food": {"id": "305", "name": "سلطة يونانية", "price": 15.0},
-        },
-      ],
-      "delivery_address": {
-        "id": "790",
-        "address": "حي الشيخ رضوان، شارع صلاح الدين، مجمع النور، شقة 4ب",
-        "latitude": 31.5203,
-        "longitude": 34.4776,
-      },
-      "payment": {"method": "Credit Card", "status": "Paid"},
-    };
-  } else if (orderId == '2049') {
-    orderData = {
-      "id": "2049",
-      "tax": 2.5,
-      "delivery_fee": 4.0,
-      "hint": "",
-      "updated_at":
-          DateTime.now().subtract(Duration(minutes: 2)).toIso8601String(),
-      "order_status": {"id": "3", "status": "Ready for Pickup"},
-      "user": {
-        "id": "458",
-        "name": "محمد عبدالله حسن",
-        "phone": "+970567891234",
-        "email": "mohammed.hassan@example.com",
-      },
-      "food_orders": [
-        {
-          "id": "1006",
-          "quantity": 3,
-          "price": 24.0,
-          "food": {"id": "306", "name": "شاورما لحم", "price": 8.0},
-        },
-        {
-          "id": "1007",
-          "quantity": 1,
-          "price": 12.0,
-          "food": {"id": "307", "name": "حمص بالطحينة", "price": 12.0},
-        },
-      ],
-      "delivery_address": {
-        "id": "791",
-        "address":
-            "شارع الجلاء، بجانب مسجد النور، العمارة رقم 12، الطابق الأول",
-        "latitude": 31.4969,
-        "longitude": 34.4532,
-      },
-      "payment": {"method": "PayPal", "status": "Paid"},
-    };
-  } else {
-    // Default mock order للـ IDs الأخرى
-    orderData = {
-      "id": orderId.toString(),
-      "tax": 0.0,
-      "delivery_fee": 0.0,
-      "hint": "",
-      "updated_at": DateTime.now().toIso8601String(),
-      "order_status": {"id": "1", "status": "Pending"},
-      "user": {
-        "id": "999",
-        "name": "Unknown Customer",
-        "phone": "",
-        "email": "",
-      },
-      "food_orders": [],
-      "delivery_address": {"id": "999", "address": "Address not available"},
-      "payment": {"method": "Unknown", "status": "Unknown"},
-    };
+// Debug function to check all available order statuses
+Future<void> debugOrderStatuses() async {
+  print('🔍 Fetching all order statuses...');
+  try {
+    final Stream<OrderStatus> stream = await getOrderStatus();
+    final statuses = await stream.toList();
+    
+    print('📋 Available Order Statuses:');
+    for (var status in statuses) {
+      print('   - ID: ${status.id}, Status: ${status.status}');
+    }
+  } catch (e) {
+    print('❌ Error fetching order statuses: $e');
   }
-
-  await Future.delayed(Duration(milliseconds: 500)); // محاكاة تأخير الشبكة
-  return Stream.value(Order.fromJSON(orderData));
-
-  // **الكود الأصلي - فعّله عند ربط الباك إند**
-  /*
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Stream.value(new Order());
-  }
-  final String _apiToken = 'api_token=${_user.apiToken}&';
-  final String url =
-      '${GlobalConfiguration().getString('api_base_url')}orders/$orderId?${_apiToken}with=user;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  final client = new http.Client();
-  final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
-
-  return streamedRest.stream
-      .transform(utf8.decoder)
-      .transform(json.decoder)
-      .map((data) => Helper.getObjectData(data as Map<String,dynamic>))
-      .map((data) {
-    return Order.fromJSON(data);
-  });
-  */
 }
 
-Future<Stream<Order>> getRecentOrders() async {
+// Function to get orders by multiple status IDs
+Future<Stream<Order>> getOrdersByStatuses(List<String> statusIds) async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> _queryParams = {};
   User _user = userRepo.currentUser.value;
 
   _queryParams['api_token'] = _user.apiToken;
-  _queryParams['limit'] = '4';
   _queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
-  _queryParams['searchFields'] = 'driver.id:=;delivery_address_id:<>';
+  _queryParams['search'] =
+      'driver.id:${_user.id};order_status_id:${statusIds.join(',')}';
+  _queryParams['searchFields'] = 'driver.id:=;order_status_id:in';
   _queryParams['searchJoin'] = 'and';
   _queryParams['orderBy'] = 'id';
   _queryParams['sortedBy'] = 'desc';
   uri = uri.replace(queryParameters: _queryParams);
 
-  //final String url = '${GlobalConfiguration().getString('api_base_url')}orders?${_apiToken}with=driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress&search=driver.id:${_user.id};order_status_id:$orderStatusId&searchFields=driver.id:=;order_status_id:=&searchJoin=and&orderBy=id&sortedBy=desc';
+  print('🔍 Multi-Status Orders Request:');
+  print('   - URL: $uri');
+  print('   - Status IDs: ${statusIds.join(', ')}');
+
   try {
     final client = new http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
+    
     return streamedRest.stream
         .transform(utf8.decoder)
         .transform(json.decoder)
-        .map((data) => Helper.getData(data as Map<String, dynamic>))
+        .map((data) {
+          final result = Helper.getData(data as Map<String, dynamic>);
+          print('📋 Multi-Status Response: ${(result as List).length} orders found');
+          return result;
+        })
         .expand((data) => (data as List))
         .map((data) {
           return Order.fromJSON(data);
         });
   } catch (e) {
-    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    print('❌ Error in getOrdersByStatuses: $e');
     return new Stream.value(new Order.fromJSON({}));
   }
-}
-
-Future<Stream<OrderStatus>> getOrderStatus() async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Stream.value(new OrderStatus());
-  }
-  final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url =
-      '${GlobalConfiguration().getString('api_base_url')}order_statuses?$_apiToken';
-
-  final client = new http.Client();
-  final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
-
-  return streamedRest.stream
-      .transform(utf8.decoder)
-      .transform(json.decoder)
-      .map((data) => Helper.getData(data as Map<String, dynamic>))
-      .expand((data) => (data as List))
-      .map((data) {
-        return OrderStatus.fromJSON(data);
-      });
 }
 
 Future<Order> onTheWayOrder(Order order) async {
   User _user = userRepo.currentUser.value;
   if (_user.apiToken == null) {
-    return new Order();
+    return Order();
   }
   final String _apiToken = 'api_token=${_user.apiToken}';
   final String url =
       '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
-  final client = new http.Client();
+  final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
     headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -665,6 +517,109 @@ Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
   }
 }
 
+Future<OrderStatusHistory?> getOrderStatusHistory(String orderId) async {
+  User _user = userRepo.currentUser.value;
+  if (_user.apiToken == null) {
+    print('❌ No API token available for order status history');
+    // Return mock data for testing when no token
+    return _getMockOrderStatusHistory(orderId);
+  }
+
+  try {
+    final String _apiToken = 'api_token=${_user.apiToken}';
+    final String url = '${GlobalConfiguration().getString('api_base_url')}orders/$orderId/status-history?$_apiToken';
+    
+    print('🔄 Fetching order status history for order: $orderId');
+    print('🔍 Status History URL: $url');
+    
+    final client = http.Client();
+    final response = await client.get(Uri.parse(url));
+    
+    print('🔍 Status History Response Status: ${response.statusCode}');
+    print('🔍 Status History Response Body (first 300 chars): ${response.body.length > 300 ? response.body.substring(0, 300) + '...' : response.body}');
+    
+    if (response.statusCode == 200) {
+      try {
+        final jsonData = json.decode(response.body);
+        print('✅ Order status history loaded successfully');
+        return OrderStatusHistory.fromJson(jsonData);
+      } catch (parseError) {
+        print('❌ JSON Parse Error in status history: $parseError');
+        // Fall back to mock data on parse error
+        return _getMockOrderStatusHistory(orderId);
+      }
+    } else {
+      print('❌ Failed to load order status history: ${response.statusCode}');
+      print('Response: ${response.body}');
+      // Fall back to mock data on error
+      return _getMockOrderStatusHistory(orderId);
+    }
+  } catch (e) {
+    print('❌ Error fetching order status history: $e');
+    print(CustomTrace(StackTrace.current, message: e.toString()).toString());
+    // Fall back to mock data on network error
+    return _getMockOrderStatusHistory(orderId);
+  }
+}
+
+// Helper function to provide mock order status history for testing
+OrderStatusHistory _getMockOrderStatusHistory(String orderId) {
+  print('🔄 Using mock order status history for testing...');
+  
+  final now = DateTime.now();
+  final mockHistory = [
+    {
+      'id': '1',
+      'status': '1',
+      'status_name': 'تم استلام الطلب',
+      'timestamp': now.subtract(Duration(hours: 2, minutes: 30)).toIso8601String(),
+      'notes': 'تم استلام طلبكم بنجاح وجاري المراجعة',
+      'updated_by': 'نظام إدارة الطلبات',
+    },
+    {
+      'id': '2',
+      'status': '2',
+      'status_name': 'قيد التحضير',
+      'timestamp': now.subtract(Duration(hours: 1, minutes: 45)).toIso8601String(),
+      'notes': 'بدأ الطباخ في تحضير طلبكم',
+      'updated_by': 'شيف المطعم - أحمد محمد',
+    },
+    {
+      'id': '3',
+      'status': '3',
+      'status_name': 'جاهز للاستلام',
+      'timestamp': now.subtract(Duration(hours: 1, minutes: 10)).toIso8601String(),
+      'notes': 'طلبكم جاهز وننتظر وصول السائق',
+      'updated_by': 'مدير المطعم - فاطمة أحمد',
+    },
+    {
+      'id': '4',
+      'status': '4',
+      'status_name': 'في الطريق إليك',
+      'timestamp': now.subtract(Duration(minutes: 25)).toIso8601String(),
+      'notes': 'السائق خالد في طريقه إليكم - الوقت المتوقع للوصول 15 دقيقة',
+      'updated_by': 'السائق - خالد عبدالله',
+    },
+  ];
+
+  // Add delivered status if this is an older order (for testing)
+  if (orderId == '2045' || orderId == '2046') {
+    mockHistory.add({
+      'id': '5',
+      'status': '5',
+      'status_name': 'تم التوصيل بنجاح',
+      'timestamp': now.subtract(Duration(minutes: 5)).toIso8601String(),
+      'notes': 'تم تسليم الطلب للعميل بنجاح - شكراً لاختياركم خدماتنا',
+      'updated_by': 'السائق - خالد عبدالله',
+    });
+  }
+
+  return OrderStatusHistory.fromJson({
+    'order_id': orderId,
+    'status_history': mockHistory,
+  });
+}
+
 // **TEST FUNCTION: اختبار الاتصال مع الباك إند**
 Future<Map<String, dynamic>> testConnection() async {
   print('🔄 Testing API connection...');
@@ -818,5 +773,97 @@ Future<Map<String, dynamic>> testConnection() async {
         '4. Try ping/curl to test server connectivity',
       ],
     };
+  }
+}
+
+Future<Stream<Order>> getOrder(String? orderId) async {
+  if (orderId == null) {
+    return Stream.value(Order.fromJSON({}));
+  }
+  
+  Uri uri = Helper.getUri('api/orders/$orderId');
+  User _user = userRepo.currentUser.value;
+  
+  Map<String, dynamic> _queryParams = {};
+  _queryParams['api_token'] = _user.apiToken;
+  _queryParams['with'] = 'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
+  
+  uri = uri.replace(queryParameters: _queryParams);
+  
+  try {
+    final client = http.Client();
+    final streamedRest = await client.send(http.Request('get', uri));
+    return streamedRest.stream
+        .transform(utf8.decoder)
+        .transform(json.decoder)
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
+        .map((data) {
+          return Order.fromJSON(data);
+        });
+  } catch (e) {
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    // Return mock order for testing
+    return Stream.value(Order.fromJSON({
+      "id": orderId,
+      "tax": 3.0,
+      "delivery_fee": 5.0,
+      "hint": "Test order for tracking",
+      "updated_at": DateTime.now().toIso8601String(),
+      "order_status": {"id": "4", "status": "في الطريق"},
+      "user": {
+        "id": "456",
+        "name": "أحمد محمد العلي",
+        "phone": "+970599123456",
+        "email": "ahmed.ali@example.com",
+      },
+      "food_orders": [
+        {
+          "id": "1001",
+          "quantity": 2,
+          "price": 30.0,
+          "food": {"id": "301", "name": "برجر دجاج مشوي", "price": 15.0},
+        },
+      ],
+      "delivery_address": {
+        "id": "789",
+        "address": "شارع عمر المختار، مقابل البنك الأهلي، العمارة رقم 15",
+        "latitude": 31.5017,
+        "longitude": 34.4668,
+      },
+      "payment": {"method": "Cash on Delivery", "status": "Pending"},
+    }));
+  }
+}
+
+Future<Stream<OrderStatus>> getOrderStatus() async {
+  Uri uri = Helper.getUri('api/order_statuses');
+  User _user = userRepo.currentUser.value;
+  
+  Map<String, dynamic> _queryParams = {};
+  _queryParams['api_token'] = _user.apiToken;
+  
+  uri = uri.replace(queryParameters: _queryParams);
+  
+  try {
+    final client = http.Client();
+    final streamedRest = await client.send(http.Request('get', uri));
+    return streamedRest.stream
+        .transform(utf8.decoder)
+        .transform(json.decoder)
+        .map((data) => Helper.getData(data as Map<String, dynamic>))
+        .expand((data) => (data as List))
+        .map((data) {
+          return OrderStatus.fromJSON(data);
+        });
+  } catch (e) {
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    // Return mock statuses for testing
+    return Stream.fromIterable([
+      OrderStatus.fromJSON({"id": "1", "status": "طلب جديد"}),
+      OrderStatus.fromJSON({"id": "2", "status": "قيد التحضير"}),
+      OrderStatus.fromJSON({"id": "3", "status": "جاهز للاستلام"}),
+      OrderStatus.fromJSON({"id": "4", "status": "في الطريق"}),
+      OrderStatus.fromJSON({"id": "5", "status": "تم التوصيل"}),
+    ]);
   }
 }

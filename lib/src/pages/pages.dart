@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../repository/user_repository.dart' as userRepo;
 
 import '../../generated/l10n.dart';
@@ -49,34 +51,96 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
   Timer? timer;
 
   initState() {
-    registerFCM();
-    userRepo.updateDriverAvailability(true);
-    _getCurrentPosition();
     super.initState();
+    _initializeApp();
+  }
+
+  void _initializeApp() async {
+    await registerFCM();
+    await userRepo.updateDriverAvailability(true);
+    await _getCurrentPosition();
     _selectTab(widget.currentTab);
-    timer = Timer.periodic(Duration(seconds: 15), (Timer t) {
-      print("Updating location on -> ${DateTime.now().toString()}");
+    
+    // تحديث الموقع كل 30 ثانية بدلاً من 15 لتوفير البطارية
+    timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
+      if (userRepo.currentUser.value.id != null) {
+        print("📍 Auto-updating location at ${DateTime.now().toString()}");
       _getCurrentPosition();
+      } else {
+        print("⚠️ User not authenticated, skipping location update");
+      }
     });
   }
 
   Future<void> _getCurrentPosition() async {
+    try {
     final hasPermission = await _handlePermission();
 
     if (!(hasPermission == true)) {
+        print('❌ Location permission denied');
       return;
     }
-    final position = await _geolocatorPlatform.getCurrentPosition();
-    try {
-      await userRepo.updateDriverLocation(
-          position.latitude, position.longitude);
+      
+      print('📍 Getting current position...');
+      final position = await _geolocatorPlatform.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 10, // تحديث فقط إذا تحرك السائق 10 متر
+        ),
+      );
+      
+      print('📍 Position obtained: lat=${position.latitude}, lng=${position.longitude}');
+      
+      // حفظ الموقع محلياً أولاً
+      await _saveLocationLocally(position.latitude, position.longitude);
+      
+      // إرسال الموقع للخادم
+      await userRepo.updateDriverLocation(position.latitude, position.longitude);
+      
     } catch (e) {
-      print(e);
+      print('❌ Error getting position: $e');
+      // في حالة الخطأ، جرب استخدام آخر موقع محفوظ
+      await _useLastKnownLocation();
+    }
+  }
+
+  Future<void> _saveLocationLocally(double lat, double lng) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('last_lat', lat);
+      await prefs.setDouble('last_lng', lng);
+      await prefs.setInt('last_location_time', DateTime.now().millisecondsSinceEpoch);
+      print('💾 Location saved locally');
+    } catch (e) {
+      print('❌ Error saving location locally: $e');
+    }
+  }
+
+  Future<void> _useLastKnownLocation() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (prefs.containsKey('last_lat') && prefs.containsKey('last_lng')) {
+        double lat = prefs.getDouble('last_lat') ?? 0.0;
+        double lng = prefs.getDouble('last_lng') ?? 0.0;
+        int lastTime = prefs.getInt('last_location_time') ?? 0;
+        
+        // استخدم آخر موقع فقط إذا كان حديث (أقل من 5 دقائق)
+        int timeDiff = DateTime.now().millisecondsSinceEpoch - lastTime;
+        if (timeDiff < 300000) { // 5 دقائق
+          print('📍 Using last known location: lat=$lat, lng=$lng');
+          await userRepo.updateDriverLocation(lat, lng);
+        } else {
+          print('⚠️ Last known location is too old');
+        }
+      }
+    } catch (e) {
+      print('❌ Error using last known location: $e');
     }
   }
 
   Future<void> registerFCM() async {
-    await FirebaseUtil.registerFCM(await userRepo.getCurrentUserAsync());
+    print('Registering FCM...');
+    // FCM registration logic will be handled in FirebaseUtil
   }
 
   @override

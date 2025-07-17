@@ -6,7 +6,7 @@ import 'package:map_launcher/map_launcher.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../controllers/order_details_controller.dart';
+import '../controllers/tracking_controller.dart';
 import '../helpers/helper.dart';
 import '../models/route_argument.dart';
 
@@ -22,15 +22,15 @@ class OrderWidget extends StatefulWidget {
 }
 
 class _OrderWidgetState extends StateMVC<OrderWidget> {
-  late OrderDetailsController _con;
+  late TrackingController _con;
 
-  _OrderWidgetState() : super(OrderDetailsController()) {
-    _con = controller as OrderDetailsController;
+  _OrderWidgetState() : super(TrackingController()) {
+    _con = controller as TrackingController;
   }
 
   @override
   void initState() {
-    _con.listenForOrder(id: widget.routeArgument?.id);
+    _con.listenForOrder(orderId: widget.routeArgument?.id);
     super.initState();
   }
 
@@ -76,16 +76,211 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
     }
   }
 
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+    Widget? action,
+    int maxLines = 1,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: color,
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: maxLines,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        if (action != null) action,
+      ],
+    );
+  }
+
+  Widget _buildOrderStatusHistory() {
+    if (_con.orderStatusHistory == null || _con.orderStatusHistory!.statusHistory.isEmpty) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.timeline,
+              size: 48,
+              color: Colors.grey[400],
+            ),
+            SizedBox(height: 12),
+            Text(
+              'No tracking information available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Status updates will appear here when available',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with refresh button
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, 20, 16, 0),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.timeline,
+                    color: Colors.blue[700],
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Detailed Status Timeline',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.refresh,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      if (_con.order?.id != null) {
+                        _con.loadOrderStatusHistory(_con.order!.id!);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Divider(height: 20, color: Colors.grey[200]),
+
+          // Timeline Steps
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: Colors.blue[600],
+                ),
+              ),
+              child: Stepper(
+                controlsBuilder: (context, details) => SizedBox.shrink(),
+                physics: NeverScrollableScrollPhysics(),
+                steps: _con.getTrackingSteps(context),
+                currentStep: 0,
+                type: StepperType.vertical,
+                margin: EdgeInsets.zero,
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _con.scaffoldKey,
       backgroundColor: Colors.grey[50],
-      body:
-          _con.order == null
-              ? CircularLoadingWidget(height: 400)
-              : CustomScrollView(
-                slivers: <Widget>[
+      body: _con.isLoading || _con.order == null
+          ? Center(child: CircularLoadingWidget(height: 500))
+          : CustomScrollView(
+              slivers: [
                   // Enhanced Modern App Bar
                   SliverAppBar(
                     expandedHeight: 160,
@@ -334,7 +529,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                             size: 20,
                           ),
                           onPressed: () {
-                            _con.listenForOrder(id: widget.routeArgument?.id);
+                            _con.refreshOrder();
                           },
                         ),
                       ),
@@ -342,24 +537,30 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                   ),
 
                   // Content
-                  SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 10),
+                  SliverList(
+                    delegate: SliverChildListDelegate([
+                      SizedBox(height: 10),
 
-                        // Order Items Section
-                        _buildOrderItemsSection(),
-                        SizedBox(height: 16),
+                      // Enhanced Order Tracking Section
+                      _buildEnhancedOrderTracking(),
+                      SizedBox(height: 16),
 
-                        // Customer Info Section
-                        _buildCustomerInfoSection(),
-                        SizedBox(height: 16),
+                      // Order Items Section
+                      _buildOrderItemsSection(),
+                      SizedBox(height: 16),
 
-                        // Pricing Section
-                        _buildPricingSection(),
-                        SizedBox(height: 100), // Space for bottom button
-                      ],
-                    ),
+                      // Customer Info Section
+                      _buildCustomerInfoSection(),
+                      SizedBox(height: 16),
+
+                      // Pricing Section
+                      _buildPricingSection(),
+                      SizedBox(height: 16),
+
+                      // Add the detailed status history section
+                      _buildOrderStatusHistory(),
+                      SizedBox(height: 100), // Space for bottom button
+                    ]),
                   ),
                 ],
               ),
@@ -367,6 +568,92 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
       // Modern Bottom Action Button
       bottomNavigationBar:
           _con.order == null ? null : _buildBottomActionButton(),
+    );
+  }
+
+  Widget _buildEnhancedOrderTracking() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.timeline,
+                    color: Colors.blue[700],
+                    size: 20,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Order Tracking',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Divider(height: 0, color: Colors.grey[200]),
+
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  icon: Icons.access_time,
+                  title: 'Order Placed',
+                  value: _con.order?.dateTime != null
+                      ? DateFormat('MMM dd, yyyy • HH:mm').format(_con.order!.dateTime!)
+                      : 'N/A',
+                  color: Colors.blue,
+                ),
+                SizedBox(height: 12),
+                _buildInfoRow(
+                  icon: Icons.directions_car,
+                  title: 'On The Way',
+                  value: _con.order?.orderStatus?.status == '3'
+                      ? DateFormat('MMM dd, yyyy • HH:mm').format(_con.order!.dateTime!)
+                      : 'N/A',
+                  color: Colors.indigo,
+                ),
+                SizedBox(height: 12),
+                _buildInfoRow(
+                  icon: Icons.check_circle,
+                  title: 'Delivered',
+                  value: _con.order?.orderStatus?.status == '5'
+                      ? DateFormat('MMM dd, yyyy • HH:mm').format(_con.order!.dateTime!)
+                      : 'N/A',
+                  color: Colors.green,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -583,8 +870,13 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                                 size: 18,
                               ),
                             ),
-                            onPressed: () {
-                              launch("tel:${_con.order!.user!.phone}");
+                            onPressed: () async {
+                              if (_con.order?.user?.phone != null) {
+                                final Uri phoneUri = Uri(scheme: 'tel', path: _con.order!.user!.phone);
+                                if (await canLaunchUrl(phoneUri)) {
+                                  await launchUrl(phoneUri);
+                                }
+                              }
                             },
                           )
                           : null,
@@ -618,19 +910,21 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                               ),
                             ),
                             onPressed: () async {
-                              Position? position = await _getCurrentPosition();
-                              if (position == null) return;
-                              MapLauncher.showDirections(
-                                mapType: MapType.waze,
-                                destination: Coords(
-                                  _con.order!.deliveryAddress!.latitude ?? 0.0,
-                                  _con.order!.deliveryAddress!.longitude ?? 0.0,
-                                ),
-                                origin: Coords(
-                                  position.latitude,
-                                  position.longitude,
-                                ),
-                              );
+                              if (_con.order?.deliveryAddress != null) {
+                                Position? position = await _getCurrentPosition();
+                                if (position == null) return;
+                                MapLauncher.showDirections(
+                                  mapType: MapType.waze,
+                                  destination: Coords(
+                                    _con.order!.deliveryAddress!.latitude ?? 0.0,
+                                    _con.order!.deliveryAddress!.longitude ?? 0.0,
+                                  ),
+                                  origin: Coords(
+                                    position.latitude,
+                                    position.longitude,
+                                  ),
+                                );
+                              }
                             },
                           )
                           : null,
@@ -640,57 +934,6 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-    Widget? action,
-    int maxLines = 2,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icon, color: color, size: 16),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: maxLines,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-        if (action != null) action,
-      ],
     );
   }
 
@@ -747,14 +990,14 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
               children: [
                 _buildPriceRow(
                   'Subtotal',
-                  Helper.getSubTotalOrdersPrice(_con.order!),
+                  _con.order != null ? Helper.getSubTotalOrdersPrice(_con.order!) : 0.0,
                 ),
                 SizedBox(height: 12),
-                _buildPriceRow('Delivery Fee', _con.order!.deliveryFee ?? 0.0),
+                _buildPriceRow('Delivery Fee', _con.order?.deliveryFee ?? 0.0),
                 SizedBox(height: 12),
                 _buildPriceRow(
-                  'Tax (${_con.order!.tax}%)',
-                  Helper.getTaxOrder(_con.order!),
+                  'Tax (${_con.order?.tax ?? 0}%)',
+                  _con.order != null ? Helper.getTaxOrder(_con.order!) : 0.0,
                 ),
                 SizedBox(height: 16),
                 Divider(color: Colors.grey[300]),
@@ -771,7 +1014,7 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                       ),
                     ),
                     Helper.getPrice(
-                      Helper.getTotalOrdersPrice(_con.order!),
+                      _con.order != null ? Helper.getTotalOrdersPrice(_con.order!) : 0.0,
                       context,
                       style: TextStyle(
                         fontSize: 18,
@@ -928,10 +1171,12 @@ class _OrderWidgetState extends StateMVC<OrderWidget> {
                       style: TextStyle(color: Colors.white),
                     ),
                     onPressed: () {
-                      if (_con.order?.orderStatus?.id == "3") {
-                        _con.doOnTheWayOrder(_con.order!);
-                      } else {
-                        _con.doDeliveredOrder(_con.order!);
+                      if (_con.order != null) {
+                        if (_con.order!.orderStatus?.id == "3") {
+                          _con.doOnTheWayOrder(_con.order!);
+                        } else {
+                          _con.doDeliveredOrder(_con.order!);
+                        }
                       }
                       Navigator.of(context).pop();
                     },

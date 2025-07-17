@@ -14,17 +14,17 @@ import '../helpers/helper.dart';
 import '../models/address.dart';
 import '../models/credit_card.dart';
 import '../models/document.dart';
-import '../models/user.dart';
+import '../models/user.dart' as UserModel;
 import '../repository/user_repository.dart' as userRepo;
 
-ValueNotifier<User> currentUser = ValueNotifier(User());
+ValueNotifier<UserModel.User> currentUser = ValueNotifier(UserModel.User());
 
 final HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
   requestTimeout: Duration(seconds: 30),
   middlewares: [HttpLogger(logLevel: LogLevel.BODY)],
 );
 
-Future<User> login(User user) async {
+Future<UserModel.User> login(UserModel.User user) async {
   // تجربة URLs مختلفة للـ login
   List<String> possibleUrls = [
     '${GlobalConfiguration().getString('base_url')}api/login', // Standard Laravel API
@@ -76,7 +76,7 @@ Future<User> login(User user) async {
 
           if (responseData['data'] != null) {
             setCurrentUser(response.body);
-            currentUser.value = User.fromJSON(responseData['data']);
+            currentUser.value = UserModel.User.fromJSON(responseData['data']);
             return currentUser.value;
           } else {
             print('❌ Login response missing "data" field');
@@ -123,25 +123,39 @@ Future<User> login(User user) async {
 
 Future<void> updateDriverLocation(double lat, double lng) async {
   if (currentUser.value.id == null) {
+    print('❌ updateDriverLocation: User not authenticated');
     return;
   }
-  final String _apiToken = 'api_token=${currentUser.value.apiToken}';
-  final String url =
-      '${GlobalConfiguration().getString('api_base_url')}${currentUser.value.id}/update_location?$_apiToken';
-  final client = http.Client();
-  final response = await client.put(
-    Uri.parse(url),
-    headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-    body: json.encode({"latitude": lat, "longitude": lng}),
+  
+  print('📍 Updating driver location: lat=$lat, lng=$lng');
+  
+  try {
+    final response = await http.post(
+      Uri.parse('https://carrytechnologies.co/api/driver/orders/update-driver-location'),
+      headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'api_token': currentUser.value.apiToken,
+        'driver_id': currentUser.value.id,
+        'latitude': lat,
+        'longitude': lng,
+      }),
   );
+
+    print('📍 Location Update Response Status: ${response.statusCode}');
+    print('📍 Location Update Response: ${response.body}');
+
   if (response.statusCode == 200) {
-    // setCurrentUser(response.body);
-    // currentUser.value = User.fromJSON(json.decode(response.body)['data']);
+      print('✅ Driver location updated successfully');
   } else {
-    print(CustomTrace(StackTrace.current, message: response.body).toString());
-    throw Exception(response.body);
+      print('❌ Failed to update driver location: ${response.statusCode}');
+      print('❌ Response: ${response.body}');
   }
-  // return currentUser.value;
+  } catch (e) {
+    print('❌ Error updating driver location: $e');
+  }
 }
 
 Future<void> updateDriverAvailability(bool value) async {
@@ -159,7 +173,7 @@ Future<void> updateDriverAvailability(bool value) async {
   );
   if (response.statusCode == 200) {
     // setCurrentUser(response.body);
-    // currentUser.value = User.fromJSON(json.decode(response.body)['data']);
+    // currentUser.value = UserModel.User.fromJSON(json.decode(response.body)['data']);
   } else {
     print(CustomTrace(StackTrace.current, message: response.body).toString());
     throw Exception(response.body);
@@ -185,7 +199,7 @@ Future<dynamic> upload(Document body) async {
   return await request.send();
 }
 
-Future<User> register(User user) async {
+Future<UserModel.User> register(UserModel.User user) async {
   HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
     requestTimeout: Duration(seconds: 30),
     middlewares: [HttpLogger(logLevel: LogLevel.BODY)],
@@ -200,7 +214,7 @@ Future<User> register(User user) async {
   );
   if (response.statusCode == 200) {
     setCurrentUser(response.body);
-    currentUser.value = User.fromJSON(json.decode(response.body)['data']);
+    currentUser.value = UserModel.User.fromJSON(json.decode(response.body)['data']);
   } else {
     print(CustomTrace(StackTrace.current, message: response.body).toString());
     throw Exception(response.body);
@@ -208,11 +222,11 @@ Future<User> register(User user) async {
   return currentUser.value;
 }
 
-Future<User> getCurrentUserAsync() async {
+Future<UserModel.User> getCurrentUserAsync() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   //prefs.clear();
   if (currentUser.value.auth == null && prefs.containsKey('current_user')) {
-    currentUser.value = User.fromJSON(
+    currentUser.value = UserModel.User.fromJSON(
       json.decode(await prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
@@ -222,7 +236,7 @@ Future<User> getCurrentUserAsync() async {
   return currentUser.value;
 }
 
-Future<bool> resetPassword(User user) async {
+Future<bool> resetPassword(UserModel.User user) async {
   final String url =
       '${GlobalConfiguration().getString('api_base_url')}send_reset_link_email';
   final client = http.Client();
@@ -240,7 +254,7 @@ Future<bool> resetPassword(User user) async {
 }
 
 Future<void> logout() async {
-  currentUser.value = User();
+  currentUser.value = UserModel.User();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove('current_user');
 }
@@ -291,11 +305,11 @@ Future<void> setCreditCard(CreditCard creditCard) async {
   }
 }
 
-Future<User> getCurrentUser() async {
+Future<UserModel.User> getCurrentUser() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   //prefs.clear();
   if (currentUser.value.auth == null && prefs.containsKey('current_user')) {
-    currentUser.value = User.fromJSON(
+    currentUser.value = UserModel.User.fromJSON(
       json.decode(await prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
@@ -318,7 +332,7 @@ Future<CreditCard> getCreditCard() async {
   return _creditCard;
 }
 
-Future<User> update(User user) async {
+Future<UserModel.User> update(UserModel.User user) async {
   final String _apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
       '${GlobalConfiguration().getString('api_base_url')}users/${currentUser.value.id}?$_apiToken';
@@ -329,12 +343,12 @@ Future<User> update(User user) async {
     body: json.encode(user.toMap()),
   );
   setCurrentUser(response.body);
-  currentUser.value = User.fromJSON(json.decode(response.body)['data']);
+  currentUser.value = UserModel.User.fromJSON(json.decode(response.body)['data']);
   return currentUser.value;
 }
 
 Future<Stream<Address>> getAddresses() async {
-  User _user = currentUser.value;
+  UserModel.User _user = currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}&';
   final String url =
       '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$_apiToken&search=user_id:${_user.id}&searchFields=user_id:=&orderBy=is_default&sortedBy=desc';
@@ -357,7 +371,7 @@ Future<Stream<Address>> getAddresses() async {
 }
 
 Future<Address> addAddress(Address address) async {
-  User _user = userRepo.currentUser.value;
+  UserModel.User _user = userRepo.currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}';
   address.userId = _user.id;
   final String url =
@@ -377,7 +391,7 @@ Future<Address> addAddress(Address address) async {
 }
 
 Future<Address> updateAddress(Address address) async {
-  User _user = userRepo.currentUser.value;
+  UserModel.User _user = userRepo.currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}';
   address.userId = _user.id;
   final String url =
@@ -397,7 +411,7 @@ Future<Address> updateAddress(Address address) async {
 }
 
 Future<Address> removeDeliveryAddress(Address address) async {
-  User _user = userRepo.currentUser.value;
+  UserModel.User _user = userRepo.currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}';
   final String url =
       '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$_apiToken';

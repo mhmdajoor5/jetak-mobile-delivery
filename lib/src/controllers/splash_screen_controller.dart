@@ -56,7 +56,7 @@ class SplashScreenController extends ControllerMVC {
     });
 
     if (userRepo.currentUser.value != null) {
-      FirebaseUtil.registerFCM(userRepo.currentUser.value);
+      FirebaseUtil.registerFCM();
     }
 
     try {

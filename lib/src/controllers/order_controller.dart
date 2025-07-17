@@ -1,4 +1,4 @@
-import 'package:deliveryboy/src/models/user.dart';
+import 'package:deliveryboy/src/models/user.dart' as UserModel;
 import 'package:deliveryboy/src/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -8,13 +8,16 @@ import '../helpers/driver_status_helper.dart';
 import '../models/order.dart';
 import '../models/pending_order_model.dart';
 import '../repository/order_repository.dart' as orderRepo;
-import '../repository/orders/pending_order_repo.dart';
+import '../repository/orders/pending_order_repo.dart' as pendingRepo;
 import '../repository/user_repository.dart' as userRepo;
 
 class OrderController extends ControllerMVC {
   List<Order> orders = <Order>[];
   List<PendingOrderModel> pendingOrdersModel = <PendingOrderModel>[];
   bool driverAvailability = false;
+  bool isLoadingOrders = false;
+  bool isAcceptingOrder = false;
+  bool isRejectingOrder = false;
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   OrderController() {
@@ -40,7 +43,7 @@ class OrderController extends ControllerMVC {
 
   void listenForOrders({String? message}) async {
     print('🔍 Checking user authentication status...');
-    User currentUser = userRepo.currentUser.value;
+    final currentUser = userRepo.currentUser.value;
 
     print('🔍 User Authentication Check:');
     print('   - User ID: ${currentUser.id}');
@@ -118,17 +121,35 @@ class OrderController extends ControllerMVC {
     // Fetch pending orders using new repo
     try {
       print('🔍 Fetching pending orders...');
-      final response = await getPendingOrders(driverId: currentUser.id.toString());
+      final response = await pendingRepo.getPendingOrders(driverId: currentUser.id.toString());
+
+      print('🔍 Controller - Raw API Response:');
+      print(response);
 
       // Parse response into PendingOrdersModel
       final parsedOrders = PendingOrdersModel.fromJson(response as Map<String, dynamic>);
+      
+      print('🔍 Controller - Parsed Orders:');
+      print('  - Number of orders: ${parsedOrders.orders.length}');
+      
+      for (int i = 0; i < parsedOrders.orders.length; i++) {
+        final order = parsedOrders.orders[i];
+        print('🔍 Controller - Order $i:');
+        print('  - Order ID: ${order.orderId}');
+        print('  - Customer Name (getter): ${order.customerName}');
+        print('  - User Name (direct): ${order.user.name}');
+        print('  - User Object: ${order.user}');
+        print('  - Address (getter): ${order.address}');
+        print('  - Delivery Address Object: ${order.deliveryAddress}');
+        print('  - Full Order Object: $order');
+      }
 
       // Update your list
       setState(() {
         pendingOrdersModel = parsedOrders.orders;
       });
 
-      print('mElkerm ✅ Loaded ${pendingOrdersModel.length} pending orders');
+      print('✅ Controller - Updated state with ${pendingOrdersModel.length} pending orders');
 
       if (message != null) {
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
@@ -138,6 +159,7 @@ class OrderController extends ControllerMVC {
 
     } catch (err) {
       print('❌ Error fetching pending orders: $err');
+      print('❌ Error details: ${err.toString()}');
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text('❌ Failed to fetch pending orders: ${err.toString()}'),
@@ -147,77 +169,335 @@ class OrderController extends ControllerMVC {
     }
   }
 
-  void acceptOrder(int orderID) async {
+  Future<void> acceptOrder(String orderID) async {
+    if (isAcceptingOrder) return; // Prevent multiple simultaneous accepts
+    
+    setState(() {
+      isAcceptingOrder = true;
+    });
+
     try {
-      print('🔄 Accepting order: $orderID');
-      final result = await orderRepo.acceptOrderWithId(orderID.toString());
+      print('✅ Controller - Starting accept process for order $orderID');
+      
+      final result = await orderRepo.acceptOrderWithId(orderID);
 
-      if (result['success'] == true) {
-        print('✅ Order $orderID accepted successfully');
-        // إعادة تحميل الطلبات بعد القبول
-        refreshOrders();
-
-        // إظهار رسالة نجاح
+      if (result['success']) {
+        print('✅ Controller - Order $orderID accepted successfully');
+        
+        // Remove the order from pending list
+        setState(() {
+          pendingOrdersModel.removeWhere((order) => order.orderId.toString() == orderID);
+          isAcceptingOrder = false;
+        });
+        
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
           SnackBar(
-            content: Text('✅ Order accepted successfully!'),
-            backgroundColor: Colors.green,
+            content: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.check, color: Colors.green, size: 16),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '🎉 تم قبول الطلب بنجاح!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'طلب #$orderID - يمكنك الآن البدء في التوصيل',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
+        
+        // Refresh orders list
+        await refreshOrders();
       } else {
         print('❌ Failed to accept order $orderID: ${result['message']}');
+        setState(() {
+          isAcceptingOrder = false;
+        });
+        
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
           SnackBar(
-            content: Text('❌ Failed to accept order: ${result['message']}'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '❌ فشل في قبول الطلب',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        result['message'] ?? 'خطأ غير معروف',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            duration: Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
     } catch (e) {
       print('❌ Error accepting order $orderID: $e');
+      setState(() {
+        isAcceptingOrder = false;
+      });
+      
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
-          content: Text('❌ Network error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              Icon(Icons.wifi_off, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '🌐 خطأ في الاتصال',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'تحقق من اتصال الإنترنت وحاول مرة أخرى',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[600],
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       );
     }
   }
 
-  void rejectOrder(int orderID) async {
-    try {
-      print('🔄 Rejecting order: $orderID');
-      final result = await orderRepo.rejectOrderWithId(orderID.toString());
+  Future<void> rejectOrder(String orderID) async {
+    if (isRejectingOrder) return; // Prevent multiple simultaneous rejects
+    
+    setState(() {
+      isRejectingOrder = true;
+    });
 
-      if (result['success'] == true) {
-        print('❌ Order $orderID rejected successfully');
-        // إزالة الطلب من القائمة بعد الرفض
+    try {
+      print('🚫 Controller - Starting reject process for order $orderID');
+      
+      final result = await orderRepo.rejectOrderWithId(orderID);
+
+      if (result['success']) {
+        print('✅ Controller - Order $orderID rejected successfully');
+        
+        // Remove the order from pending list
         setState(() {
-          orders.removeWhere((order) => order.id == orderID.toString());
+          pendingOrdersModel.removeWhere((order) => order.orderId.toString() == orderID);
+          isRejectingOrder = false;
         });
 
-        // إظهار رسالة نجاح
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
           SnackBar(
-            content: Text('❌ Order rejected successfully'),
-            backgroundColor: Colors.orange,
+            content: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.cancel, color: Colors.orange, size: 16),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '🚫 تم رفض الطلب',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'طلب #$orderID - تم إشعار العميل بالرفض',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.orange[600],
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
+        
+        // Refresh orders list
+        await refreshOrders();
       } else {
         print('❌ Failed to reject order $orderID: ${result['message']}');
+        setState(() {
+          isRejectingOrder = false;
+        });
+        
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
           SnackBar(
-            content: Text('❌ Failed to reject order: ${result['message']}'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '❌ فشل في رفض الطلب',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        result['message'] ?? 'خطأ غير معروف',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            duration: Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
     } catch (e) {
       print('❌ Error rejecting order $orderID: $e');
+      setState(() {
+        isRejectingOrder = false;
+      });
+      
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
-          content: Text('❌ Network error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              Icon(Icons.wifi_off, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '🌐 خطأ في الاتصال',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'تحقق من اتصال الإنترنت وحاول مرة أخرى',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[600],
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       );
     }
@@ -256,17 +536,9 @@ class OrderController extends ControllerMVC {
     );
   }
 
+  // إضافة دالة تحديث الطلبات
   Future<void> refreshOrders() async {
-    try {
-      print('🔄 Refreshing orders...');
-      orders.clear();
-      setState(() {}); // Update UI immediately after clearing
-      listenForOrders(
-        message: S.of(state!.context).order_refreshed_successfuly,
-      );
-      print('✅ Orders refresh initiated');
-    } catch (e) {
-      print('❌ Error refreshing orders: $e');
-    }
+    print('🔄 Controller - Refreshing orders list');
+    listenForOrders();
   }
 }
