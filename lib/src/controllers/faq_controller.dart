@@ -10,15 +10,15 @@ class FaqController extends ControllerMVC {
  late GlobalKey<ScaffoldState> scaffoldKey;
 
   FaqController() {
-    scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     listenForFaqs();
   }
 
   void listenForFaqs({String? message}) async {
     final Stream<FaqCategory> stream = await getFaqCategories();
-    stream.listen((FaqCategory _faq) {
+    stream.listen((FaqCategory faq) {
       setState(() {
-        faqs.add(_faq);
+        faqs.add(faq);
       });
     }, onError: (a) {
       print(a);

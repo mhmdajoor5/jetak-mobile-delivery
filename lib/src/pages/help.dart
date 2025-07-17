@@ -9,6 +9,8 @@ import '../elements/FaqItemWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
 
 class HelpWidget extends StatefulWidget {
+  const HelpWidget({super.key});
+
   @override
   _HelpWidgetState createState() => _HelpWidgetState();
 }
@@ -47,7 +49,7 @@ late  FaqController _con;
                   style:  TextStyle(letterSpacing: 1.3, color: Colors.black54),
                 ),
                 actions: <Widget>[
-                  new ShoppingCartButtonWidget(iconColor: Colors.black54, labelColor: Colors.black54),
+                  ShoppingCartButtonWidget(iconColor: Colors.black54, labelColor: Colors.black54),
                 ],
               ),
               body: RefreshIndicator(

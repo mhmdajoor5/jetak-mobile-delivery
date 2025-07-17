@@ -7,13 +7,13 @@ import '../models/user.dart';
 import '../repository/user_repository.dart' as repository;
 
 class SettingsController extends ControllerMVC {
-  CreditCard creditCard = new CreditCard();
+  CreditCard creditCard = CreditCard();
  late GlobalKey<FormState> loginFormKey;
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   SettingsController() {
-    loginFormKey = new GlobalKey<FormState>();
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    loginFormKey = GlobalKey<FormState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
   }
 
   void update(User user) async {
@@ -43,6 +43,6 @@ class SettingsController extends ControllerMVC {
   }
 
   Future<void> refreshSettings() async {
-    creditCard = new CreditCard();
+    creditCard = CreditCard();
   }
 }

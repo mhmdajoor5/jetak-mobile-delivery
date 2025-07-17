@@ -27,7 +27,7 @@ class Restaurant {
     try {
       id = jsonMap['id'].toString();
       name = jsonMap['name'];
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).length > 0 ? Media.fromJSON(jsonMap['media'][0]) : new Media();
+      image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty ? Media.fromJSON(jsonMap['media'][0]) : Media();
       rate = jsonMap['rate'] ?? '0';
       deliveryFee = jsonMap['delivery_fee'] != null ? jsonMap['delivery_fee'].toDouble() : 0.0;
       adminCommission = jsonMap['admin_commission'] != null ? jsonMap['admin_commission'].toDouble() : 0.0;
@@ -46,7 +46,7 @@ class Restaurant {
     } catch (e) {
       id = '';
       name = '';
-      image = new Media();
+      image = Media();
       rate = '0';
       deliveryFee = 0.0;
       adminCommission = 0.0;

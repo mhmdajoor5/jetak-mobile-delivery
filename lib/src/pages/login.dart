@@ -8,6 +8,8 @@ import '../helpers/app_config.dart' as config;
 import '../repository/user_repository.dart' as userRepo;
 
 class LoginWidget extends StatefulWidget {
+  const LoginWidget({super.key});
+
   @override
   _LoginWidgetState createState() => _LoginWidgetState();
 }
@@ -22,7 +24,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
   @override
   void initState() {
     super.initState();
-    if (userRepo.currentUser.value?.apiToken != null) {
+    if (userRepo.currentUser.value.apiToken != null) {
       Navigator.of(context).pushReplacementNamed('/Pages', arguments: 1);
     }
   }
@@ -47,7 +49,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
             ),
             Positioned(
               top: config.App(context).appHeight(37) - 140,
-              child: Container(
+              child: SizedBox(
                 width: config.App(context).appWidth(84),
                 height: config.App(context).appHeight(37),
                 child: Text(

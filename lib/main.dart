@@ -29,6 +29,8 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -76,17 +78,17 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: settingRepo.setting,
-      builder: (context, Setting _setting, _) {
+      builder: (context, Setting setting, _) {
         print(
-          CustomTrace(StackTrace.current, message: _setting.toMap().toString()),
+          CustomTrace(StackTrace.current, message: setting.toMap().toString()),
         );
         return MaterialApp(
           navigatorKey: settingRepo.navigatorKey,
-          title: _setting.appName,
+          title: setting.appName,
           initialRoute: '/Splash',
           onGenerateRoute: RouteGenerator.generateRoute,
           debugShowCheckedModeBanner: false,
-          locale: _setting.mobileLanguage.value,
+          locale: setting.mobileLanguage.value,
           localizationsDelegates: [
             S.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -94,7 +96,7 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: S.delegate.supportedLocales,
           theme:
-              _setting.brightness.value == Brightness.light
+              setting.brightness.value == Brightness.light
                   ? ThemeData(
                     fontFamily: 'Poppins',
                     primaryColor: Colors.white,

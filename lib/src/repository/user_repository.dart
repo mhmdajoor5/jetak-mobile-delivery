@@ -5,7 +5,6 @@ import 'dart:math' as Math;
 import 'package:flutter/cupertino.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:pretty_http_logger/pretty_http_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -108,7 +107,7 @@ Future<UserModel.User> login(UserModel.User user) async {
       print('❌ Error with login URL $url: $e');
       if (url == possibleUrls.last) {
         // إذا كان آخر URL، ارمي الخطأ
-        throw e;
+        rethrow;
       }
       // وإلا، جرب الـ URL التالي
       continue;
@@ -162,9 +161,9 @@ Future<void> updateDriverAvailability(bool value) async {
   if (currentUser.value.id == null) {
     return;
   }
-  final String _apiToken = 'api_token=${currentUser.value.apiToken}';
+  final String apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}${currentUser.value.id}/update_availability?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}${currentUser.value.id}/update_availability?$apiToken';
   final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
@@ -227,7 +226,7 @@ Future<UserModel.User> getCurrentUserAsync() async {
   //prefs.clear();
   if (currentUser.value.auth == null && prefs.containsKey('current_user')) {
     currentUser.value = UserModel.User.fromJSON(
-      json.decode(await prefs.get('current_user') as String),
+      json.decode(prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
   } else {
@@ -299,10 +298,8 @@ void setCurrentUser(jsonString) async {
 }
 
 Future<void> setCreditCard(CreditCard creditCard) async {
-  if (creditCard != null) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('credit_card', json.encode(creditCard.toMap()));
-  }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('credit_card', json.encode(creditCard.toMap()));
 }
 
 Future<UserModel.User> getCurrentUser() async {
@@ -310,7 +307,7 @@ Future<UserModel.User> getCurrentUser() async {
   //prefs.clear();
   if (currentUser.value.auth == null && prefs.containsKey('current_user')) {
     currentUser.value = UserModel.User.fromJSON(
-      json.decode(await prefs.get('current_user') as String),
+      json.decode(prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
   } else {
@@ -322,20 +319,20 @@ Future<UserModel.User> getCurrentUser() async {
 }
 
 Future<CreditCard> getCreditCard() async {
-  CreditCard _creditCard = CreditCard();
+  CreditCard creditCard = CreditCard();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.containsKey('credit_card')) {
-    _creditCard = CreditCard.fromJSON(
-      json.decode(await prefs.get('credit_card') as String),
+    creditCard = CreditCard.fromJSON(
+      json.decode(prefs.get('credit_card') as String),
     );
   }
-  return _creditCard;
+  return creditCard;
 }
 
 Future<UserModel.User> update(UserModel.User user) async {
-  final String _apiToken = 'api_token=${currentUser.value.apiToken}';
+  final String apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}users/${currentUser.value.id}?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}users/${currentUser.value.id}?$apiToken';
   final client = http.Client();
   final response = await client.post(
     Uri.parse(url),
@@ -348,10 +345,10 @@ Future<UserModel.User> update(UserModel.User user) async {
 }
 
 Future<Stream<Address>> getAddresses() async {
-  UserModel.User _user = currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}&';
+  UserModel.User user = currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}&';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$_apiToken&search=user_id:${_user.id}&searchFields=user_id:=&orderBy=is_default&sortedBy=desc';
+      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$apiToken&search=user_id:${user.id}&searchFields=user_id:=&orderBy=is_default&sortedBy=desc';
   try {
     final client = http.Client();
     final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
@@ -371,11 +368,11 @@ Future<Stream<Address>> getAddresses() async {
 }
 
 Future<Address> addAddress(Address address) async {
-  UserModel.User _user = userRepo.currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}';
-  address.userId = _user.id;
+  UserModel.User user = userRepo.currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}';
+  address.userId = user.id;
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$apiToken';
   final client = http.Client();
   try {
     final response = await client.post(
@@ -391,11 +388,11 @@ Future<Address> addAddress(Address address) async {
 }
 
 Future<Address> updateAddress(Address address) async {
-  UserModel.User _user = userRepo.currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}';
-  address.userId = _user.id;
+  UserModel.User user = userRepo.currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}';
+  address.userId = user.id;
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$apiToken';
   final client = http.Client();
   try {
     final response = await client.put(
@@ -411,10 +408,10 @@ Future<Address> updateAddress(Address address) async {
 }
 
 Future<Address> removeDeliveryAddress(Address address) async {
-  UserModel.User _user = userRepo.currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}';
+  UserModel.User user = userRepo.currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$apiToken';
   final client = http.Client();
   try {
     final response = await client.delete(

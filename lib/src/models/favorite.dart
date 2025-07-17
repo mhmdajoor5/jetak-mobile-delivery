@@ -12,19 +12,19 @@ class Favorite {
 
   Favorite.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      id = jsonMap['id'] != null ? jsonMap['id'].toString() : null;
-      food = jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : new Food();
+      id = jsonMap['id']?.toString();
+      food = jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food();
       extras = jsonMap['extras'] != null ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toList() : null;
     } catch (e) {
       id = '';
-      food = new Food();
+      food = Food();
       extras = [];
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["food_id"] = food?.id;
     map["user_id"] = userId;

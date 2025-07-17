@@ -6,6 +6,8 @@ import '../models/language.dart';
 import '../repository/settings_repository.dart' as settingRepo;
 
 class LanguagesWidget extends StatefulWidget {
+  const LanguagesWidget({super.key});
+
   @override
   _LanguagesWidgetState createState() => _LanguagesWidgetState();
 }
@@ -15,7 +17,7 @@ class _LanguagesWidgetState extends State<LanguagesWidget> {
 
   @override
   void initState() {
-    languagesList = new LanguagesList();
+    languagesList = LanguagesList();
     super.initState();
   }
 
@@ -31,7 +33,7 @@ class _LanguagesWidgetState extends State<LanguagesWidget> {
           style: TextStyle(letterSpacing: 1.3),
         ),
         actions: <Widget>[
-          new ShoppingCartButtonWidget(iconColor: Theme.of(context).hintColor, labelColor: Colors.black54),
+          ShoppingCartButtonWidget(iconColor: Theme.of(context).hintColor, labelColor: Colors.black54),
         ],
       ),
       body: SingleChildScrollView(
@@ -69,23 +71,23 @@ class _LanguagesWidgetState extends State<LanguagesWidget> {
                 return SizedBox(height: 10);
               },
               itemBuilder: (context, index) {
-                Language _language = languagesList.languages.elementAt(index);
-                settingRepo.getDefaultLanguage(settingRepo.setting.value.mobileLanguage.value.languageCode).then((_langCode) {
-                  if (_langCode == _language.code) {
-                    _language.selected = true;
+                Language language = languagesList.languages.elementAt(index);
+                settingRepo.getDefaultLanguage(settingRepo.setting.value.mobileLanguage.value.languageCode).then((langCode) {
+                  if (langCode == language.code) {
+                    language.selected = true;
                   }
                 });
                 return InkWell(
                   onTap: () async {
-                    settingRepo.setting.value.mobileLanguage.value = new Locale(_language.code, '');
+                    settingRepo.setting.value.mobileLanguage.value = Locale(language.code, '');
                     settingRepo.setting.notifyListeners();
-                    languagesList.languages.forEach((_l) {
+                    for (var _l in languagesList.languages) {
                       setState(() {
                         _l.selected = false;
                       });
-                    });
-                    _language.selected = !_language.selected;
-                    settingRepo.setDefaultLanguage(_language.code);
+                    }
+                    language.selected = !language.selected;
+                    settingRepo.setDefaultLanguage(language.code);
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -106,20 +108,20 @@ class _LanguagesWidgetState extends State<LanguagesWidget> {
                               width: 40,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(40)),
-                                image: DecorationImage(image: AssetImage(_language.flag), fit: BoxFit.cover),
+                                image: DecorationImage(image: AssetImage(language.flag), fit: BoxFit.cover),
                               ),
                             ),
                             Container(
-                              height: _language.selected ? 40 : 0,
-                              width: _language.selected ? 40 : 0,
+                              height: language.selected ? 40 : 0,
+                              width: language.selected ? 40 : 0,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(40)),
-                                color: Colors.black54.withOpacity(_language.selected ? 0.85 : 0),
+                                color: Colors.black54.withOpacity(language.selected ? 0.85 : 0),
                               ),
                               child: Icon(
                                 Icons.check,
-                                size: _language.selected ? 24 : 0,
-                                color: Colors.black54.withOpacity(_language.selected ? 0.85 : 0),
+                                size: language.selected ? 24 : 0,
+                                color: Colors.black54.withOpacity(language.selected ? 0.85 : 0),
                               ),
                             ),
                           ],
@@ -130,13 +132,13 @@ class _LanguagesWidgetState extends State<LanguagesWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                _language.englishName,
+                                language.englishName,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                               Text(
-                                _language.localName,
+                                language.localName,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
                                 style: Theme.of(context).textTheme.bodyLarge,

@@ -12,7 +12,7 @@ class OrderDetailsController extends ControllerMVC {
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   OrderDetailsController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
   }
 
   void listenForOrder({String? id, String? message}) async {
@@ -24,8 +24,8 @@ class OrderDetailsController extends ControllerMVC {
     try {
       final Stream<Order> stream = await getOrder(id);
       stream.listen(
-        (Order _order) {
-          setState(() => order = _order);
+        (Order order) {
+          setState(() => order = order);
           // Load detailed status history after order is loaded
           loadOrderStatusHistory(id);
         },
@@ -79,14 +79,14 @@ class OrderDetailsController extends ControllerMVC {
     }
   }
 
-  void doOnTheWayOrder(Order _order) async {
-    onTheWayOrder(_order).then((value) {
+  void doOnTheWayOrder(Order order) async {
+    onTheWayOrder(order).then((value) {
       setState(() {
-        this.order!.orderStatus?.id = '4';
+        order.orderStatus?.id = '4';
       });
       // Reload status history after status change
-      if (_order.id != null) {
-        loadOrderStatusHistory(_order.id!);
+      if (order.id != null) {
+        loadOrderStatusHistory(order.id!);
       }
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(content: Text('The order is On The Way to the client')),
@@ -94,14 +94,14 @@ class OrderDetailsController extends ControllerMVC {
     });
   }
 
-  void doDeliveredOrder(Order _order) async {
-    deliveredOrder(_order).then((value) {
+  void doDeliveredOrder(Order order) async {
+    deliveredOrder(order).then((value) {
       setState(() {
-        this.order!.orderStatus?.id = '5';
+        order.orderStatus?.id = '5';
       });
       // Reload status history after status change
-      if (_order.id != null) {
-        loadOrderStatusHistory(_order.id!);
+      if (order.id != null) {
+        loadOrderStatusHistory(order.id!);
       }
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(content: Text('The order deliverd successfully to client')),

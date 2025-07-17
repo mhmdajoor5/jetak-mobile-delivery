@@ -12,7 +12,7 @@ class Filter {
     try {
       open = jsonMap['open'] ?? false;
       delivery = jsonMap['delivery'] ?? false;
-      cuisines = jsonMap['cuisines'] != null && (jsonMap['cuisines'] as List).length > 0
+      cuisines = jsonMap['cuisines'] != null && (jsonMap['cuisines'] as List).isNotEmpty
           ? List.from(jsonMap['cuisines']).map((element) => Cuisine.fromJSON(element)).toList()
           : [];
     } catch (e) {
@@ -21,7 +21,7 @@ class Filter {
   }
 
   Map<String, dynamic> toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map['open'] = open;
     map['delivery'] = delivery;
     map['cuisines'] = cuisines?.map((element) => element.toMap()).toList();
@@ -48,19 +48,19 @@ class Filter {
     String relation = '';
     if (oldQuery != null) {
       relation = oldQuery['with'] != null ? oldQuery['with'] + '.' : '';
-      query['with'] = oldQuery['with'] != null ? oldQuery['with'] : null;
+      query['with'] = oldQuery['with'];
     }
     if (delivery?? false) {
       if (open?? false) {
-        query['search'] = relation + 'available_for_delivery:1;closed:0';
-        query['searchFields'] = relation + 'available_for_delivery:=;closed:=';
+        query['search'] = '${relation}available_for_delivery:1;closed:0';
+        query['searchFields'] = '${relation}available_for_delivery:=;closed:=';
       } else {
-        query['search'] = relation + 'available_for_delivery:1';
-        query['searchFields'] = relation + 'available_for_delivery:=';
+        query['search'] = '${relation}available_for_delivery:1';
+        query['searchFields'] = '${relation}available_for_delivery:=';
       }
     } else if (open?? false) {
-      query['search'] = relation + 'closed:${open! ? 0 : 1}';
-      query['searchFields'] = relation + 'closed:=';
+      query['search'] = '${relation}closed:${open! ? 0 : 1}';
+      query['searchFields'] = '${relation}closed:=';
     }
     if (cuisines != null && (cuisines?.isNotEmpty ?? false)) {
       query['cuisines[]'] = cuisines?.map((element) => element.id).toList();

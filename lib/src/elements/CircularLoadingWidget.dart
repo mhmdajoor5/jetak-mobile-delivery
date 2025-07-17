@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class CircularLoadingWidget extends StatefulWidget {
   final double? height;
 
-  CircularLoadingWidget({super.key, this.height}) ;
+  const CircularLoadingWidget({super.key, this.height}) ;
 
   @override
   _CircularLoadingWidgetState createState() => _CircularLoadingWidgetState();
@@ -15,6 +15,7 @@ class _CircularLoadingWidgetState extends State<CircularLoadingWidget> with Sing
  late  Animation<double> animation;
 late AnimationController animationController;
 
+  @override
   void initState() {
     super.initState();
     animationController = AnimationController(duration: Duration(milliseconds: 300), vsync: this);
@@ -48,8 +49,8 @@ late AnimationController animationController;
       opacity: animation.value / 100 > 1.0 ? 1.0 : animation.value / 100,
       child: SizedBox(
         height: animation.value,
-        child: new Center(
-          child: new CircularProgressIndicator(),
+        child: Center(
+          child: CircularProgressIndicator(),
         ),
       ),
     );

@@ -43,7 +43,7 @@ class FoodOrder {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["price"] = price;
     map["quantity"] = quantity;

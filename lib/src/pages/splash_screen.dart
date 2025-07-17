@@ -5,6 +5,8 @@ import '../controllers/splash_screen_controller.dart';
 import '../repository/user_repository.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return SplashScreenState();
@@ -27,10 +29,10 @@ class SplashScreenState extends StateMVC<SplashScreen> {
   void loadData() {
     _con.progress.addListener(() {
       double progress = 0;
-      _con.progress.value.values.forEach((_progress) {
+      for (var _progress in _con.progress.value.values) {
         progress += _progress;
-        print("mElkerm : progress : ${progress}");
-      });
+        print("mElkerm : progress : $progress");
+      }
       if (progress == 59) {
         try {
           if (currentUser.value.apiToken == null) {

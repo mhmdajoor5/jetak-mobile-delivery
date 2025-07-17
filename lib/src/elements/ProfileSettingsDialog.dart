@@ -7,14 +7,14 @@ class ProfileSettingsDialog extends StatefulWidget {
   final User user;
   final VoidCallback onChanged;
 
-  ProfileSettingsDialog({super. key,required this.user,required this.onChanged}) ;
+  const ProfileSettingsDialog({super. key,required this.user,required this.onChanged}) ;
 
   @override
   _ProfileSettingsDialogState createState() => _ProfileSettingsDialogState();
 }
 
 class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
-  GlobalKey<FormState> _profileSettingsFormKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _profileSettingsFormKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                     key: _profileSettingsFormKey,
                     child: Column(
                       children: <Widget>[
-                        new TextFormField(
+                        TextFormField(
                           style: TextStyle(color: Theme.of(context).hintColor),
                           keyboardType: TextInputType.text,
                           decoration: getInputDecoration(hintText: S.of(context).john_doe, labelText: S.of(context).full_name),
@@ -52,7 +52,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                           validator: (input) => input!.trim().length < 3 ? S.of(context).not_a_valid_full_name : null,
                           onSaved: (input) => widget.user.name = input,
                         ),
-                        new TextFormField(
+                        TextFormField(
                           style: TextStyle(color: Theme.of(context).hintColor),
                           keyboardType: TextInputType.emailAddress,
                           decoration: getInputDecoration(hintText: 'johndo@gmail.com', labelText: S.of(context).email_address),
@@ -60,7 +60,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                           validator: (input) => !input!.contains('@') ? S.of(context).not_a_valid_email : null,
                           onSaved: (input) => widget.user.email = input,
                         ),
-                        new TextFormField(
+                        TextFormField(
                           style: TextStyle(color: Theme.of(context).hintColor),
                           keyboardType: TextInputType.text,
                           decoration: getInputDecoration(hintText: '+136 269 9765', labelText: S.of(context).phone),
@@ -68,7 +68,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                           validator: (input) => input!.trim().length < 3 ? S.of(context).not_a_valid_phone : null,
                           onSaved: (input) => widget.user.phone = input,
                         ),
-                        new TextFormField(
+                        TextFormField(
                           style: TextStyle(color: Theme.of(context).hintColor),
                           keyboardType: TextInputType.text,
                           decoration: getInputDecoration(hintText: S.of(context).your_address, labelText: S.of(context).address),
@@ -76,7 +76,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                           validator: (input) => input!.trim().length < 3 ? S.of(context).not_a_valid_address : null,
                           onSaved: (input) => widget.user.address = input,
                         ),
-                        new TextFormField(
+                        TextFormField(
                           style: TextStyle(color: Theme.of(context).hintColor),
                           keyboardType: TextInputType.text,
                           decoration: getInputDecoration(hintText: S.of(context).your_biography, labelText: S.of(context).about),
@@ -89,6 +89,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                   ),
                   SizedBox(height: 20),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       MaterialButton(
                         onPressed: () {
@@ -104,7 +105,6 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
                         ),
                       ),
                     ],
-                    mainAxisAlignment: MainAxisAlignment.end,
                   ),
                   SizedBox(height: 10),
                 ],
@@ -119,7 +119,7 @@ class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
   }
 
   InputDecoration getInputDecoration({required String hintText,required String labelText}) {
-    return new InputDecoration(
+    return InputDecoration(
       hintText: hintText,
       labelText: labelText,
       hintStyle:

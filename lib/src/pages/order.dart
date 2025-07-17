@@ -13,7 +13,7 @@ import '../models/route_argument.dart';
 class OrderWidget extends StatefulWidget {
   final RouteArgument? routeArgument;
 
-  const OrderWidget({Key? key, this.routeArgument}) : super(key: key);
+  const OrderWidget({super.key, this.routeArgument});
 
   @override
   _OrderWidgetState createState() {

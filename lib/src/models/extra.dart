@@ -25,9 +25,9 @@ class Extra {
       description = jsonMap['description'];
       checked = false;
       image =
-          jsonMap['media'] != null && (jsonMap['media'] as List).length > 0
+          jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty
               ? Media.fromJSON(jsonMap['media'][0])
-              : new Media();
+              : Media();
     } catch (e) {
       id = '';
       extraGroupId = '0';
@@ -35,13 +35,13 @@ class Extra {
       price = 0.0;
       description = '';
       checked = false;
-      image = new Media();
+      image = Media();
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["name"] = name;
     map["price"] = price;
@@ -51,11 +51,11 @@ class Extra {
 
   @override
   bool operator ==(dynamic other) {
-    return other.id == this.id;
+    return other.id == id;
   }
 
   @override
-  int get hashCode => this.id.hashCode;
+  int get hashCode => id.hashCode;
 
   @override
   String toString() {

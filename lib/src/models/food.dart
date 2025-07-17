@@ -44,19 +44,19 @@ class Food {
       packageItemsCount = jsonMap['package_items_count'].toString();
       featured = jsonMap['featured'] ?? false;
       deliverable = jsonMap['deliverable'] ?? false;
-      restaurant = jsonMap['restaurant'] != null ? Restaurant.fromJSON(jsonMap['restaurant']) : new Restaurant();
-      category = jsonMap['category'] != null ? Category.fromJSON(jsonMap['category']) : new Category();
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).length > 0 ? Media.fromJSON(jsonMap['media'][0]) : new Media();
-      extras = jsonMap['extras'] != null && (jsonMap['extras'] as List).length > 0
+      restaurant = jsonMap['restaurant'] != null ? Restaurant.fromJSON(jsonMap['restaurant']) : Restaurant();
+      category = jsonMap['category'] != null ? Category.fromJSON(jsonMap['category']) : Category();
+      image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty ? Media.fromJSON(jsonMap['media'][0]) : Media();
+      extras = jsonMap['extras'] != null && (jsonMap['extras'] as List).isNotEmpty
           ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toSet().toList()
           : [];
-      extraGroups = jsonMap['extra_groups'] != null && (jsonMap['extra_groups'] as List).length > 0
+      extraGroups = jsonMap['extra_groups'] != null && (jsonMap['extra_groups'] as List).isNotEmpty
           ? List.from(jsonMap['extra_groups']).map((element) => ExtraGroup.fromJSON(element)).toSet().toList()
           : [];
-      foodReviews = jsonMap['food_reviews'] != null && (jsonMap['food_reviews'] as List).length > 0
+      foodReviews = jsonMap['food_reviews'] != null && (jsonMap['food_reviews'] as List).isNotEmpty
           ? List.from(jsonMap['food_reviews']).map((element) => Review.fromJSON(element)).toSet().toList()
           : [];
-      nutritions = jsonMap['nutrition'] != null && (jsonMap['nutrition'] as List).length > 0
+      nutritions = jsonMap['nutrition'] != null && (jsonMap['nutrition'] as List).isNotEmpty
           ? List.from(jsonMap['nutrition']).map((element) => Nutrition.fromJSON(element)).toSet().toList()
           : [];
     } catch (e) {
@@ -71,9 +71,9 @@ class Food {
       packageItemsCount = '';
       featured = false;
       deliverable = false;
-      restaurant = new Restaurant();
-      category = new Category();
-      image = new Media();
+      restaurant = Restaurant();
+      category = Category();
+      image = Media();
       extras = [];
       extraGroups = [];
       foodReviews = [];
@@ -83,7 +83,7 @@ class Food {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["name"] = name;
     map["price"] = price;
@@ -96,9 +96,9 @@ class Food {
 
   @override
   bool operator ==(dynamic other) {
-    return other.id == this.id;
+    return other.id == id;
   }
 
   @override
-  int get hashCode => this.id.hashCode;
+  int get hashCode => id.hashCode;
 }

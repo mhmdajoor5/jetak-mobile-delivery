@@ -14,7 +14,7 @@ class MapWidget extends StatefulWidget {
   final RouteArgument routeArgument;
   final GlobalKey<ScaffoldState> parentScaffoldKey;
 
-  MapWidget({super.key, required this.routeArgument, required this.parentScaffoldKey})  ;
+  const MapWidget({super.key, required this.routeArgument, required this.parentScaffoldKey})  ;
 
   @override
   _MapWidgetState createState() => _MapWidgetState();
@@ -29,7 +29,7 @@ class _MapWidgetState extends StateMVC<MapWidget> {
 
   @override
   void initState() {
-    _con.currentOrder = widget.routeArgument?.param as Order;
+    _con.currentOrder = widget.routeArgument.param as Order;
     if (_con.currentOrder?.deliveryAddress?.latitude != null) {
       // user select a restaurant
       print(_con.currentOrder?.deliveryAddress?.toMap().toString());
@@ -49,12 +49,12 @@ class _MapWidgetState extends StateMVC<MapWidget> {
         elevation: 0,
         centerTitle: true,
         leading: _con.currentOrder?.deliveryAddress?.latitude == null
-            ? new IconButton(
-                icon: new Icon(Icons.sort, color: Theme.of(context).hintColor),
+            ? IconButton(
+                icon: Icon(Icons.sort, color: Theme.of(context).hintColor),
                 onPressed: () => widget.parentScaffoldKey.currentState?.openDrawer(),
               )
             : IconButton(
-                icon: new Icon(Icons.arrow_back, color: Theme.of(context).hintColor),
+                icon: Icon(Icons.arrow_back, color: Theme.of(context).hintColor),
                 onPressed: () => Navigator.of(context).pop(),
               ),
         title: Text(
@@ -141,7 +141,7 @@ class _MapWidgetState extends StateMVC<MapWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              S.of(context).order_id + "#${_con.currentOrder?.id}",
+                              "${S.of(context).order_id}#${_con.currentOrder?.id}",
                               overflow: TextOverflow.ellipsis,
                               maxLines: 2,
                               style: Theme.of(context).textTheme.bodySmall,

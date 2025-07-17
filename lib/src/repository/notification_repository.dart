@@ -10,15 +10,15 @@ import '../models/user.dart';
 import '../repository/user_repository.dart' as userRepo;
 
 Future<Stream<Notification>> getNotifications() async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Stream.value(new Notification());
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
+    return Stream.value(Notification());
   }
-  final String _apiToken = 'api_token=${_user.apiToken}&';
+  final String apiToken = 'api_token=${user.apiToken}&';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}notifications?${_apiToken}search=notifiable_id:${_user.id}&searchFields=notifiable_id:=&orderBy=created_at&sortedBy=desc&limit=10';
+      '${GlobalConfiguration().getString('api_base_url')}notifications?${apiToken}search=notifiable_id:${user.id}&searchFields=notifiable_id:=&orderBy=created_at&sortedBy=desc&limit=10';
 
-  final client = new http.Client();
+  final client = http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
@@ -27,13 +27,13 @@ Future<Stream<Notification>> getNotifications() async {
 }
 
 Future<Notification> markAsReadNotifications(Notification notification) async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Notification();
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
+    return Notification();
   }
-  final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}notifications/${notification.id}?$_apiToken';
-  final client = new http.Client();
+  final String apiToken = 'api_token=${user.apiToken}';
+  final String url = '${GlobalConfiguration().getString('api_base_url')}notifications/${notification.id}?$apiToken';
+  final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
     headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -44,13 +44,13 @@ Future<Notification> markAsReadNotifications(Notification notification) async {
 }
 
 Future<Notification> removeNotification(Notification cart) async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Notification();
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
+    return Notification();
   }
-  final String _apiToken = 'api_token=${_user.apiToken}';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}notifications/${cart.id}?$_apiToken';
-  final client = new http.Client();
+  final String apiToken = 'api_token=${user.apiToken}';
+  final String url = '${GlobalConfiguration().getString('api_base_url')}notifications/${cart.id}?$apiToken';
+  final client = http.Client();
   final response = await client.delete(
     Uri.parse(url),
     headers: {HttpHeaders.contentTypeHeader: 'application/json'},

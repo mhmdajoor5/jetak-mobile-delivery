@@ -31,7 +31,7 @@ class FoodOrderItemWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Hero(
-              tag: '${heroTag}${foodOrder?.id ?? ''}',
+              tag: '$heroTag${foodOrder?.id ?? ''}',
               child: SafeNetworkImage(
                 height: 60,
                 width: 60,
@@ -58,7 +58,7 @@ class FoodOrderItemWidget extends StatelessWidget {
                         Wrap(
                           children: List.generate(foodOrder!.extras!.length, (index) {
                             return Text(
-                              foodOrder!.extras!.elementAt(index).name! + ', ',
+                              '${foodOrder!.extras!.elementAt(index).name!}, ',
                               style: Theme.of(context).textTheme.bodyMedium,
                             );
                           }),
@@ -79,7 +79,7 @@ class FoodOrderItemWidget extends StatelessWidget {
                     children: <Widget>[
                       Helper.getPrice(Helper.getOrderPrice(foodOrder!), context, style: Theme.of(context).textTheme.bodySmall),
                       Text(
-                        " x " + foodOrder!.quantity.toString(),
+                        " x ${foodOrder!.quantity}",
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],

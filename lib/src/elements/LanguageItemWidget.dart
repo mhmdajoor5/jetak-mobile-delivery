@@ -72,7 +72,7 @@ late  Animation animation;
         } else {
           animationController.forward();
         }
-        settingRepo.setting.value.mobileLanguage.value = new Locale(widget.language!.code, '');
+        settingRepo.setting.value.mobileLanguage.value = Locale(widget.language!.code, '');
         // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
         settingRepo.setting.notifyListeners();
       },

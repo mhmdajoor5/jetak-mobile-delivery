@@ -61,7 +61,7 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
               ),
               Positioned(
                 top: config.App(context).appHeight(29.5) - 140,
-                child: Container(
+                child: SizedBox(
                   width: config.App(context).appWidth(84),
                   height: config.App(context).appHeight(29.5),
                   child: Text(

@@ -11,15 +11,15 @@ class NotificationController extends ControllerMVC {
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   NotificationController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     listenForNotifications();
   }
 
   void listenForNotifications({String? message}) async {
     final Stream<model.Notification> stream = await getNotifications();
-    stream.listen((model.Notification _notification) {
+    stream.listen((model.Notification notification) {
       setState(() {
-        notifications.add(_notification);
+        notifications.add(notification);
       });
     }, onError: (a) {
       print(a);
@@ -28,7 +28,7 @@ class NotificationController extends ControllerMVC {
       ));
     }, onDone: () {
       if (notifications.isNotEmpty) {
-        unReadNotificationsCount = notifications.where((model.Notification _n) => !_n.read! ?? false).toList().length;
+        unReadNotificationsCount = notifications.where((model.Notification n) => !n.read! ?? false).toList().length;
       } else {
         unReadNotificationsCount = 0;
       }
@@ -45,11 +45,11 @@ class NotificationController extends ControllerMVC {
     listenForNotifications(message: S.of(state!.context).notifications_refreshed_successfuly);
   }
 
-  void doMarkAsReadNotifications(model.Notification _notification) async {
-    markAsReadNotifications(_notification).then((value) {
+  void doMarkAsReadNotifications(model.Notification notification) async {
+    markAsReadNotifications(notification).then((value) {
       setState(() {
         --unReadNotificationsCount;
-        _notification.read = !_notification.read!;
+        notification.read = !notification.read!;
       });
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text('This notification has marked as read'),
@@ -57,11 +57,11 @@ class NotificationController extends ControllerMVC {
     });
   }
 
-  void doMarkAsUnReadNotifications(model.Notification _notification) {
-    markAsReadNotifications(_notification).then((value) {
+  void doMarkAsUnReadNotifications(model.Notification notification) {
+    markAsReadNotifications(notification).then((value) {
       setState(() {
         ++unReadNotificationsCount;
-        _notification.read = !_notification.read!;
+        notification.read = !notification.read!;
       });
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text('This notification has marked as un read'),
@@ -69,13 +69,13 @@ class NotificationController extends ControllerMVC {
     });
   }
 
-  void doRemoveNotification(model.Notification _notification) async {
-    removeNotification(_notification).then((value) {
+  void doRemoveNotification(model.Notification notification) async {
+    removeNotification(notification).then((value) {
       setState(() {
-        if (!_notification.read!) {
+        if (!notification.read!) {
           --unReadNotificationsCount;
         }
-        this.notifications.remove(_notification);
+        notifications.remove(notification);
       });
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text('Notification was removed'),

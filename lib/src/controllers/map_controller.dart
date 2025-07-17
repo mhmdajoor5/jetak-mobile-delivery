@@ -17,9 +17,9 @@ class MapController extends ControllerMVC {
   List<Order> orders = <Order>[];
   List<Marker> allMarkers = <Marker>[];
   Address? currentAddress;
-  Set<Polyline> polylines = new Set();
+  Set<Polyline> polylines = {};
   CameraPosition? cameraPosition;
-  MapsUtil mapsUtil = new MapsUtil();
+  MapsUtil mapsUtil = MapsUtil();
   double taxAmount = 0.0;
   double subTotal = 0.0;
   double deliveryFee = 0.0;
@@ -30,12 +30,12 @@ class MapController extends ControllerMVC {
     print('listenForOrders');
     final Stream<Order> stream = await getNearOrders(myAddress, areaAddress);
     stream.listen(
-        (Order _order) {
+        (Order order) {
           setState(() {
-            orders.add(_order);
+            orders.add(order);
           });
-          if (!_order.deliveryAddress!.isUnknown()) {
-            Helper.getOrderMarker(_order.deliveryAddress?.toMap() as Map<String, dynamic>).then((marker) {
+          if (!order.deliveryAddress!.isUnknown()) {
+            Helper.getOrderMarker(order.deliveryAddress?.toMap() as Map<String, dynamic>).then((marker) {
               setState(() {
                 allMarkers.add(marker);
               });
@@ -104,13 +104,13 @@ class MapController extends ControllerMVC {
   Future<void> goCurrentLocation() async {
     final GoogleMapController controller = await mapController.future;
 
-    sett.setCurrentLocation().then((_currentAddress) {
+    sett.setCurrentLocation().then((currentAddress) {
       setState(() {
-        sett.myAddress.value = _currentAddress;
-        currentAddress = _currentAddress;
+        sett.myAddress.value = currentAddress;
+        currentAddress = currentAddress;
       });
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: LatLng(_currentAddress.latitude, _currentAddress.longitude),
+        target: LatLng(currentAddress.latitude, currentAddress.longitude),
         zoom: 14.4746,
       )));
     });
@@ -131,22 +131,14 @@ class MapController extends ControllerMVC {
   void getDirectionSteps() async {
     currentAddress = sett.myAddress.value;
     mapsUtil
-        .get("origin=" +
-            currentAddress!.latitude.toString() +
-            "," +
-            currentAddress!.longitude.toString() +
-            "&destination=" +
-            currentOrder!.deliveryAddress!.longitude.toString() +
-            "," +
-            currentOrder!.deliveryAddress!.longitude.toString() +
-            "&key=${sett.setting.value?.googleMapsKey}")
+        .get("origin=${currentAddress!.latitude},${currentAddress!.longitude}&destination=${currentOrder!.deliveryAddress!.longitude},${currentOrder!.deliveryAddress!.longitude}&key=${sett.setting.value.googleMapsKey}")
         .then((dynamic res) {
       if (res != null) {
-        List<LatLng> _latLng = res as List<LatLng>;
-        _latLng?.insert(0, new LatLng(currentAddress!.latitude!, currentAddress!.longitude!));
+        List<LatLng> latLng = res as List<LatLng>;
+        latLng.insert(0, LatLng(currentAddress!.latitude!, currentAddress!.longitude!));
         setState(() {
-          polylines.add(new Polyline(
-              visible: true, polylineId: new PolylineId(currentAddress.hashCode.toString()), points: _latLng, color: config.Colors().mainColor(0.8), width: 6));
+          polylines.add(Polyline(
+              visible: true, polylineId: PolylineId(currentAddress.hashCode.toString()), points: latLng, color: config.Colors().mainColor(0.8), width: 6));
         });
       }
     });
@@ -157,7 +149,7 @@ class MapController extends ControllerMVC {
     currentOrder!.foodOrders?.forEach((food) {
       subTotal += food.quantity! * food.price!;
     });
-    deliveryFee = currentOrder!.foodOrders?.elementAt(0)?.food?.restaurant?.deliveryFee ?? 0;
+    deliveryFee = currentOrder!.foodOrders?.elementAt(0).food?.restaurant?.deliveryFee ?? 0;
     taxAmount = (subTotal + deliveryFee) * currentOrder!.tax! / 100;
     total = subTotal + taxAmount + deliveryFee;
 

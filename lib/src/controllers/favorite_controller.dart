@@ -10,15 +10,15 @@ class FavoriteController extends ControllerMVC {
  late GlobalKey<ScaffoldState> scaffoldKey;
 
   FavoriteController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     listenForFavorites();
   }
 
   void listenForFavorites({String? message}) async {
     final Stream<Favorite> stream = await getFavorites();
-    stream.listen((Favorite _favorite) {
+    stream.listen((Favorite favorite) {
       setState(() {
-        favorites.add(_favorite);
+        favorites.add(favorite);
       });
     }, onError: (a) {
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(

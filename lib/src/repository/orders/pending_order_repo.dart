@@ -1,6 +1,5 @@
 
 import 'dart:convert';
-import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:global_configuration/global_configuration.dart';
 import '../user_repository.dart' as userRepo;

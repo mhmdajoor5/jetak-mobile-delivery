@@ -22,22 +22,22 @@ class HomeController extends ControllerMVC {
 
   void listenForCategories() async {
     final Stream<Category> stream = await getCategories();
-    stream.listen((Category _category) {
-      setState(() => categories.add(_category));
+    stream.listen((Category category) {
+      setState(() => categories.add(category));
     }, onError: (a) {}, onDone: () {});
   }
 
   void listenForRecentReviews() async {
     final Stream<Review> stream = await getRecentReviews();
-    stream.listen((Review _review) {
-      setState(() => recentReviews.add(_review));
+    stream.listen((Review review) {
+      setState(() => recentReviews.add(review));
     }, onError: (a) {}, onDone: () {});
   }
 
   void listenForTrendingFoods() async {
     final Stream<Food> stream = await getTrendingFoods();
-    stream.listen((Food _food) {
-      setState(() => trendingFoods.add(_food));
+    stream.listen((Food food) {
+      setState(() => trendingFoods.add(food));
     }, onError: (a) {
       print(a);
     }, onDone: () {});

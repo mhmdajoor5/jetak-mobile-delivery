@@ -6,7 +6,7 @@ import '../models/user.dart';
 class ProfileAvatarWidget extends StatelessWidget {
   final User user;
 
-  ProfileAvatarWidget({
+  const ProfileAvatarWidget({
     super.key,
     required this.user,
   });
@@ -22,7 +22,7 @@ class ProfileAvatarWidget extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          Container(
+          SizedBox(
             height: 160,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-typedef void SizeChangedCallBack(Size newSize);
+typedef SizeChangedCallBack = void Function(Size newSize);
 
 class LayoutSizeChangeNotification extends LayoutChangedNotification {
   LayoutSizeChangeNotification(this.newSize) : super();
@@ -39,16 +38,15 @@ class LayoutSizeChangeNotifier extends SingleChildRenderObjectWidget {
 
   @override
   _SizeChangeRenderWithCallback createRenderObject(BuildContext context) {
-    return new _SizeChangeRenderWithCallback(onLayoutChangedCallback: (size) {
-      new LayoutSizeChangeNotification(size).dispatch(context);
+    return _SizeChangeRenderWithCallback(onLayoutChangedCallback: (size) {
+      LayoutSizeChangeNotification(size).dispatch(context);
     });
   }
 }
 
 class _SizeChangeRenderWithCallback extends RenderProxyBox {
   _SizeChangeRenderWithCallback({RenderBox? child,  required this.onLayoutChangedCallback})
-      : assert(onLayoutChangedCallback != null),
-        super(child);
+      : super(child);
 
   // There's a 1:1 relationship between the _RenderSizeChangedWithCallback and
   // the `context` that is captured by the closure created by createRenderObject

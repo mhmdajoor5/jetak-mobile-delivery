@@ -38,13 +38,13 @@ class CustomTrace {
 
   void _parseTrace() {
     /* The trace comes with multiple lines of strings, (each line is also known as a frame), so split the trace's string by lines to get all the frames */
-    var frames = this._trace.toString().split("\n");
+    var frames = _trace.toString().split("\n");
 
     /* The first frame is the current function */
-    this.functionName = _getFunctionNameFromFrame(frames[0]);
+    functionName = _getFunctionNameFromFrame(frames[0]);
 
     /* The second frame is the caller function */
-    this.callerFunctionName = _getFunctionNameFromFrame(frames[1]);
+    callerFunctionName = _getFunctionNameFromFrame(frames[1]);
 
     /* The first frame has all the information we need */
     var traceString = frames[0];
@@ -63,11 +63,11 @@ class CustomTrace {
       To get the column number, we would have to get the third index
     */
     try {
-      this.fileName = listOfInfos[0];
-      this.lineNumber = int.parse(listOfInfos[1]);
+      fileName = listOfInfos[0];
+      lineNumber = int.parse(listOfInfos[1]);
       var columnStr = listOfInfos[2];
       columnStr = columnStr.replaceFirst(")", "");
-      this.columnNumber = int.parse(columnStr);
+      columnNumber = int.parse(columnStr);
     } catch (e) {}
   }
 

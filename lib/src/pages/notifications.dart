@@ -10,7 +10,7 @@ import '../elements/NotificationItemWidget.dart';
 class NotificationsWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState>? parentScaffoldKey;
 
-  NotificationsWidget({super. key, this.parentScaffoldKey})  ;
+  const NotificationsWidget({super. key, this.parentScaffoldKey})  ;
 
   @override
   _NotificationsWidgetState createState() => _NotificationsWidgetState();
@@ -29,9 +29,9 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
       key: _con.scaffoldKey,
       drawer: DrawerWidget(),
       appBar: AppBar(
-        leading: new IconButton(
-          icon: new Icon(Icons.sort, color: Theme.of(context).hintColor),
-          onPressed: () => _con.scaffoldKey?.currentState?.openDrawer(),
+        leading: IconButton(
+          icon: Icon(Icons.sort, color: Theme.of(context).hintColor),
+          onPressed: () => _con.scaffoldKey.currentState?.openDrawer(),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
@@ -45,6 +45,7 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
             onPressed: () {
               Navigator.of(context).pushNamed('/Notifications');
             },
+            color: Colors.transparent,
             child: Stack(
               alignment: AlignmentDirectional.bottomEnd,
               children: <Widget>[
@@ -54,6 +55,9 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
                   size: 28,
                 ),
                 Container(
+                  padding: EdgeInsets.all(0),
+                  decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.all(Radius.circular(10))),
+                  constraints: BoxConstraints(minWidth: 13, maxWidth: 13, minHeight: 13, maxHeight: 13),
                   child: Text(
                     _con.unReadNotificationsCount.toString(),
                     textAlign: TextAlign.center,
@@ -61,13 +65,9 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
                     TextStyle(color: Colors.black54, fontSize: 8),
 
                   ),
-                  padding: EdgeInsets.all(0),
-                  decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.all(Radius.circular(10))),
-                  constraints: BoxConstraints(minWidth: 13, maxWidth: 13, minHeight: 13, maxHeight: 13),
                 ),
               ],
             ),
-            color: Colors.transparent,
           )
         ],
         title: Text(

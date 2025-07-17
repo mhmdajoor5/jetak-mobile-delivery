@@ -19,18 +19,18 @@ class Setting {
   String? scaffoldDarkColor;
   String? scaffoldColor;
   String? googleMapsKey;
-  ValueNotifier<Locale> mobileLanguage = new ValueNotifier(Locale('en', ''));
+  ValueNotifier<Locale> mobileLanguage = ValueNotifier(Locale('en', ''));
   String? appVersion;
   bool enableVersion = true;
 
-  ValueNotifier<Brightness> brightness = new ValueNotifier(Brightness.light);
+  ValueNotifier<Brightness> brightness = ValueNotifier(Brightness.light);
 
   Setting();
 
   Setting.fromJSON(Map<String, dynamic> jsonMap) {
     try {
-      appName = jsonMap['app_name'] ?? null;
-      mainColor = jsonMap['main_color'] ?? null;
+      appName = jsonMap['app_name'];
+      mainColor = jsonMap['main_color'];
       mainDarkColor = jsonMap['main_dark_color'] ?? '';
       secondColor = jsonMap['second_color'] ?? '';
       secondDarkColor = jsonMap['second_dark_color'] ?? '';
@@ -38,7 +38,7 @@ class Setting {
       accentDarkColor = jsonMap['accent_dark_color'] ?? '';
       scaffoldDarkColor = jsonMap['scaffold_dark_color'] ?? '';
       scaffoldColor = jsonMap['scaffold_color'] ?? '';
-      googleMapsKey = jsonMap['google_maps_key'] ?? null;
+      googleMapsKey = jsonMap['google_maps_key'];
       mobileLanguage.value = Locale(jsonMap['mobile_language'] ?? "en", '');
       appVersion = jsonMap['app_version'] ?? '';
       distanceUnit = jsonMap['distance_unit'] ?? 'km';
@@ -54,7 +54,7 @@ class Setting {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["app_name"] = appName;
     map["default_tax"] = defaultTax;
     map["default_currency"] = defaultCurrency;

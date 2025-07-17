@@ -11,7 +11,7 @@ class NotificationItemWidget extends StatelessWidget {
   final VoidCallback onMarkAsUnRead;
   final VoidCallback onRemoved;
 
-  NotificationItemWidget({super.key,required this.notification,required this.onMarkAsRead,required this.onMarkAsUnRead,required this.onRemoved}) ;
+  const NotificationItemWidget({super.key,required this.notification,required this.onMarkAsRead,required this.onMarkAsUnRead,required this.onRemoved}) ;
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +20,11 @@ class NotificationItemWidget extends StatelessWidget {
       items: <ActionItems>[
         ActionItems(
             icon: (notification.read ?? false)
-                ? new Icon(
+                ? Icon(
                     Icons.panorama_fish_eye,
                     color: Theme.of(context).cardColor,
                   )
-                : new Icon(
+                : Icon(
                     Icons.brightness_1,
                     color: Theme.of(context).cardColor,
                   ),
@@ -36,10 +36,10 @@ class NotificationItemWidget extends StatelessWidget {
               }
             },
             backgroudColor: Theme.of(context).scaffoldBackgroundColor),
-        new ActionItems(
+        ActionItems(
             icon: Padding(
               padding: const EdgeInsets.only(right: 10),
-              child: new Icon(Icons.delete, color: Theme.of(context).canvasColor),
+              child: Icon(Icons.delete, color: Theme.of(context).canvasColor),
             ),
             onPress: () {
               onRemoved();

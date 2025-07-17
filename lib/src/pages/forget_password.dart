@@ -7,6 +7,8 @@ import '../elements/BlockButtonWidget.dart';
 import '../helpers/app_config.dart' as config;
 
 class ForgetPasswordWidget extends StatefulWidget {
+  const ForgetPasswordWidget({super.key});
+
   @override
   _ForgetPasswordWidgetState createState() => _ForgetPasswordWidgetState();
 }
@@ -42,7 +44,7 @@ class _ForgetPasswordWidgetState extends StateMVC<ForgetPasswordWidget> {
             ),
             Positioned(
               top: config.App(context).appHeight(37) - 120,
-              child: Container(
+              child: SizedBox(
                 width: config.App(context).appWidth(84),
                 height: config.App(context).appHeight(37),
                 child: Text(

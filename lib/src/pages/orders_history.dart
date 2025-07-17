@@ -204,7 +204,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Widget _buildFilterTabs() {
-    return Container(
+    return SizedBox(
       height: 50,
       child: ListView(
         scrollDirection: Axis.horizontal,

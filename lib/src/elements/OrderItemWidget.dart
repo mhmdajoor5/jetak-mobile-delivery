@@ -2,12 +2,10 @@ import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
-import '../../generated/l10n.dart';
 import '../helpers/helper.dart';
 import '../models/order.dart';
 import '../models/route_argument.dart';
 import '../controllers/order_controller.dart';
-import 'FoodOrderItemWidget.dart';
 
 
 
@@ -16,7 +14,7 @@ class OrderItemWidget extends StatefulWidget {
   final Order order;
   final OrderController? orderController;
 
-  OrderItemWidget({
+  const OrderItemWidget({
     super.key,
     required this.expanded,
     required this.order,
@@ -33,16 +31,14 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
   @override
   Widget build(BuildContext context) {
     // Add debugging for the widget data
-    if (widget.order != null) {
-      print('🖼️ OrderItemWidget Debug:');
-      print('  - Order ID: ${widget.order.id}');
-      print('  - User object: ${widget.order.user}');
-      print('  - Customer name: ${widget.order.user?.name}');
-      print('  - Customer phone: ${widget.order.user?.phone}');
-      print('  - Delivery Address object: ${widget.order.deliveryAddress}');
-      print('  - Address text: ${widget.order.deliveryAddress?.address}');
-    }
-
+    print('🖼️ OrderItemWidget Debug:');
+    print('  - Order ID: ${widget.order.id}');
+    print('  - User object: ${widget.order.user}');
+    print('  - Customer name: ${widget.order.user?.name}');
+    print('  - Customer phone: ${widget.order.user?.phone}');
+    print('  - Delivery Address object: ${widget.order.deliveryAddress}');
+    print('  - Address text: ${widget.order.deliveryAddress?.address}');
+  
     final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
     final isNewOrder =
         widget.order.orderStatus?.id == '1' ||
@@ -268,7 +264,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                           ),
                         ),
                       )
-                          .toList(),
+                          ,
 
                       SizedBox(height: 12),
                       Divider(height: 1, color: Colors.grey[300]),
@@ -958,7 +954,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    '${widget.order.orderStatus?.status ?? 'Unknown'}',
+                    widget.order.orderStatus?.status ?? 'Unknown',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

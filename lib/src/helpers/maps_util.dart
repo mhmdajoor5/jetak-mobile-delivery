@@ -9,12 +9,12 @@ import '../models/Step.dart';
 class MapsUtil {
   static const BASE_URL = "https://maps.googleapis.com/maps/api/directions/json?";
 
-  static MapsUtil _instance = new MapsUtil.internal();
+  static final MapsUtil _instance = MapsUtil.internal();
 
   MapsUtil.internal();
 
   factory MapsUtil() => _instance;
-  final JsonDecoder _decoder = new JsonDecoder();
+  final JsonDecoder _decoder = JsonDecoder();
   Future<List<LatLng>> get(String url) async {
     final response = await http.get(Uri.parse(BASE_URL + url));
     final String res = response.body;
@@ -61,10 +61,10 @@ class MapsUtil {
 //   }
 
   List<LatLng> parseSteps(final responseBody) {
-    List<Step> _steps = responseBody.map<Step>((json) {
-      return new Step.fromJson(json);
+    List<Step> steps = responseBody.map<Step>((json) {
+      return Step.fromJson(json);
     }).toList();
-    List<LatLng> _latLang = _steps.map((Step step) => step.startLatLng).toList();
-    return _latLang;
+    List<LatLng> latLang = steps.map((Step step) => step.startLatLng).toList();
+    return latLang;
   }
 }

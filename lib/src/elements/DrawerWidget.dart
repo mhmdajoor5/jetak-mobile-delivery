@@ -9,6 +9,8 @@ import '../repository/settings_repository.dart';
 import '../repository/user_repository.dart';
 
 class DrawerWidget extends StatefulWidget {
+  const DrawerWidget({super.key});
+
   @override
   _DrawerWidgetState createState() => _DrawerWidgetState();
 }
@@ -438,7 +440,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                     }
                     setting.notifyListeners();
                   },
-          activeColor: Colors.blue[600],
+          activeTrackColor: Colors.blue[600],
         ),
       ),
     );

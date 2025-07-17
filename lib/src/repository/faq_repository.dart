@@ -9,11 +9,11 @@ import '../models/user.dart';
 import '../repository/user_repository.dart';
 
 Future<Stream<FaqCategory>> getFaqCategories() async {
-  User _user = currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}&';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}faq_categories?${_apiToken}with=faqs';
+  User user = currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}&';
+  final String url = '${GlobalConfiguration().getString('api_base_url')}faq_categories?${apiToken}with=faqs';
 
-  final client = new http.Client();
+  final client = http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {

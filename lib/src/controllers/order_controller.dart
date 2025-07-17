@@ -1,5 +1,3 @@
-import 'package:deliveryboy/src/models/user.dart' as UserModel;
-import 'package:deliveryboy/src/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -21,7 +19,7 @@ class OrderController extends ControllerMVC {
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   OrderController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
   }
 
   void getCurrentUserStatus() {
@@ -127,7 +125,7 @@ class OrderController extends ControllerMVC {
       print(response);
 
       // Parse response into PendingOrdersModel
-      final parsedOrders = PendingOrdersModel.fromJson(response as Map<String, dynamic>);
+      final parsedOrders = PendingOrdersModel.fromJson(response);
       
       print('🔍 Controller - Parsed Orders:');
       print('  - Number of orders: ${parsedOrders.orders.length}');
@@ -506,9 +504,9 @@ class OrderController extends ControllerMVC {
   void listenForOrdersHistory({String? message}) async {
     final Stream<Order> stream = await orderRepo.getOrdersHistory();
     stream.listen(
-      (Order _order) {
+      (Order order) {
         setState(() {
-          orders.add(_order);
+          orders.add(order);
         });
       },
       onError: (a) {

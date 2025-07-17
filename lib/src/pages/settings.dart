@@ -6,16 +6,15 @@ import '../controllers/settings_controller.dart';
 import '../elements/CircularLoadingWidget.dart';
 import '../elements/ProfileSettingsDialog.dart';
 import '../helpers/helper.dart';
-import '../models/setting.dart';
-import '../repository/settings_repository.dart' as settingRepo;
 import '../repository/user_repository.dart' as userRepo;
 import '../repository/order_repository.dart' as orderRepo;
 import '../notification_controller.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 
 class SettingsWidget extends StatefulWidget {
+  const SettingsWidget({super.key});
+
   @override
   _SettingsWidgetState createState() => _SettingsWidgetState();
 }
@@ -620,6 +619,7 @@ class _SettingsWidgetState extends StateMVC<SettingsWidget> {
                         children: <Widget>[
                           Expanded(
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
                                   userRepo.currentUser.value.name ?? "",
@@ -631,7 +631,6 @@ class _SettingsWidgetState extends StateMVC<SettingsWidget> {
                                   style: Theme.of(context).textTheme.displaySmall,
                                 )
                               ],
-                              crossAxisAlignment: CrossAxisAlignment.start,
                             ),
                           ),
                           SizedBox(

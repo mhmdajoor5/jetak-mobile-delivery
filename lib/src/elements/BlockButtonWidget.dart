@@ -19,11 +19,11 @@ class BlockButtonWidget extends StatelessWidget {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-              color: this.color.withOpacity(0.4),
+              color: color.withOpacity(0.4),
               blurRadius: 40,
               offset: Offset(0, 15)),
           BoxShadow(
-              color: this.color.withOpacity(0.4),
+              color: color.withOpacity(0.4),
               blurRadius: 13,
               offset: Offset(0, 3))
         ],
@@ -33,11 +33,11 @@ class BlockButtonWidget extends StatelessWidget {
         elevation: 0,
         focusElevation: 0,
         highlightElevation: 0,
-        onPressed: this.onPressed,
+        onPressed: onPressed,
         padding: padding ?? EdgeInsets.symmetric(horizontal: 66, vertical: 14),
-        color: this.color,
+        color: color,
         shape: StadiumBorder(),
-        child: this.text,
+        child: text,
       ),
     );
   }

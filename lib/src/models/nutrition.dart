@@ -12,9 +12,9 @@ class Nutrition {
 
   @override
   bool operator ==(dynamic other) {
-    return other.id == this.id;
+    return other.id == id;
   }
 
   @override
-  int get hashCode => this.id.hashCode;
+  int get hashCode => id.hashCode;
 }

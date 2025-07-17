@@ -9,11 +9,11 @@ import '../models/user.dart';
 import '../repository/user_repository.dart';
 
 Future<Stream<Gallery>> getGalleries(String idRestaurant) async {
-  User _user = currentUser.value;
-  final String _apiToken = 'api_token=${_user.apiToken}&';
-  final String url = '${GlobalConfiguration().getString('api_base_url')}galleries?${_apiToken}search=restaurant_id:$idRestaurant';
+  User user = currentUser.value;
+  final String apiToken = 'api_token=${user.apiToken}&';
+  final String url = '${GlobalConfiguration().getString('api_base_url')}galleries?${apiToken}search=restaurant_id:$idRestaurant';
 
-  final client = new http.Client();
+  final client = http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream

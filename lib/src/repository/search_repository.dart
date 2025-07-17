@@ -8,10 +8,10 @@ void setRecentSearch(search) async {
 }
 
 Future<String> getRecentSearch() async {
-  String _search = "";
+  String search = "";
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.containsKey('recent_search')) {
-    _search = prefs.get('recent_search').toString();
+    search = prefs.get('recent_search').toString();
   }
-  return _search;
+  return search;
 }

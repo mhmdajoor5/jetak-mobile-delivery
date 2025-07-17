@@ -4,7 +4,6 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:mvc_pattern/mvc_pattern.dart';
 
 import '../../generated/l10n.dart';
-import '../helpers/helper.dart';
 import '../models/order.dart';
 import '../models/order_status.dart';
 import '../models/order_status_history.dart';
@@ -19,7 +18,7 @@ class TrackingController extends ControllerMVC {
   bool isLoading = false;
 
   TrackingController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
   }
 
   @override
@@ -37,9 +36,9 @@ class TrackingController extends ControllerMVC {
 
     try {
       final Stream<Order> stream = await getOrder(orderId);
-      stream.listen((Order _order) {
+      stream.listen((Order order) {
         setState(() {
-          order = _order;
+          order = order;
           isLoading = false;
         });
       }, onError: (a) {
@@ -53,11 +52,9 @@ class TrackingController extends ControllerMVC {
       }, onDone: () {
         listenForOrderStatus();
         // Load detailed status history
-        if (orderId != null) {
-          loadOrderStatusHistory(orderId);
-          _startAutoRefresh(orderId);
-        }
-        if (message != null) {
+        loadOrderStatusHistory(orderId);
+        _startAutoRefresh(orderId);
+              if (message != null) {
           ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
             content: Text(message),
           ));
@@ -73,9 +70,9 @@ class TrackingController extends ControllerMVC {
 
   void listenForOrderStatus() async {
     final Stream<OrderStatus> stream = await getOrderStatus();
-    stream.listen((OrderStatus _orderStatus) {
+    stream.listen((OrderStatus orderStatus) {
       setState(() {
-        orderStatus.add(_orderStatus);
+        orderStatus.add(orderStatus);
       });
     }, onError: (a) {}, onDone: () {});
   }
@@ -124,7 +121,7 @@ class TrackingController extends ControllerMVC {
   }
 
   List<Step> getTrackingSteps(BuildContext context) {
-    List<Step> _orderStatusSteps = [];
+    List<Step> orderStatusSteps = [];
     
     // Use detailed status history if available
     if (orderStatusHistory != null && orderStatusHistory!.statusHistory.isNotEmpty) {
@@ -133,7 +130,7 @@ class TrackingController extends ControllerMVC {
         final isActive = i == 0; // Latest status is active
         final isCompleted = i > 0; // Previous statuses are completed
         
-        _orderStatusSteps.add(Step(
+        orderStatusSteps.add(Step(
           state: isActive 
               ? StepState.indexed 
               : isCompleted 
@@ -218,7 +215,7 @@ class TrackingController extends ControllerMVC {
     } else {
       // Fallback to basic order status if no detailed history available
       if (order?.orderStatus != null) {
-        _orderStatusSteps.add(Step(
+        orderStatusSteps.add(Step(
           state: StepState.indexed,
           isActive: true,
           title: Text(
@@ -268,7 +265,7 @@ class TrackingController extends ControllerMVC {
       }
     }
 
-    return _orderStatusSteps;
+    return orderStatusSteps;
   }
 
   String getEstimatedDeliveryTime() {
@@ -326,26 +323,26 @@ class TrackingController extends ControllerMVC {
     return Colors.grey[600]!;
   }
 
-  void doOnTheWayOrder(Order _order) async {
-    onTheWayOrder(_order).then((value) {
+  void doOnTheWayOrder(Order order) async {
+    onTheWayOrder(order).then((value) {
       setState(() {
         order = value;
       });
       // Refresh status history after updating
-      if (_order.id != null) {
-        loadOrderStatusHistory(_order.id!);
+      if (order.id != null) {
+        loadOrderStatusHistory(order.id!);
       }
     });
   }
 
-  void doDeliveredOrder(Order _order) async {
-    deliveredOrder(_order).then((value) {
+  void doDeliveredOrder(Order order) async {
+    deliveredOrder(order).then((value) {
       setState(() {
         order = value;
       });
       // Refresh status history after updating
-      if (_order.id != null) {
-        loadOrderStatusHistory(_order.id!);
+      if (order.id != null) {
+        loadOrderStatusHistory(order.id!);
       }
     });
   }

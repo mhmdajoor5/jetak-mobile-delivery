@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../models/user.dart';
 import '../repository/user_repository.dart' as userRepo;
@@ -14,7 +13,7 @@ class DriverStatusUtil {
 
   DriverStatusUtil._internal();
 
-  static getInstance() {
+  static DriverStatusUtil getInstance() {
     return _singleton;
   }
 
