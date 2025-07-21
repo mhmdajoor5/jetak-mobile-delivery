@@ -164,6 +164,7 @@ class OrderController extends ControllerMVC {
           backgroundColor: Colors.red,
         ),
       );
+      rethrow;
     }
   }
 

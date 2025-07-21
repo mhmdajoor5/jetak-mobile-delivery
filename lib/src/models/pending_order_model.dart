@@ -50,7 +50,7 @@ class PendingOrderModel {
     this.deliveryAddress,
   });
 
-  factory PendingOrderModel.fromJson(Map<String, dynamic> json) =>
+  factory PendingOrderModel.fromJson(Map<dynamic, dynamic> json) =>
       PendingOrderModel(
         orderId: json["order_id"] ?? 0,
         tax: (json["tax"] ?? 0.0).toDouble(),
@@ -116,7 +116,7 @@ class OrderUser {
     required this.email,
   });
 
-  factory OrderUser.fromJson(Map<String, dynamic> json) =>
+  factory OrderUser.fromJson(Map<dynamic, dynamic> json) =>
       OrderUser(
         id: json["id"] ?? 0,
         name: json["name"] ?? "Unknown Customer",

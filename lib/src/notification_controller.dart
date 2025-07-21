@@ -139,6 +139,7 @@ class NotificationController {
       
     } catch (e) {
       print('❌ Error checking for new orders: $e');
+      rethrow;
     } finally {
       _isCheckingOrders = false;
     }
