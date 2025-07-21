@@ -16,9 +16,9 @@ class HeadingIconButtonWidget extends StatelessWidget {
           Expanded(
             child: Row(
               children: <Widget>[
-                this.icon,
+                icon,
                 SizedBox(width: 10),
-                this.text,
+                text,
               ],
             ),
           ),

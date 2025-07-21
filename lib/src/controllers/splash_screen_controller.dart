@@ -13,12 +13,12 @@ import '../repository/settings_repository.dart' as settingRepo;
 import '../repository/user_repository.dart' as userRepo;
 
 class SplashScreenController extends ControllerMVC {
-  ValueNotifier<Map<String, double>> progress = new ValueNotifier(new Map());
+  ValueNotifier<Map<String, double>> progress = ValueNotifier({});
   late GlobalKey<ScaffoldState> scaffoldKey;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
   SplashScreenController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     // Should define these variables before the app loaded
     progress.value = {"Setting": 0, "User": 0};
   }
@@ -40,31 +40,30 @@ class SplashScreenController extends ControllerMVC {
     );
     // configureFirebase(firebaseMessaging);
     settingRepo.setting.addListener(() {
-      if (settingRepo.setting.value.appName != null &&
-          settingRepo.setting.value.appName != '' &&
+      if (settingRepo.setting.value.appName != '' &&
           settingRepo.setting.value.mainColor != null) {
         progress.value["Setting"] = 41;
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-        progress?.notifyListeners();
+        progress.notifyListeners();
       }
     });
     userRepo.currentUser.addListener(() {
       if (userRepo.currentUser.value.auth != null) {
         progress.value["User"] = 59;
-        progress?.notifyListeners();
+        progress.notifyListeners();
       }
     });
 
-    if (userRepo.currentUser.value != null) {
-      FirebaseUtil.registerFCM();
-    }
-
+    FirebaseUtil.registerFCM();
+  
     try {
       await fcmOnLaunchListeners();
       await fcmOnResumeListeners();
       await fcmOnMessageListeners();
     } catch (e) {}
     Timer(Duration(seconds: 20), () {
+      if(userRepo.currentUser.value.auth == null) {
+        Navigator.of(scaffoldKey.currentContext!).pushReplacementNamed('/Login');
+      }      
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text(S.of(state!.context).verify_your_internet_connection),
@@ -109,7 +108,7 @@ class SplashScreenController extends ControllerMVC {
   }
 
   Future notificationOnLaunch(Map<String, dynamic> message) async {
-    String messageId = await settingRepo.getMessageId();
+    String? messageId = await settingRepo.getMessageId();
     try {
       if (messageId != message['google.message_id']) {
         await settingRepo.saveMessageId(message['google.message_id']);
@@ -140,7 +139,7 @@ class SplashScreenController extends ControllerMVC {
     RemoteMessage? message =
         await FirebaseMessaging.instance.getInitialMessage();
     if (message != null) {
-      String messageId = await settingRepo.getMessageId();
+      String? messageId = await settingRepo.getMessageId();
       try {
         if (messageId != message.messageId) {
           await settingRepo.saveMessageId(message.messageId ?? "");

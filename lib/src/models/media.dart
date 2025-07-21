@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:global_configuration/global_configuration.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
@@ -35,7 +34,7 @@ class Media {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["name"] = name;
     map["url"] = url;

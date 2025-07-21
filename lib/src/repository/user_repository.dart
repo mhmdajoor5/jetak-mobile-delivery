@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
 
+import 'package:deliveryboy/src/network/api_client.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
@@ -27,40 +29,37 @@ final HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
 Future<UserModel.User> login(UserModel.User user) async {
   // تجربة URLs مختلفة للـ login
   List<String> possibleUrls = [
-    '${GlobalConfiguration().getString('base_url')}api/login', // Standard Laravel API
-    '${GlobalConfiguration().getString('api_base_url')}login', // Driver specific
-    '${GlobalConfiguration().getString('base_url')}api/driver/login', // Explicit driver login
+    '${GlobalConfiguration().getValue('base_url')}api/login', // Standard Laravel API
+    '${GlobalConfiguration().getValue('api_base_url')}login', // Driver specific
+    '${GlobalConfiguration().getValue('base_url')}/api/driver/login', // Explicit driver login
   ];
 
-  final client = http.Client();
+  final client = ApiClient().dio;
 
   for (String url in possibleUrls) {
     print('🔍 Trying login URL: $url');
 
     try {
       final response = await client.post(
-        Uri.parse(url),
-        headers: {
-          HttpHeaders.contentTypeHeader: 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode(user.toMap()),
+        url,
+        
+        data:user.toMap(),
       );
 
       print('🔍 Login Response Status: ${response.statusCode}');
       print('🔍 Login Response Headers: ${response.headers}');
       print(
-        '🔍 Login Response Body (first 200 chars): ${response.body.substring(0, Math.min<int>(200, response.body.length))}',
+        '🔍 Login Response Body (first 200 chars): ${response.data.toString().substring(0, Math.min<int>(10, response.data.length))}',
       );
 
       // فحص Content-Type
-      String? contentType = response.headers['content-type'];
+      String? contentType = response.headers.map['content-type']?.first;
       bool isJson =
           contentType != null && contentType.contains('application/json');
       bool isHtml =
-          response.body.trim().startsWith('<!DOCTYPE html>') ||
-          response.body.contains('<html>') ||
-          response.body.contains('<link rel=');
+          response.data.toString().trim().startsWith('<!DOCTYPE html>') ||
+          response.data.toString().contains('<html>') ||
+          response.data.toString().contains('<link rel=');
 
       if (isHtml) {
         print('❌ Login URL $url returned HTML instead of JSON');
@@ -72,10 +71,10 @@ Future<UserModel.User> login(UserModel.User user) async {
 
         // التحقق من أن الـ JSON valid
         try {
-          Map<String, dynamic> responseData = json.decode(response.body);
+          Map<String, dynamic> responseData = response.data;
 
           if (responseData['data'] != null) {
-            setCurrentUser(response.body);
+            setCurrentUser(responseData);
             currentUser.value = UserModel.User.fromJSON(responseData['data']);
             return currentUser.value;
           } else {
@@ -84,7 +83,7 @@ Future<UserModel.User> login(UserModel.User user) async {
           }
         } catch (jsonError) {
           print('❌ JSON parsing error: $jsonError');
-          print('❌ Response body: ${response.body}');
+          print('❌ Response body: ${response.data}');
           throw Exception('Invalid JSON response from login API');
         }
       } else if (response.statusCode == 401) {
@@ -93,7 +92,7 @@ Future<UserModel.User> login(UserModel.User user) async {
       } else if (response.statusCode == 422) {
         print('❌ Login failed: Validation error');
         try {
-          Map<String, dynamic> errorData = json.decode(response.body);
+          Map<String, dynamic> errorData = response.data;
           String errorMessage = errorData['message'] ?? 'Validation failed';
           throw Exception(errorMessage);
         } catch (e) {
@@ -101,7 +100,7 @@ Future<UserModel.User> login(UserModel.User user) async {
         }
       } else {
         print('❌ Login failed with status ${response.statusCode}');
-        print('❌ Response: ${response.body}');
+        print('❌ Response: ${response.data}');
         continue; // جرب الـ URL التالي
       }
     } catch (e) {

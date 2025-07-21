@@ -8,28 +8,28 @@ import '../repository/order_repository.dart';
 import '../repository/user_repository.dart';
 
 class ProfileController extends ControllerMVC {
-  User user = new User();
+  User user = User();
   List<Order> recentOrders = [];
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   ProfileController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     listenForUser();
   }
 
   void listenForUser() {
-    getCurrentUser().then((_user) {
+    getCurrentUser().then((user) {
       setState(() {
-        user = _user;
+        user = user;
       });
     });
   }
 
   void listenForRecentOrders({String? message}) async {
     final Stream<Order> stream = await getOrdersHistory();
-    stream.listen((Order _order) {
+    stream.listen((Order order) {
       setState(() {
-        recentOrders.add(_order);
+        recentOrders.add(order);
       });
     }, onError: (a) {
       print(a);
@@ -47,7 +47,7 @@ class ProfileController extends ControllerMVC {
 
   Future<void> refreshProfile() async {
     recentOrders.clear();
-    user = new User();
+    user = User();
     listenForRecentOrders(message: S.of(state!.context).orders_refreshed_successfuly);
     listenForUser();
   }

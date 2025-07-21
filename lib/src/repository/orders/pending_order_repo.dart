@@ -1,6 +1,5 @@
 
 import 'dart:convert';
-import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:global_configuration/global_configuration.dart';
 import '../user_repository.dart' as userRepo;
@@ -16,19 +15,19 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
 
   try {
     // استخدام API endpoint الصحيح للطلبات المعلقة
-    final baseUrl = GlobalConfiguration().getString('api_base_url');
-    final url = '${baseUrl}orders';
+    final baseUrl = GlobalConfiguration().getValue('api_base_url');
+    final url = '${baseUrl}orders?api_token=${user.apiToken!}';
     
     final response = await http.get(
       Uri.parse(url).replace(queryParameters: {
         'api_token': user.apiToken!,
-        'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
-        'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
-        'searchFields': 'driver_id:=;order_status_id:=',
-        'searchJoin': 'and',
-        'orderBy': 'id',
+        //  'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
+        // // 'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
+        // 'searchFields': 'driver_id:=;order_status_id:=',
+        // 'searchJoin': 'and',
+         'orderBy': 'id',
         'sortedBy': 'desc',
-        'limit': '20'
+        'limit': '100'
       }),
       headers: {'Content-Type': 'application/json'},
     );

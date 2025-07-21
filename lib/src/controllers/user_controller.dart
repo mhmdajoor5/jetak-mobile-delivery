@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,7 +13,7 @@ import '../models/triple.dart';
 import '../repository/user_repository.dart' as repository;
 
 class UserController extends ControllerMVC {
-  User user = new User();
+  User user = User();
   bool hidePassword = true;
   bool loading = false;
  late GlobalKey<FormState> loginFormKey;
@@ -24,11 +23,11 @@ class UserController extends ControllerMVC {
  late File registrationDocument;
 
   UserController() {
-    loginFormKey = new GlobalKey<FormState>();
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    loginFormKey = GlobalKey<FormState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     _firebaseMessaging = FirebaseMessaging.instance;
-    _firebaseMessaging.getToken().then((_deviceToken) {
-      user.deviceToken = _deviceToken;
+    _firebaseMessaging.getToken().then((deviceToken) {
+      user.deviceToken = deviceToken;
     });
   }
 
@@ -47,7 +46,7 @@ class UserController extends ControllerMVC {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
       repository.login(user).then((value) {
-        if (value != null && value.apiToken != null) {
+        if (value.apiToken != null) {
           Navigator.of(scaffoldKey.currentContext!)
               .pushReplacementNamed('/Pages', arguments: 1);
         } else {
@@ -105,7 +104,7 @@ class UserController extends ControllerMVC {
   }
 
   File? getFile(key) {
-    return files[key] == null ? null : files[key]!.second;
+    return files[key]?.second;
   }
 
   void uploadDocument() async {
@@ -158,7 +157,7 @@ class UserController extends ControllerMVC {
       user.document5 = uploadedFiles["document5"]!.third;
 
       repository.register(user).then((value) async {
-        if (value != null && value.apiToken != null) {
+        if (value.apiToken != null) {
           Navigator.of(scaffoldKey.currentContext!)
               .pushReplacementNamed('/Pages', arguments: 1);
         } else {
@@ -185,7 +184,7 @@ class UserController extends ControllerMVC {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
       repository.resetPassword(user).then((value) {
-        if (value != null && value == true) {
+        if (value == true) {
           ScaffoldMessenger.of(scaffoldKey.currentContext!)
               .showSnackBar(SnackBar(
             content: Text(S
@@ -213,8 +212,8 @@ class UserController extends ControllerMVC {
     }
   }
 
-  setRegistrationDocument(File file) {
-    this.registrationDocument = file;
+  void setRegistrationDocument(File file) {
+    registrationDocument = file;
     setState(() {});
   }
 }

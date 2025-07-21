@@ -16,7 +16,7 @@ class FirebaseUtil {
 
   FirebaseUtil._internal();
 
-  static getInstance() {
+  static FirebaseUtil getInstance() {
     return _singleton;
   }
 
@@ -47,16 +47,10 @@ class FirebaseUtil {
       String? deviceToken = await getDeviceToken();
       print('Notification: $deviceToken');
 
-      if (deviceToken != null) {
-        UserModel.User? currentUser = await userRepo.getCurrentUserAsync();
-        if (currentUser != null) {
-          currentUser.deviceToken = deviceToken;
-          await userRepo.update(currentUser);
-        }
-      } else {
-        print('Failed to get FCM token');
-      }
-    } catch (e) {
+      UserModel.User? currentUser = await userRepo.getCurrentUser();
+      currentUser.deviceToken = deviceToken;
+      await userRepo.update(currentUser);
+            } catch (e) {
       print('Notification not configured');
       print(e);
     }

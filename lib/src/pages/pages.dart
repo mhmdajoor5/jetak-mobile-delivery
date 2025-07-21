@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:deliveryboy/src/helpers/FirebaseUtils.dart';
-import 'package:deliveryboy/src/helpers/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -24,7 +22,7 @@ class PagesTestWidget extends StatefulWidget {
  late DateTime currentBackPressTime;
  late RouteArgument routeArgument;
   Widget currentPage = OrdersWidget();
-  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   PagesTestWidget({
       super. key,
@@ -50,6 +48,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   Timer? timer;
 
+  @override
   initState() {
     super.initState();
     _initializeApp();
@@ -228,7 +227,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
               currentIndex: widget.currentTab,
               onTap: (int i) {
                 print(i);
-                this._selectTab(i);
+                _selectTab(i);
               },
               items: [
                 // Profile Tab
@@ -391,8 +390,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
 
   Future<bool> onWillPop() {
     DateTime now = DateTime.now();
-    if (widget.currentBackPressTime == null ||
-        now.difference(widget.currentBackPressTime) > Duration(seconds: 2)) {
+    if (now.difference(widget.currentBackPressTime) > Duration(seconds: 2)) {
       widget.currentBackPressTime = now;
       Fluttertoast.showToast(msg: S.of(context).tapBackAgainToLeave);
       return Future.value(false);

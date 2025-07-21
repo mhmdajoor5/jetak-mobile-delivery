@@ -18,7 +18,7 @@ class ExtraGroup {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["name"] = name;
     return map;
@@ -26,14 +26,14 @@ class ExtraGroup {
 
   @override
   String toString() {
-    return this.toMap().toString();
+    return toMap().toString();
   }
 
   @override
   bool operator ==(dynamic other) {
-    return other.id == this.id;
+    return other.id == id;
   }
 
   @override
-  int get hashCode => this.id.hashCode;
+  int get hashCode => id.hashCode;
 }

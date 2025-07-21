@@ -106,14 +106,14 @@ class FoodController extends ControllerMVC {
     setState(() {});
   }
 
-  incrementQuantity() {
+  void incrementQuantity() {
     if (quantity <= 99) {
       ++quantity;
       calculateTotal();
     }
   }
 
-  decrementQuantity() {
+  void decrementQuantity() {
     if (quantity > 1) {
       --quantity;
       calculateTotal();

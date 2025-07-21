@@ -1,19 +1,18 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import 'package:path/path.dart';
 
 import '../../generated/l10n.dart';
 import '../controllers/user_controller.dart';
 import '../elements/BlockButtonWidget.dart';
 import '../helpers/app_config.dart' as config;
 import '../models/triple.dart';
-import '../repository/user_repository.dart';
 
 class SignUpWidget extends StatefulWidget {
+  const SignUpWidget({super.key});
+
   @override
   _SignUpWidgetState createState() => _SignUpWidgetState();
 }
@@ -45,7 +44,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
             ),
             Positioned(
               top: config.App(context).appHeight(29.5) - 140,
-              child: Container(
+              child: SizedBox(
                 width: config.App(context).appWidth(84),
                 height: config.App(context).appHeight(29.5),
                 child: Text(
@@ -213,7 +212,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                   .pushNamed('/Complete-profile');
 
                           print(result as  Map<String, Triple<bool, File, String>> );
-                          Map<String, Triple<bool, File, String>> filesMap = result as Map<String, Triple<bool, File, String>>;
+                          Map<String, Triple<bool, File, String>> filesMap = result;
                          await _con.register(filesMap);
                         },
                       ),

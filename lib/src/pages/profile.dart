@@ -1,4 +1,3 @@
-import 'package:deliveryboy/src/models/order_status.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -12,7 +11,7 @@ import '../elements/ShoppingCartButtonWidget.dart';
 class ProfileWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState> parentScaffoldKey;
 
-  ProfileWidget({super.key, required this.parentScaffoldKey});
+  const ProfileWidget({super.key, required this.parentScaffoldKey});
 
   @override
   _ProfileWidgetState createState() => _ProfileWidgetState();
@@ -41,7 +40,7 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.sort, color: Colors.black54),
-          onPressed: () => widget.parentScaffoldKey?.currentState?.openDrawer(),
+          onPressed: () => widget.parentScaffoldKey.currentState?.openDrawer(),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.black54,
@@ -118,14 +117,14 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
                                   )
                                   .length,
                           itemBuilder: (context, index) {
-                            var _order = _con.recentOrders
+                            var order = _con.recentOrders
                                 .where(
                                   (e) => e.orderStatus?.status == 'Delivered',
                                 )
                                 .elementAt(index);
                             return OrderItemWidget(
                               expanded: index == 0 ? true : false,
-                              order: _order,
+                              order: order,
                             );
                           },
                           separatorBuilder: (context, index) {

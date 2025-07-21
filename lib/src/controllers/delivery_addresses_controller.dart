@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -10,18 +12,17 @@ class DeliveryAddressesController extends ControllerMVC {
   late GlobalKey<ScaffoldState> scaffoldKey;
 
   DeliveryAddressesController() {
-    this.scaffoldKey = new GlobalKey<ScaffoldState>();
+    scaffoldKey = GlobalKey<ScaffoldState>();
     listenForAddresses();
   }
 
   void listenForAddresses({String? message}) async {
     final Stream<model.Address> stream = await userRepo.getAddresses();
-    stream.listen((model.Address _address) {
+    stream.listen((model.Address address) {
       setState(() {
-        addresses.add(_address);
+        addresses.add(address);
       });
     }, onError: (a) {
-      print(a);
 
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text(S.of(state!.context).verify_your_internet_connection),
@@ -43,7 +44,7 @@ class DeliveryAddressesController extends ControllerMVC {
   void addAddress(model.Address address) {
     userRepo.addAddress(address).then((value) {
       setState(() {
-        this.addresses.add(value);
+        addresses.add(value);
       });
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text(S.of(state!.context).new_address_added_successfully),
@@ -73,7 +74,7 @@ class DeliveryAddressesController extends ControllerMVC {
   void removeDeliveryAddress(model.Address address) async {
     userRepo.removeDeliveryAddress(address).then((value) {
       setState(() {
-        this.addresses.remove(address);
+        addresses.remove(address);
       });
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text("Delivery Address removed successfully"),

@@ -16,23 +16,23 @@ import '../repository/user_repository.dart' as userRepo;
 
 Future<Stream<Order>> getOrders() async {
   Uri uri = Helper.getUri('api/orders');
-  Map<String, dynamic> _queryParams = {};
+  Map<String, dynamic> queryParams = {};
   final String orderStatusId = "5"; // for delivered status
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] =
+  queryParams['api_token'] = user.apiToken;
+  queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] =
-      'driver.id:${_user.id};order_status_id:$orderStatusId;delivery_address_id:null';
-  _queryParams['searchFields'] =
+  queryParams['search'] =
+      'driver.id:${user.id};order_status_id:$orderStatusId;delivery_address_id:null';
+  queryParams['searchFields'] =
       'driver.id:=;order_status_id:<>;delivery_address_id:<>';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams['searchJoin'] = 'and';
+  queryParams['orderBy'] = 'id';
+  queryParams['sortedBy'] = 'desc';
+  uri = uri.replace(queryParameters: queryParams);
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
     return streamedRest.stream
         .transform(utf8.decoder)
@@ -44,7 +44,7 @@ Future<Stream<Order>> getOrders() async {
         });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Order.fromJSON({}));
+    return Stream.value(Order.fromJSON({}));
   }
 }
 
@@ -53,23 +53,23 @@ Future<Stream<Order>> getNearOrders(
   Address areaAddress,
 ) async {
   Uri uri = Helper.getUri('api/orders');
-  Map<String, dynamic> _queryParams = {};
-  User _user = userRepo.currentUser.value;
+  Map<String, dynamic> queryParams = {};
+  User user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['limit'] = '6';
-  _queryParams['with'] =
+  queryParams['api_token'] = user.apiToken;
+  queryParams['limit'] = '6';
+  queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] = 'driver.id:${_user.id};delivery_address_id:null';
-  _queryParams['searchFields'] = 'driver.id:=;delivery_address_id:<>';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams['search'] = 'driver.id:${user.id};delivery_address_id:null';
+  queryParams['searchFields'] = 'driver.id:=;delivery_address_id:<>';
+  queryParams['searchJoin'] = 'and';
+  queryParams['orderBy'] = 'id';
+  queryParams['sortedBy'] = 'desc';
+  uri = uri.replace(queryParameters: queryParams);
 
   //final String url = '${GlobalConfiguration().getString('api_base_url')}orders?${_apiToken}with=driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress&search=driver.id:${_user.id};order_status_id:$orderStatusId&searchFields=driver.id:=;order_status_id:=&searchJoin=and&orderBy=id&sortedBy=desc';
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
     return streamedRest.stream
         .transform(utf8.decoder)
@@ -81,34 +81,34 @@ Future<Stream<Order>> getNearOrders(
         });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Order.fromJSON({}));
+    return Stream.value(Order.fromJSON({}));
   }
 }
 
 Future<Stream<Order>> getOrdersHistory() async {
   Uri uri = Helper.getUri('api/orders');
-  Map<String, dynamic> _queryParams = {};
-  User _user = userRepo.currentUser.value;
+  Map<String, dynamic> queryParams = {};
+  User user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] =
+  queryParams['api_token'] = user.apiToken;
+  queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] =
-      'driver.id:${_user.id};order_status_id:5;delivery_address_id:null'; // Use 5 for delivered but add debug
-  _queryParams['searchFields'] =
+  queryParams['search'] =
+      'driver.id:${user.id};order_status_id:5;delivery_address_id:null'; // Use 5 for delivered but add debug
+  queryParams['searchFields'] =
       'driver.id:=;order_status_id:=;delivery_address_id:<>';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams['searchJoin'] = 'and';
+  queryParams['orderBy'] = 'id';
+  queryParams['sortedBy'] = 'desc';
+  uri = uri.replace(queryParameters: queryParams);
 
   print('🔍 Order History API Request:');
   print('   - URL: $uri');
-  print('   - Driver ID: ${_user.id}');
+  print('   - Driver ID: ${user.id}');
   print('   - Looking for status ID: 5 (delivered)');
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
     
     return streamedRest.stream
@@ -129,14 +129,14 @@ Future<Stream<Order>> getOrdersHistory() async {
           
           return result;
         })
-        .expand((data) => (data as List))
+        .expand((data) => data)
         .map((data) {
           return Order.fromJSON(data);
         });
   } catch (e) {
     print('❌ Error in getOrdersHistory: $e');
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Order.fromJSON({}));
+    return Stream.value(Order.fromJSON({}));
   }
 }
 
@@ -159,26 +159,26 @@ Future<void> debugOrderStatuses() async {
 // Function to get orders by multiple status IDs
 Future<Stream<Order>> getOrdersByStatuses(List<String> statusIds) async {
   Uri uri = Helper.getUri('api/orders');
-  Map<String, dynamic> _queryParams = {};
-  User _user = userRepo.currentUser.value;
+  Map<String, dynamic> queryParams = {};
+  User user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] =
+  queryParams['api_token'] = user.apiToken;
+  queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
-  _queryParams['search'] =
-      'driver.id:${_user.id};order_status_id:${statusIds.join(',')}';
-  _queryParams['searchFields'] = 'driver.id:=;order_status_id:in';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams['search'] =
+      'driver.id:${user.id};order_status_id:${statusIds.join(',')}';
+  queryParams['searchFields'] = 'driver.id:=;order_status_id:in';
+  queryParams['searchJoin'] = 'and';
+  queryParams['orderBy'] = 'id';
+  queryParams['sortedBy'] = 'desc';
+  uri = uri.replace(queryParameters: queryParams);
 
   print('🔍 Multi-Status Orders Request:');
   print('   - URL: $uri');
   print('   - Status IDs: ${statusIds.join(', ')}');
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
     
     return streamedRest.stream
@@ -189,24 +189,24 @@ Future<Stream<Order>> getOrdersByStatuses(List<String> statusIds) async {
           print('📋 Multi-Status Response: ${(result as List).length} orders found');
           return result;
         })
-        .expand((data) => (data as List))
+        .expand((data) => data)
         .map((data) {
           return Order.fromJSON(data);
         });
   } catch (e) {
     print('❌ Error in getOrdersByStatuses: $e');
-    return new Stream.value(new Order.fromJSON({}));
+    return Stream.value(Order.fromJSON({}));
   }
 }
 
 Future<Order> onTheWayOrder(Order order) async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
     return Order();
   }
-  final String _apiToken = 'api_token=${_user.apiToken}';
+  final String apiToken = 'api_token=${user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$apiToken';
   final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
@@ -217,14 +217,14 @@ Future<Order> onTheWayOrder(Order order) async {
 }
 
 Future<Order> deliveredOrder(Order order) async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
-    return new Order();
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
+    return Order();
   }
-  final String _apiToken = 'api_token=${_user.apiToken}';
+  final String apiToken = 'api_token=${user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$_apiToken';
-  final client = new http.Client();
+      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$apiToken';
+  final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
     headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -235,24 +235,24 @@ Future<Order> deliveredOrder(Order order) async {
 
 Future<Stream<Order>> getNewPendingOrders() async {
   Uri uri = Helper.getUri('api/orders'); // أو حسب وثائق الباك إند
-  Map<String, dynamic> _queryParams = {};
-  User _user = userRepo.currentUser.value;
+  Map<String, dynamic> queryParams = {};
+  User user = userRepo.currentUser.value;
 
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] =
+  queryParams['api_token'] = user.apiToken;
+  queryParams['with'] =
       'foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment;user';
-  _queryParams['search'] =
+  queryParams['search'] =
       'driver_id:null;order_status_id:1,2,3'; // طلبات غير معينة
-  _queryParams['searchFields'] = 'driver_id:=;order_status_id:in';
-  _queryParams['searchJoin'] = 'and';
-  _queryParams['orderBy'] = 'id';
-  _queryParams['sortedBy'] = 'desc';
-  _queryParams['limit'] = '20';
+  queryParams['searchFields'] = 'driver_id:=;order_status_id:in';
+  queryParams['searchJoin'] = 'and';
+  queryParams['orderBy'] = 'id';
+  queryParams['sortedBy'] = 'desc';
+  queryParams['limit'] = '20';
 
-  uri = uri.replace(queryParameters: _queryParams);
+  uri = uri.replace(queryParameters: queryParams);
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.get(uri);
 
     print('🔍 API Response Status: ${response.statusCode}');
@@ -340,10 +340,10 @@ Stream<Order> _getMockOrdersStream() {
 Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
   Uri uri = Helper.getUri('api/driver/accept-order-by-driver');
   // api/driver/accept-order-by-driver
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.post(
       uri,
       headers: {
@@ -351,8 +351,8 @@ Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
         'Accept': 'application/json',
       },
       body: json.encode({
-        'api_token': _user.apiToken,
-        'driver_id': _user.id,
+        'api_token': user.apiToken,
+        'driver_id': user.id,
         'order_id': orderId,
       }),
     );
@@ -424,10 +424,10 @@ Future<Map<String, dynamic>> rejectOrderWithId(
   String? reason,
 }) async {
   Uri uri = Helper.getUri('api/orders/$orderId/reject');
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.post(
       uri,
       headers: {
@@ -435,8 +435,8 @@ Future<Map<String, dynamic>> rejectOrderWithId(
         'Accept': 'application/json',
       },
       body: json.encode({
-        'api_token': _user.apiToken,
-        'driver_id': _user.id,
+        'api_token': user.apiToken,
+        'driver_id': user.id,
         'reason': reason ?? 'Driver unavailable',
       }),
     );
@@ -460,10 +460,10 @@ Future<Map<String, dynamic>> updateDriverLocation(
   double longitude,
 ) async {
   Uri uri = Helper.getUri('api/driver/location');
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.post(
       uri,
       headers: {
@@ -471,7 +471,7 @@ Future<Map<String, dynamic>> updateDriverLocation(
         'Accept': 'application/json',
       },
       body: json.encode({
-        'api_token': _user.apiToken,
+        'api_token': user.apiToken,
         'latitude': latitude,
         'longitude': longitude,
       }),
@@ -490,10 +490,10 @@ Future<Map<String, dynamic>> updateDriverLocation(
 
 Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
   Uri uri = Helper.getUri('api/driver/availability');
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final response = await client.post(
       uri,
       headers: {
@@ -501,7 +501,7 @@ Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
         'Accept': 'application/json',
       },
       body: json.encode({
-        'api_token': _user.apiToken,
+        'api_token': user.apiToken,
         'is_available': isAvailable,
       }),
     );
@@ -518,16 +518,16 @@ Future<Map<String, dynamic>> updateDriverAvailability(bool isAvailable) async {
 }
 
 Future<OrderStatusHistory?> getOrderStatusHistory(String orderId) async {
-  User _user = userRepo.currentUser.value;
-  if (_user.apiToken == null) {
+  User user = userRepo.currentUser.value;
+  if (user.apiToken == null) {
     print('❌ No API token available for order status history');
     // Return mock data for testing when no token
     return _getMockOrderStatusHistory(orderId);
   }
 
   try {
-    final String _apiToken = 'api_token=${_user.apiToken}';
-    final String url = '${GlobalConfiguration().getString('api_base_url')}orders/$orderId/status-history?$_apiToken';
+    final String apiToken = 'api_token=${user.apiToken}';
+    final String url = '${GlobalConfiguration().getString('api_base_url')}orders/$orderId/status-history?$apiToken';
     
     print('🔄 Fetching order status history for order: $orderId');
     print('🔍 Status History URL: $url');
@@ -536,7 +536,7 @@ Future<OrderStatusHistory?> getOrderStatusHistory(String orderId) async {
     final response = await client.get(Uri.parse(url));
     
     print('🔍 Status History Response Status: ${response.statusCode}');
-    print('🔍 Status History Response Body (first 300 chars): ${response.body.length > 300 ? response.body.substring(0, 300) + '...' : response.body}');
+    print('🔍 Status History Response Body (first 300 chars): ${response.body.length > 300 ? '${response.body.substring(0, 300)}...' : response.body}');
     
     if (response.statusCode == 200) {
       try {
@@ -629,19 +629,19 @@ Future<Map<String, dynamic>> testConnection() async {
   print('🔍 Base URL: $baseUrl');
 
   // فحص الـ User والـ Token
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
   print('🔍 Current User Info:');
-  print('   - User ID: ${_user.id}');
-  print('   - User Name: ${_user.name}');
-  print('   - User Email: ${_user.email}');
-  print('   - API Token Length: ${_user.apiToken?.length ?? 0}');
+  print('   - User ID: ${user.id}');
+  print('   - User Name: ${user.name}');
+  print('   - User Email: ${user.email}');
+  print('   - API Token Length: ${user.apiToken?.length ?? 0}');
   print(
-    '   - API Token (first 20 chars): ${_user.apiToken?.substring(0, Math.min<int>(20, _user.apiToken?.length ?? 0))}...',
+    '   - API Token (first 20 chars): ${user.apiToken?.substring(0, Math.min<int>(20, user.apiToken?.length ?? 0))}...',
   );
-  print('   - Token is null: ${_user.apiToken == null}');
-  print('   - Token is empty: ${_user.apiToken?.isEmpty ?? true}');
+  print('   - Token is null: ${user.apiToken == null}');
+  print('   - Token is empty: ${user.apiToken?.isEmpty ?? true}');
 
-  if (_user.apiToken == null || _user.apiToken!.isEmpty) {
+  if (user.apiToken == null || user.apiToken!.isEmpty) {
     return {
       'success': false,
       'message': '🚨 NO API TOKEN FOUND!',
@@ -658,15 +658,15 @@ Future<Map<String, dynamic>> testConnection() async {
 
   Uri uri = Helper.getUri('api/orders');
 
-  Map<String, dynamic> _queryParams = {};
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['limit'] = '1';
-  uri = uri.replace(queryParameters: _queryParams);
+  Map<String, dynamic> queryParams = {};
+  queryParams['api_token'] = user.apiToken;
+  queryParams['limit'] = '1';
+  uri = uri.replace(queryParameters: queryParams);
 
   print('🔍 Full URL: $uri');
 
   try {
-    final client = new http.Client();
+    final client = http.Client();
 
     // اختبار 1: بدون Token
     Uri uriWithoutToken = Helper.getUri('api/orders');
@@ -703,8 +703,8 @@ Future<Map<String, dynamic>> testConnection() async {
         0,
         Math.min<int>(200, response.body.length),
       ),
-      'token_length': _user.apiToken?.length ?? 0,
-      'user_id': _user.id,
+      'token_length': user.apiToken?.length ?? 0,
+      'user_id': user.id,
     };
 
     // تحليل نوع المشكلة
@@ -782,13 +782,13 @@ Future<Stream<Order>> getOrder(String? orderId) async {
   }
   
   Uri uri = Helper.getUri('api/orders/$orderId');
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
   
-  Map<String, dynamic> _queryParams = {};
-  _queryParams['api_token'] = _user.apiToken;
-  _queryParams['with'] = 'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
+  Map<String, dynamic> queryParams = {};
+  queryParams['api_token'] = user.apiToken;
+  queryParams['with'] = 'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
   
-  uri = uri.replace(queryParameters: _queryParams);
+  uri = uri.replace(queryParameters: queryParams);
   
   try {
     final client = http.Client();
@@ -837,12 +837,12 @@ Future<Stream<Order>> getOrder(String? orderId) async {
 
 Future<Stream<OrderStatus>> getOrderStatus() async {
   Uri uri = Helper.getUri('api/order_statuses');
-  User _user = userRepo.currentUser.value;
+  User user = userRepo.currentUser.value;
   
-  Map<String, dynamic> _queryParams = {};
-  _queryParams['api_token'] = _user.apiToken;
+  Map<String, dynamic> queryParams = {};
+  queryParams['api_token'] = user.apiToken;
   
-  uri = uri.replace(queryParameters: _queryParams);
+  uri = uri.replace(queryParameters: queryParams);
   
   try {
     final client = http.Client();

@@ -6,7 +6,7 @@ import '../models/faq.dart';
 class FaqItemWidget extends StatelessWidget {
   final Faq? faq;
 
-  FaqItemWidget({super.key, this.faq}) ;
+  const FaqItemWidget({super.key, this.faq}) ;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class FaqItemWidget extends StatelessWidget {
             decoration:
                 BoxDecoration(color: Theme.of(context).focusColor, borderRadius: BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5))),
             child: Text(
-              Helper.skipHtml(this.faq?.question ?? ""),
+              Helper.skipHtml(faq?.question ?? ""),
               style:  TextStyle(color: Colors.black54),
             ),
           ),
@@ -37,7 +37,7 @@ class FaqItemWidget extends StatelessWidget {
             decoration: BoxDecoration(
                 color: Colors.black54, borderRadius: BorderRadius.only(bottomRight: Radius.circular(5), bottomLeft: Radius.circular(5))),
             child: Text(
-              Helper.skipHtml(this.faq?.answer ??""),
+              Helper.skipHtml(faq?.answer ??""),
               style: Theme.of(context).textTheme.displaySmall,
             ),
           ),

@@ -17,18 +17,18 @@ class Review {
       id = jsonMap['id'].toString();
       review = jsonMap['review'];
       rate = jsonMap['rate'].toString() ?? '0';
-      user = jsonMap['user'] != null ? User.fromJSON(jsonMap['user']) : new User();
+      user = jsonMap['user'] != null ? User.fromJSON(jsonMap['user']) : User();
     } catch (e) {
       id = '';
       review = '';
       rate = '0';
-      user = new User();
+      user = User();
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["review"] = review;
     map["rate"] = rate;
@@ -38,26 +38,26 @@ class Review {
 
   @override
   String toString() {
-    return this.toMap().toString();
+    return toMap().toString();
   }
 
   Map ofRestaurantToMap(Restaurant restaurant) {
-    var map = this.toMap();
+    var map = toMap();
     map["restaurant_id"] = restaurant.id;
     return map;
   }
 
   Map ofFoodToMap(Food food) {
-    var map = this.toMap();
+    var map = toMap();
     map["food_id"] = food.id;
     return map;
   }
 
   @override
   bool operator ==(dynamic other) {
-    return other.id == this.id;
+    return other.id == id;
   }
 
   @override
-  int get hashCode => this.id.hashCode;
+  int get hashCode => id.hashCode;
 }

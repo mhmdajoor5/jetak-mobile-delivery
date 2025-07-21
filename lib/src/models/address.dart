@@ -16,10 +16,10 @@ class Address {
   Address.fromJSON(Map<String, dynamic> jsonMap) {
     try {
       id = jsonMap['id']?.toString() ?? '';
-      description = jsonMap['description'] != null ? jsonMap['description'].toString() : null;
-      address = jsonMap['address'] != null ? jsonMap['address'] : null;
-      latitude = jsonMap['latitude'] != null ? jsonMap['latitude'].toDouble() : null;
-      longitude = jsonMap['longitude'] != null ? jsonMap['longitude'].toDouble() : null;
+      description = jsonMap['description']?.toString();
+      address = jsonMap['address'];
+      latitude = jsonMap['latitude']?.toDouble();
+      longitude = jsonMap['longitude']?.toDouble();
       isDefault = jsonMap['is_default'] ?? false;
     } catch (e) {
       print(CustomTrace(StackTrace.current, message: e.toString()));
@@ -31,7 +31,7 @@ class Address {
   }
 
   Map toMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["description"] = description;
     map["address"] = address;

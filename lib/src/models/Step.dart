@@ -6,8 +6,8 @@ class Step {
   Step({required this.startLatLng});
 
   factory Step.fromJson(Map<String, dynamic> json) {
-    return new Step(
-      startLatLng: new LatLng(json["end_location"]["lat"], json["end_location"]["lng"]),
+    return Step(
+      startLatLng: LatLng(json["end_location"]["lat"], json["end_location"]["lng"]),
     );
   }
 }

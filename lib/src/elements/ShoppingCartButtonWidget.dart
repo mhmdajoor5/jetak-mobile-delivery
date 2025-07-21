@@ -39,15 +39,19 @@ class _ShoppingCartButtonWidgetState extends StateMVC<ShoppingCartButtonWidget> 
       onPressed: () {
         Navigator.of(context).pushNamed('/Notifications');
       },
+      color: Colors.transparent,
       child: Stack(
         alignment: AlignmentDirectional.bottomEnd,
         children: <Widget>[
           Icon(
             Icons.notifications_none,
-            color: this.widget.iconColor,
+            color: widget.iconColor,
             size: 28,
           ),
           Container(
+            padding: EdgeInsets.all(0),
+            decoration: BoxDecoration(color: widget.labelColor, borderRadius: BorderRadius.all(Radius.circular(10))),
+            constraints: BoxConstraints(minWidth: 13, maxWidth: 13, minHeight: 13, maxHeight: 13),
             child: Text(
               _con.unReadNotificationsCount.toString(),
               textAlign: TextAlign.center,
@@ -55,13 +59,9 @@ class _ShoppingCartButtonWidgetState extends StateMVC<ShoppingCartButtonWidget> 
                     TextStyle(color: Colors.black54, fontSize: 8, height: 1.3),
 
             ),
-            padding: EdgeInsets.all(0),
-            decoration: BoxDecoration(color: this.widget.labelColor, borderRadius: BorderRadius.all(Radius.circular(10))),
-            constraints: BoxConstraints(minWidth: 13, maxWidth: 13, minHeight: 13, maxHeight: 13),
           ),
         ],
       ),
-      color: Colors.transparent,
     );
   }
 }

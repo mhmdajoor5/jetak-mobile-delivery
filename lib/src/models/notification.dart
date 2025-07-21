@@ -21,13 +21,13 @@ class Notification {
       type = '';
       data = {};
       read = false;
-      createdAt = new DateTime(0);
+      createdAt = DateTime(0);
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }
 
   Map markReadMap() {
-    var map = new Map<String, dynamic>();
+    var map = <String, dynamic>{};
     map["id"] = id;
     map["read_at"] = !read!;
     return map;

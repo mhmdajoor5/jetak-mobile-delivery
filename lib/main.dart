@@ -14,21 +14,31 @@ import 'src/helpers/custom_trace.dart';
 import 'src/models/setting.dart';
 import 'src/repository/settings_repository.dart' as settingRepo;
 import 'src/repository/user_repository.dart' as userRepo;
-
+// This must be a top-level function, outside of any class.
+// It is called when the app is in the background or terminated.
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in your background handlers,
+  // such as Firestore, make sure to call `initializeApp` before using them.
+  await Firebase.initializeApp();
+  print('Handling a background message from main.dart: ${message.messageId}');
+  // Call your NotificationController to create a local notification
+  NotificationController.createNewNotification(message);
+}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
-  await NotificationController.initializeLocalNotifications();
-  // await NotificationController.initializeIsolateReceivePort();
+  
   await NotificationController.getDeviceToken(); // ← Add this
-
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+  await NotificationController.initializeLocalNotifications();
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -76,17 +86,17 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: settingRepo.setting,
-      builder: (context, Setting _setting, _) {
+      builder: (context, Setting setting, _) {
         print(
-          CustomTrace(StackTrace.current, message: _setting.toMap().toString()),
+          CustomTrace(StackTrace.current, message: setting.toMap().toString()),
         );
         return MaterialApp(
           navigatorKey: settingRepo.navigatorKey,
-          title: _setting.appName,
+          title: setting.appName,
           initialRoute: '/Splash',
           onGenerateRoute: RouteGenerator.generateRoute,
           debugShowCheckedModeBanner: false,
-          locale: _setting.mobileLanguage.value,
+          locale: setting.mobileLanguage.value,
           localizationsDelegates: [
             S.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -94,7 +104,7 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: S.delegate.supportedLocales,
           theme:
-              _setting.brightness.value == Brightness.light
+              setting.brightness.value == Brightness.light
                   ? ThemeData(
                     fontFamily: 'Poppins',
                     primaryColor: Colors.white,
@@ -220,20 +230,20 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// TODO: Define the background message handler
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+// // // TODO: Define the background message handler
+// // Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+// //   await Firebase.initializeApp();
 
-  _showNotificationWithButton(message);
+// //   _showNotificationWithButton(message);
 
-  if (kDebugMode) {
-    print("Handling a background message: ${message.messageId}");
-    print('Message data: ${message.data}');
-    print('Message notification: ${message.notification?.title}');
-    print('Message notification: ${message.notification?.body}');
-  }
-}
+// //   if (kDebugMode) {
+// //     print("Handling a background message: ${message.messageId}");
+// //     print('Message data: ${message.data}');
+// //     print('Message notification: ${message.notification?.title}');
+// //     print('Message notification: ${message.notification?.body}');
+// //   }
+// // }
 
-void _showNotificationWithButton(RemoteMessage message) {
-  NotificationController.createNewNotification(message);
-}
+// void _showNotificationWithButton(RemoteMessage message) {
+//   NotificationController.createNewNotification(message);
+// }

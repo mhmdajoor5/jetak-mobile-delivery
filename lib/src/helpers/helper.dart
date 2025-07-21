@@ -1,18 +1,13 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_html/src/style.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as maps;
-import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart';
-import 'app_config.dart' as config;
 
 import '../../generated/l10n.dart';
 import '../elements/CircularLoadingWidget.dart';
@@ -22,12 +17,12 @@ import '../repository/settings_repository.dart';
 
 class Helper {
  late BuildContext context;
-  Helper.of(BuildContext _context) {
-    this.context = _context;
+  Helper.of(BuildContext context) {
+    context = context;
   }
 
   // for mapping data retrieved form json array
-  static getData(Map<String, dynamic> data) {
+  static dynamic getData(Map<String, dynamic> data) {
     return data['data'] ?? [];
   }
 
@@ -39,8 +34,8 @@ class Helper {
     return (data['data'] as bool) ?? false;
   }
 
-  static getObjectData(Map<String, dynamic> data) {
-    return data['data'] ?? new Map<String, dynamic>();
+  static dynamic getObjectData(Map<String, dynamic> data) {
+    return data['data'] ?? <String, dynamic>{};
   }
 
   static Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -173,9 +168,9 @@ class Helper {
         softWrap: false,
         overflow: TextOverflow.fade,
         maxLines: 1,
-        text: setting.value?.currencyRight != null && setting.value?.currencyRight == false
+        text: setting.value.currencyRight == false
             ? TextSpan(
-                text: setting.value?.defaultCurrency,
+                text: setting.value.defaultCurrency,
                 style: style /*?? Theme.of(context).textTheme.subtitle1*/,
                 children: <TextSpan>[
                   TextSpan(text: myPrice.toStringAsFixed(2) ?? '', style: style /*?? Theme.of(context).textTheme.subtitle1*/),
@@ -186,7 +181,7 @@ class Helper {
                 style: style /*?? Theme.of(context).textTheme.subtitle1*/,
                 children: <TextSpan>[
                   TextSpan(
-                      text: setting.value?.defaultCurrency,
+                      text: setting.value.defaultCurrency,
                       style: TextStyle(
                           fontWeight: FontWeight.w400, fontSize: style != null ? style.fontSize! - 4 : Theme.of(context).textTheme.bodySmall!.fontSize! - 4)),
                 ],
@@ -235,18 +230,18 @@ class Helper {
 
   static double getSubTotalOrdersPrice(Order order) {
     double total = 0;
-    order.foodOrders!.forEach((foodOrder) {
+    for (var foodOrder in order.foodOrders!) {
       total += getTotalOrderPrice(foodOrder);
-    });
+    }
     return total;
   }
 
   static String getDistance(double distance, String unit) {
-    String _unit = setting.value.distanceUnit!;
-    if (_unit == 'km') {
+    String unit0 = setting.value.distanceUnit!;
+    if (unit0 == 'km') {
       distance *= 1.60934;
     }
-    return distance != null ? distance.toStringAsFixed(2) + " " + unit : "";
+    return distance != null ? "${distance.toStringAsFixed(2)} $unit" : "";
   }
 
   static String skipHtml(String htmlString) {
@@ -329,10 +324,10 @@ class Helper {
     return loader;
   }
 
-  static hideLoader(OverlayEntry loader) {
+  static void hideLoader(OverlayEntry loader) {
     Timer(Duration(milliseconds: 500), () {
       try {
-        loader?.remove();
+        loader.remove();
       } catch (e) {}
     });
   }
@@ -343,25 +338,25 @@ class Helper {
 
   static String getCreditCardNumber(String number) {
     String result = '';
-    if (number != null && number.isNotEmpty && number.length == 16) {
+    if (number.isNotEmpty && number.length == 16) {
       result = number.substring(0, 4);
-      result += ' ' + number.substring(4, 8);
-      result += ' ' + number.substring(8, 12);
-      result += ' ' + number.substring(12, 16);
+      result += ' ${number.substring(4, 8)}';
+      result += ' ${number.substring(8, 12)}';
+      result += ' ${number.substring(12, 16)}';
     }
     return result;
   }
 
   static Uri getUri(String path) {
-    String _path = Uri.parse(GlobalConfiguration().getString('base_url')).path;
-    if (!_path.endsWith('/')) {
-      _path += '/';
+    String path0 = Uri.parse(GlobalConfiguration().getString('base_url')).path;
+    if (!path0.endsWith('/')) {
+      path0 += '/';
     }
     Uri uri = Uri(
         scheme: Uri.parse(GlobalConfiguration().getString('base_url')).scheme,
         host: Uri.parse(GlobalConfiguration().getString('base_url')).host,
         port: Uri.parse(GlobalConfiguration().getString('base_url')).port,
-        path: _path + path);
+        path: path0 + path);
     return uri;
   }
 
@@ -371,7 +366,7 @@ class Helper {
       if (!baseUrl.endsWith('/')) {
         baseUrl += '/';
       }
-      return baseUrl + "images/image_default.png";
+      return "${baseUrl}images/image_default.png";
     }
     
     // Fix malformed URLs like 'localhoststorage' to 'http://localhost/storage/'
@@ -391,20 +386,21 @@ class Helper {
     return url;
   }
 
-  String trans(String text) {
+  static String trans(String text, BuildContext context) {
     switch (text) {
-      case "App\\Notifications\\StatusChangedOrder":
+      case "App\Notifications\StatusChangedOrder":
         return S.of(context).order_satatus_changed;
-      case "App\\Notifications\\NewOrder":
+      case "App\Notifications\NewOrder":
         return S.of(context).new_order_from_costumer;
-      case "App\\Notifications\\AssignedOrder":
+      case "App\Notifications\AssignedOrder":
         return S.of(context).your_have_an_order_assigned_to_you;
       case "km":
         return S.of(context).km;
       case "mi":
         return S.of(context).mi;
+      
       default:
-        return "";
+             return S.of(context).order_satatus_changed;
     }
   }
   static bool isUuid(String input) {

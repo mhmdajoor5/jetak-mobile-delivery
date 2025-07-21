@@ -12,11 +12,11 @@ class Category {
     try {
       id = jsonMap['id'].toString();
       name = jsonMap['name'];
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).length > 0 ? Media.fromJSON(jsonMap['media'][0]) : new Media();
+      image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty ? Media.fromJSON(jsonMap['media'][0]) : Media();
     } catch (e) {
       id = '';
       name = '';
-      image = new Media();
+      image = Media();
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
   }

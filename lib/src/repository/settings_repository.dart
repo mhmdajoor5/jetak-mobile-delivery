@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
@@ -13,14 +12,14 @@ import '../helpers/custom_trace.dart';
 import '../models/address.dart';
 import '../models/setting.dart';
 
-ValueNotifier<Setting> setting = new ValueNotifier(new Setting());
-ValueNotifier<Address> myAddress = new ValueNotifier(new Address());
+ValueNotifier<Setting> setting = ValueNotifier(Setting());
+ValueNotifier<Address> myAddress = ValueNotifier(Address());
 final navigatorKey = GlobalKey<NavigatorState>();
 //LocationData locationData;
 
 Future<Setting> initSettings() async {
   Setting _setting;
-  final String url = '${GlobalConfiguration().getString('api_base_url')}settings';
+  final String url = '${GlobalConfiguration().getValue('api_base_url')}settings';
   try {
     final response = await http.get(Uri.parse(url), headers: {HttpHeaders.contentTypeHeader: 'application/json'});
     if (response.statusCode == 200 && response.headers.containsValue('application/json')) {
@@ -29,7 +28,9 @@ Future<Setting> initSettings() async {
         await prefs.setString('settings', json.encode(json.decode(response.body)['data']));
         _setting = Setting.fromJSON(json.decode(response.body)['data']);
         if (prefs.containsKey('language')) {
-          _setting.mobileLanguage.value = Locale(prefs.get('language') as String, '');
+          _setting.mobileLanguage.value = Locale(prefs.getString('language')!, '');
+        } else {
+          _setting.mobileLanguage.value = Locale('en', '');
         }
         _setting.brightness.value = prefs.getBool('isDark') ?? false ? Brightness.dark : Brightness.light;
         setting.value = _setting;

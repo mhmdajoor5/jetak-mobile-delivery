@@ -15,21 +15,21 @@ import '../repository/user_repository.dart';
 
 Future<Stream<Restaurant>> getNearRestaurants(Address myLocation, Address areaLocation) async {
   Uri uri = Helper.getUri('api/restaurants');
-  Map<String, dynamic> _queryParams = {};
+  Map<String, dynamic> queryParams = {};
   SharedPreferences prefs = await SharedPreferences.getInstance();
   Filter filter = Filter.fromJSON(json.decode(prefs.getString('filter') ?? '{}'));
 
-  _queryParams['limit'] = '6';
+  queryParams['limit'] = '6';
   if (!myLocation.isUnknown() && !areaLocation.isUnknown()) {
-    _queryParams['myLon'] = myLocation.longitude.toString();
-    _queryParams['myLat'] = myLocation.latitude.toString();
-    _queryParams['areaLon'] = areaLocation.longitude.toString();
-    _queryParams['areaLat'] = areaLocation.latitude.toString();
+    queryParams['myLon'] = myLocation.longitude.toString();
+    queryParams['myLat'] = myLocation.latitude.toString();
+    queryParams['areaLon'] = areaLocation.longitude.toString();
+    queryParams['areaLat'] = areaLocation.latitude.toString();
   }
-  _queryParams.addAll(filter.toQuery());
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams.addAll(filter.toQuery());
+  uri = uri.replace(queryParameters: queryParams);
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
@@ -37,26 +37,26 @@ Future<Stream<Restaurant>> getNearRestaurants(Address myLocation, Address areaLo
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJSON({}));
   }
 }
 
 Future<Stream<Restaurant>> getPopularRestaurants(Address myLocation) async {
   Uri uri = Helper.getUri('api/restaurants');
-  Map<String, dynamic> _queryParams = {};
+  Map<String, dynamic> queryParams = {};
   SharedPreferences prefs = await SharedPreferences.getInstance();
   Filter filter = Filter.fromJSON(json.decode(prefs.getString('filter') ?? '{}'));
 
-  _queryParams['limit'] = '6';
-  _queryParams['popular'] = 'all';
+  queryParams['limit'] = '6';
+  queryParams['popular'] = 'all';
   if (!myLocation.isUnknown()) {
-    _queryParams['myLon'] = myLocation.longitude.toString();
-    _queryParams['myLat'] = myLocation.latitude.toString();
+    queryParams['myLon'] = myLocation.longitude.toString();
+    queryParams['myLat'] = myLocation.latitude.toString();
   }
-  _queryParams.addAll(filter.toQuery());
-  uri = uri.replace(queryParameters: _queryParams);
+  queryParams.addAll(filter.toQuery());
+  uri = uri.replace(queryParameters: queryParams);
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
@@ -64,25 +64,25 @@ Future<Stream<Restaurant>> getPopularRestaurants(Address myLocation) async {
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJSON({}));
   }
 }
 
 Future<Stream<Restaurant>> searchRestaurants(String search, Address address) async {
   Uri uri = Helper.getUri('api/restaurants');
-  Map<String, dynamic> _queryParams = {};
-  _queryParams['search'] = 'name:$search;description:$search';
-  _queryParams['searchFields'] = 'name:like;description:like';
-  _queryParams['limit'] = '5';
+  Map<String, dynamic> queryParams = {};
+  queryParams['search'] = 'name:$search;description:$search';
+  queryParams['searchFields'] = 'name:like;description:like';
+  queryParams['limit'] = '5';
   if (!address.isUnknown()) {
-    _queryParams['myLon'] = address.longitude.toString();
-    _queryParams['myLat'] = address.latitude.toString();
-    _queryParams['areaLon'] = address.longitude.toString();
-    _queryParams['areaLat'] = address.latitude.toString();
+    queryParams['myLon'] = address.longitude.toString();
+    queryParams['myLat'] = address.latitude.toString();
+    queryParams['areaLon'] = address.longitude.toString();
+    queryParams['areaLat'] = address.latitude.toString();
   }
-  uri = uri.replace(queryParameters: _queryParams);
+  uri = uri.replace(queryParameters: queryParams);
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
@@ -90,35 +90,35 @@ Future<Stream<Restaurant>> searchRestaurants(String search, Address address) asy
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJSON({}));
   }
 }
 
 Future<Stream<Restaurant>> getRestaurant(String id, Address address) async {
   Uri uri = Helper.getUri('api/restaurants/$id');
-  Map<String, dynamic> _queryParams = {};
+  Map<String, dynamic> queryParams = {};
   if (!address.isUnknown()) {
-    _queryParams['myLon'] = address.longitude.toString();
-    _queryParams['myLat'] = address.latitude.toString();
-    _queryParams['areaLon'] = address.longitude.toString();
-    _queryParams['areaLat'] = address.latitude.toString();
+    queryParams['myLon'] = address.longitude.toString();
+    queryParams['myLat'] = address.latitude.toString();
+    queryParams['areaLon'] = address.longitude.toString();
+    queryParams['areaLat'] = address.latitude.toString();
   }
-  uri = uri.replace(queryParameters: _queryParams);
+  uri = uri.replace(queryParameters: queryParams);
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).map((data) => Restaurant.fromJSON(data));
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return new Stream.value(new Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJSON({}));
   }
 }
 
 Future<Stream<Review>> getRestaurantReviews(String id) async {
   final String url = '${GlobalConfiguration().getString('api_base_url')}restaurant_reviews?with=user&search=restaurant_id:$id';
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
@@ -126,27 +126,27 @@ Future<Stream<Review>> getRestaurantReviews(String id) async {
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: url).toString());
-    return new Stream.value(new Review.fromJSON({}));
+    return Stream.value(Review.fromJSON({}));
   }
 }
 
 Future<Stream<Review>> getRecentReviews() async {
   final String url = '${GlobalConfiguration().getString('api_base_url')}restaurant_reviews?orderBy=updated_at&sortedBy=desc&limit=3&with=user';
   try {
-    final client = new http.Client();
+    final client = http.Client();
     final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
       return Review.fromJSON(data);
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: url).toString());
-    return new Stream.value(new Review.fromJSON({}));
+    return Stream.value(Review.fromJSON({}));
   }
 }
 
 Future<Review> addRestaurantReview(Review review, Restaurant restaurant) async {
   final String url = '${GlobalConfiguration().getString('api_base_url')}restaurant_reviews';
-  final client = new http.Client();
+  final client = http.Client();
   review.user = currentUser.value;
   try {
     final response = await client.post(

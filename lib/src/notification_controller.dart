@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'repository/settings_repository.dart' as settingRepo;
@@ -113,7 +112,7 @@ class NotificationController {
         driverId: user.id.toString(),
       );
       
-      final parsedOrders = PendingOrdersModel.fromJson(response as Map<String, dynamic>);
+      final parsedOrders = PendingOrdersModel.fromJson(response);
       
       print('📋 Found ${parsedOrders.orders.length} pending orders');
       
@@ -140,6 +139,7 @@ class NotificationController {
       
     } catch (e) {
       print('❌ Error checking for new orders: $e');
+      rethrow;
     } finally {
       _isCheckingOrders = false;
     }
@@ -329,6 +329,8 @@ class NotificationController {
 
   static Future<void> getDeviceToken() async {
     try {
+      await FirebaseMessaging.instance.getAPNSToken();
+      
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         print('🔑 FCM Token: $token');

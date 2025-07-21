@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'package:deliveryboy/src/elements/OrderItemWidget.dart';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
-import '../../generated/l10n.dart';
 import '../controllers/order_controller.dart';
 import '../elements/EmptyOrdersWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
@@ -14,7 +12,7 @@ import '../elements/ShoppingCartButtonWidget.dart';
 class OrdersWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState>? parentScaffoldKey;
 
-  OrdersWidget({super.key, this.parentScaffoldKey});
+  const OrdersWidget({super.key, this.parentScaffoldKey});
 
   @override
   _OrdersWidgetState createState() => _OrdersWidgetState();
@@ -196,7 +194,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           onChanged: (value) {
                             _con.updateCurrentUserStatus(value);
                           },
-                          activeColor: Colors.green,
+                          activeTrackColor: Colors.green,
                         ),
                       ],
                     ),
@@ -515,8 +513,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                   order.address ?? "عنوان غير متوفر",
                                                   style: TextStyle(
                                                     fontSize: 13,
-                                                    color: order.address != null && 
-                                                           order.address != "Address not available"
+                                                    color: order.address != "Address not available"
                                                         ? Colors.orange[800]
                                                         : Colors.red[600],
                                                     fontWeight: FontWeight.w500,
@@ -557,7 +554,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                           children: [
                                             // Accept Button with enhanced design
                                             Expanded(
-                                              child: Container(
+                                              child: SizedBox(
                                                 height: 48,
                                                 child: ElevatedButton(
                                                   onPressed: () => _showAcceptDialog(context, order),
@@ -592,7 +589,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                             
                                             // Reject Button with enhanced design
                                             Expanded(
-                                              child: Container(
+                                              child: SizedBox(
                                                 height: 48,
                                                 child: ElevatedButton(
                                                   onPressed: () => _showRejectDialog(context, order),
@@ -651,8 +648,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                   });
                 },
                 backgroundColor: Colors.green,
-                child: Icon(Icons.refresh, color: Colors.white),
                 tooltip: 'Refresh pendingOrdersModel',
+                child: Icon(Icons.refresh, color: Colors.white),
               ),
     );
   }

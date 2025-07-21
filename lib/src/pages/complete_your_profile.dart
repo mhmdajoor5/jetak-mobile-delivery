@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:deliveryboy/src/elements/BlockButtonWidget.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -13,6 +12,8 @@ import '../helpers/app_config.dart' as config;
 import '../models/profile_document_titles.dart';
 
 class CompleteYourProfileWidget extends StatefulWidget {
+  const CompleteYourProfileWidget({super.key});
+
   @override
   _CompleteYourProfileWidgetState createState() =>
       _CompleteYourProfileWidgetState();
@@ -49,7 +50,7 @@ class _CompleteYourProfileWidgetState
               ),
               Positioned(
                 top: config.App(context).appHeight(29.5) - 140,
-                child: Container(
+                child: SizedBox(
                   width: config.App(context).appWidth(84),
                   height: config.App(context).appHeight(29.5),
                   child: Text(

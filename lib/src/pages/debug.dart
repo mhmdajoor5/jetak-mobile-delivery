@@ -5,12 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 
-import '../controllers/order_controller.dart';
 import '../repository/order_repository.dart' as orderRepo;
 import '../repository/user_repository.dart' as userRepo;
 import '../models/user.dart';
 
 class DebugScreen extends StatefulWidget {
+  const DebugScreen({super.key});
+
   @override
   _DebugScreenState createState() => _DebugScreenState();
 }
@@ -144,7 +145,7 @@ class _DebugScreenState extends State<DebugScreen> {
   }
 
   Widget _buildTestButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: isLoading ? null : _runConnectionTest,
@@ -163,7 +164,7 @@ class _DebugScreenState extends State<DebugScreen> {
   }
 
   Widget _buildLoginTestButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: isLoading ? null : _testLoginEndpoints,
@@ -380,13 +381,13 @@ class _DebugScreenState extends State<DebugScreen> {
     });
 
     try {
-      String baseUrl = GlobalConfiguration().getString('base_url');
-      String apiBaseUrl = GlobalConfiguration().getString('api_base_url');
+      String baseUrl = GlobalConfiguration().getValue('base_url');
+      String apiBaseUrl = GlobalConfiguration().getValue('api_base_url');
       
       List<String> loginUrls = [
-        '${baseUrl}api/login',
-        '${apiBaseUrl}login',
-        '${baseUrl}api/driver/login',
+        '$baseUrl/api/login',
+        '$apiBaseUrl/login',
+        '$baseUrl/api/driver/login',
       ];
 
       Map<String, dynamic> testResults = {
@@ -423,7 +424,7 @@ class _DebugScreenState extends State<DebugScreen> {
                        response.body.contains('<link rel=');
 
           String preview = response.body.length > 200 
-              ? response.body.substring(0, 200) + '...'
+              ? '${response.body.substring(0, 200)}...'
               : response.body;
 
           Map<String, dynamic> endpointResult = {
