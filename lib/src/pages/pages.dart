@@ -56,7 +56,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
 
   void _initializeApp() async {
     await registerFCM();
-    await userRepo.updateDriverAvailability(true);
+    await userRepo.userRepository.updateDriverAvailability(true);
     await _getCurrentPosition();
     _selectTab(widget.currentTab);
     
@@ -94,7 +94,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       await _saveLocationLocally(position.latitude, position.longitude);
       
       // إرسال الموقع للخادم
-      await userRepo.updateDriverLocation(position.latitude, position.longitude);
+      await userRepo.userRepository.updateDriverLocation(position.latitude, position.longitude);
       
     } catch (e) {
       print('❌ Error getting position: $e');
@@ -127,7 +127,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         int timeDiff = DateTime.now().millisecondsSinceEpoch - lastTime;
         if (timeDiff < 300000) { // 5 دقائق
           print('📍 Using last known location: lat=$lat, lng=$lng');
-          await userRepo.updateDriverLocation(lat, lng);
+          await userRepo.userRepository.updateDriverLocation(lat, lng);
         } else {
           print('⚠️ Last known location is too old');
         }

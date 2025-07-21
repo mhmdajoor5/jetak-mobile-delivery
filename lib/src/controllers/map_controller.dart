@@ -110,7 +110,7 @@ class MapController extends ControllerMVC {
         currentAddress = currentAddress;
       });
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: LatLng(currentAddress.latitude, currentAddress.longitude),
+        target: LatLng(currentAddress.latitude!, currentAddress.longitude!),
         zoom: 14.4746,
       )));
     });

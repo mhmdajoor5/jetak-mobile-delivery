@@ -25,7 +25,7 @@ class Controller extends ControllerMVC {
       });
     });
     */
-    userRepo.getCurrentUser().then((user) {
+    userRepo.userRepository.getCurrentUser().then((user) {
       setState(() {
         userRepo.currentUser.value = user;
       });

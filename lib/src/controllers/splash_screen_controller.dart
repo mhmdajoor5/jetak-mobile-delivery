@@ -106,7 +106,7 @@ class SplashScreenController extends ControllerMVC {
   }
 
   Future notificationOnLaunch(Map<String, dynamic> message) async {
-    String messageId = await settingRepo.getMessageId();
+    String? messageId = await settingRepo.getMessageId();
     try {
       if (messageId != message['google.message_id']) {
         await settingRepo.saveMessageId(message['google.message_id']);
@@ -137,7 +137,7 @@ class SplashScreenController extends ControllerMVC {
     RemoteMessage? message =
         await FirebaseMessaging.instance.getInitialMessage();
     if (message != null) {
-      String messageId = await settingRepo.getMessageId();
+      String? messageId = await settingRepo.getMessageId();
       try {
         if (messageId != message.messageId) {
           await settingRepo.saveMessageId(message.messageId ?? "");

@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
 
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
-    userRepo.getCurrentUser();
+    userRepo.userRepository.getCurrentUser();
     // NotificationController.startListeningNotificationEvents();
 
     // Listen to messages when app is in foreground

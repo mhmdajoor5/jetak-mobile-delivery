@@ -21,7 +21,7 @@ class FirebaseUtil {
   }
 
   static Future<UserModel.User> getUser() async {
-    return await userRepo.getCurrentUser();
+    return await userRepo.userRepository.getCurrentUser();
   }
 
   /// Get FCM device token
@@ -47,9 +47,9 @@ class FirebaseUtil {
       String? deviceToken = await getDeviceToken();
       print('Notification: $deviceToken');
 
-      UserModel.User? currentUser = await userRepo.getCurrentUserAsync();
+      UserModel.User? currentUser = await userRepo.userRepository.getCurrentUser();
       currentUser.deviceToken = deviceToken;
-      await userRepo.update(currentUser);
+      await userRepo.userRepository.updateProfile(currentUser);
             } catch (e) {
       print('Notification not configured');
       print(e);

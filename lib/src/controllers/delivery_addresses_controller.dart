@@ -15,13 +15,12 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void listenForAddresses({String? message}) async {
-    final Stream<model.Address> stream = await userRepo.getAddresses();
+    final Stream<model.Address> stream = await userRepo.userRepository.getAddresses();
     stream.listen((model.Address address) {
       setState(() {
         addresses.add(address);
       });
     }, onError: (a) {
-      print(a);
 
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text(S.of(state!.context).verify_your_internet_connection),
@@ -41,7 +40,7 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void addAddress(model.Address address) {
-    userRepo.addAddress(address).then((value) {
+    userRepo.userRepository.addAddress(address).then((value) {
       setState(() {
         addresses.add(value);
       });
@@ -59,7 +58,7 @@ class DeliveryAddressesController extends ControllerMVC {
 //        });
 //      });
 //    }
-    userRepo.updateAddress(address).then((value) {
+    userRepo.userRepository.updateAddress(address).then((value) {
       //setState(() {});
 //      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
 //        content: Text(S.of(context).the_address_updated_successfully),
@@ -71,7 +70,7 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void removeDeliveryAddress(model.Address address) async {
-    userRepo.removeDeliveryAddress(address).then((value) {
+    userRepo.userRepository.removeAddress(address).then((value) {
       setState(() {
         addresses.remove(address);
       });
