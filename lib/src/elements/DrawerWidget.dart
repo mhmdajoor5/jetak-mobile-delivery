@@ -483,7 +483,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                     child: Text('Logout', style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       Navigator.of(context).pop();
-                    userRepository.logout().then((value) {
+                    logout().then((value) {
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           '/Login', 
                           (Route<dynamic> route) => false

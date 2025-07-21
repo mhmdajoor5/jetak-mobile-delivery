@@ -45,7 +45,7 @@ class UserController extends ControllerMVC {
     if (loginFormKey.currentState!.validate()) {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
-      repository.userRepository.login(user).then((value) {
+      repository.login(user).then((value) {
         if (value.apiToken != null) {
           Navigator.of(scaffoldKey.currentContext!)
               .pushReplacementNamed('/Pages', arguments: 1);
@@ -78,7 +78,7 @@ class UserController extends ControllerMVC {
     files.putIfAbsent(docKey, () => Triple(false, file, uuid));
     setState(() {});
 
-    repository.userRepository
+    repository
         .upload(Document(
             uuid: files[docKey]!.third,
             field: docKey,
@@ -119,7 +119,7 @@ class UserController extends ControllerMVC {
     //   return;
     // }
     // repository
-    //     .userRepository.upload(DocumentBody(
+    //     .upload(DocumentBody(
     //         document: Document(
     //             uuid: uuid,
     //             field: "document",
@@ -156,7 +156,7 @@ class UserController extends ControllerMVC {
       user.document4 = uploadedFiles["document4"]!.third;
       user.document5 = uploadedFiles["document5"]!.third;
 
-      repository.userRepository.register(user).then((value) async {
+      repository.register(user).then((value) async {
         if (value.apiToken != null) {
           Navigator.of(scaffoldKey.currentContext!)
               .pushReplacementNamed('/Pages', arguments: 1);
@@ -183,7 +183,7 @@ class UserController extends ControllerMVC {
     if (loginFormKey.currentState!.validate()) {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
-      repository.userRepository.resetPassword(user).then((value) {
+      repository.resetPassword(user).then((value) {
         if (value == true) {
           ScaffoldMessenger.of(scaffoldKey.currentContext!)
               .showSnackBar(SnackBar(

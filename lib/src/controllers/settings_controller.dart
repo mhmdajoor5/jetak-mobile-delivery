@@ -18,7 +18,7 @@ class SettingsController extends ControllerMVC {
 
   void update(User user) async {
     user.deviceToken = null;
-    repository.userRepository.updateProfile(user).then((value) {
+    repository.update(user).then((value) {
       setState(() {
         //this.favorite = value;
       });
@@ -29,7 +29,7 @@ class SettingsController extends ControllerMVC {
   }
 
   void updateCreditCard(CreditCard creditCard) {
-    repository.userRepository.saveCreditCard(creditCard).then((value) {
+    repository.setCreditCard(creditCard).then((value) {
       setState(() {});
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
         content: Text(S.of(state!.context).payment_settings_updated_successfully),
@@ -38,7 +38,7 @@ class SettingsController extends ControllerMVC {
   }
 
   void listenForUser() async {
-    creditCard = await repository.userRepository.getCreditCard();
+    creditCard = await repository.getCreditCard();
     setState(() {});
   }
 

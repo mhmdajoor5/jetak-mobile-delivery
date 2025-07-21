@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -15,7 +17,7 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void listenForAddresses({String? message}) async {
-    final Stream<model.Address> stream = await userRepo.userRepository.getAddresses();
+    final Stream<model.Address> stream = await userRepo.getAddresses();
     stream.listen((model.Address address) {
       setState(() {
         addresses.add(address);
@@ -40,7 +42,7 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void addAddress(model.Address address) {
-    userRepo.userRepository.addAddress(address).then((value) {
+    userRepo.addAddress(address).then((value) {
       setState(() {
         addresses.add(value);
       });
@@ -58,7 +60,7 @@ class DeliveryAddressesController extends ControllerMVC {
 //        });
 //      });
 //    }
-    userRepo.userRepository.updateAddress(address).then((value) {
+    userRepo.updateAddress(address).then((value) {
       //setState(() {});
 //      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
 //        content: Text(S.of(context).the_address_updated_successfully),
@@ -70,7 +72,7 @@ class DeliveryAddressesController extends ControllerMVC {
   }
 
   void removeDeliveryAddress(model.Address address) async {
-    userRepo.userRepository.removeAddress(address).then((value) {
+    userRepo.removeDeliveryAddress(address).then((value) {
       setState(() {
         addresses.remove(address);
       });

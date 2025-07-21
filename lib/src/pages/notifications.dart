@@ -22,7 +22,10 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
   _NotificationsWidgetState() : super(NotificationController()) {
     _con = (controller as NotificationController?)!;
   }
-
+  @override
+  void initState() {
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,39 +40,6 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        actions: <Widget>[
-          MaterialButton(
-            elevation: 0,
-            focusElevation: 0,
-            highlightElevation: 0,
-            onPressed: () {
-              Navigator.of(context).pushNamed('/Notifications');
-            },
-            color: Colors.transparent,
-            child: Stack(
-              alignment: AlignmentDirectional.bottomEnd,
-              children: <Widget>[
-                Icon(
-                  Icons.notifications_none,
-                  color: Theme.of(context).hintColor,
-                  size: 28,
-                ),
-                Container(
-                  padding: EdgeInsets.all(0),
-                  decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.all(Radius.circular(10))),
-                  constraints: BoxConstraints(minWidth: 13, maxWidth: 13, minHeight: 13, maxHeight: 13),
-                  child: Text(
-                    _con.unReadNotificationsCount.toString(),
-                    textAlign: TextAlign.center,
-                    style:
-                    TextStyle(color: Colors.black54, fontSize: 8),
-
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
         title: Text(
           S.of(context).notifications,
           style:  TextStyle(letterSpacing: 1.3)),
@@ -80,11 +50,10 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
         onRefresh: _con.refreshNotifications,
         child: _con.notifications.isEmpty
             ? EmptyNotificationsWidget()
-            : ListView(
-                padding: EdgeInsets.symmetric(vertical: 10),
+            : Column(
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(vertical: 0),
                       leading: Icon(
@@ -105,29 +74,28 @@ class _NotificationsWidgetState extends StateMVC<NotificationsWidget> {
                       ),
                     ),
                   ),
-                  ListView.separated(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    primary: false,
-                    itemCount: _con.notifications.length,
-                    separatorBuilder: (context, index) {
-                      return SizedBox(height: 15);
-                    },
-                    itemBuilder: (context, index) {
-                      return NotificationItemWidget(
-                        notification: _con.notifications.elementAt(index),
-                        onMarkAsRead: () {
-                          _con.doMarkAsReadNotifications(_con.notifications.elementAt(index));
-                        },
-                        onMarkAsUnRead: () {
-                          _con.doMarkAsUnReadNotifications(_con.notifications.elementAt(index));
-                        },
-                        onRemoved: () {
-                          _con.doRemoveNotification(_con.notifications.elementAt(index));
-                        },
-                      );
-                    },
+                  Expanded(
+                    child: ListView.separated(
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      primary: false,
+                      itemCount: _con.notifications.length,
+                      separatorBuilder: (context, index) {
+                        return SizedBox(height: 15,);
+                      },
+                      itemBuilder: (context, index) {
+                        return NotificationItemWidget(
+                          notification: _con.notifications[index],
+                          onMarkAsRead: ()=>
+                            _con.doMarkAsReadNotifications(_con.notifications[index]),
+                          onMarkAsUnRead: ()=> _con.doMarkAsUnReadNotifications(_con.notifications[index]),
+                          onRemoved: ()=> _con.doRemoveNotification(_con.notifications[index]),
+                          
+                        );
+                      } 
+                    
+                    ),
                   ),
                 ],
               ),

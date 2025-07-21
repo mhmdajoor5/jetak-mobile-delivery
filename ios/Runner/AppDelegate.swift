@@ -12,7 +12,6 @@ import GoogleMaps
   ) -> Bool {
     // Initialize Firebase
     FirebaseApp.configure()
-
     // Provide your Google Maps API Key
     GMSServices.provideAPIKey("YOUR_GOOGLE_MAPS_API_KEY")
     GeneratedPluginRegistrant.register(with: self)

@@ -18,11 +18,11 @@ class DriverStatusUtil {
   }
 
   static Future<User> getUser() async {
-    return await userRepo.userRepository.getCurrentUser();
+    return await userRepo.getCurrentUser();
   }
 
   static Future<void> updateDriverStatus(bool value)  async {
     driverStatus = value;
-    await userRepo.userRepository.updateDriverAvailability(value);
+    await userRepo.updateDriverAvailability(value);
   }
 }

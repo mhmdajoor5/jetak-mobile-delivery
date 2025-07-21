@@ -1,3 +1,5 @@
+import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
+import 'package:deliveryboy/src/constants/theme/sizes_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -54,7 +56,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                 height: config.App(context).appHeight(37),
                 child: Text(
                   S.of(context).lets_start_with_login,
-                  style: TextStyle(color: Colors.black54),
+                  style: TextStyle(color: Colors.white60, fontSize: Sizes.size20),
                 ),
               ),
             ),
@@ -62,7 +64,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
               top: config.App(context).appHeight(37) - 50,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black54,
+                  color: ColorsManager.charcoal,
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   boxShadow: [
                     BoxShadow(
@@ -82,6 +84,8 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       TextFormField(
+                           style: TextStyle(color: Colors.white),
+
                         keyboardType: TextInputType.emailAddress,
                         onSaved: (input) => _con.user.email = input!,
                         validator:
@@ -91,37 +95,39 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                                     : null,
                         decoration: InputDecoration(
                           labelText: S.of(context).email,
-                          labelStyle: TextStyle(color: Colors.black54),
+                          labelStyle: TextStyle(color: Colors.white60),
                           contentPadding: EdgeInsets.all(12),
+                         
                           hintText: 'johndoe@gmail.com',
                           hintStyle: TextStyle(
                             color: Theme.of(
                               context,
-                            ).focusColor.withOpacity(0.7),
+                            ).focusColor,
                           ),
                           prefixIcon: Icon(
                             Icons.alternate_email,
-                            color: Colors.black54,
+                            color: Colors.white60,
                           ),
+                          
                           border: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.2),
+                              ).focusColor,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.5),
+                              ).focusColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.2),
+                              ).focusColor,
                             ),
                           ),
                         ),
@@ -138,19 +144,20 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                                         .should_be_more_than_3_characters
                                     : null,
                         obscureText: _con.hidePassword,
+                        style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelText: S.of(context).password,
-                          labelStyle: TextStyle(color: Colors.black54),
+                          labelStyle: TextStyle(color: Colors.white60),
                           contentPadding: EdgeInsets.all(12),
                           hintText: '••••••••••••',
                           hintStyle: TextStyle(
                             color: Theme.of(
                               context,
-                            ).focusColor.withOpacity(0.7),
+                            ).focusColor,
                           ),
                           prefixIcon: Icon(
                             Icons.lock_outline,
-                            color: Colors.black54,
+                            color: Colors.white60,
                           ),
                           suffixIcon: IconButton(
                             onPressed: () {
@@ -169,21 +176,21 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.2),
+                              ).focusColor,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.5),
+                              ).focusColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).focusColor.withOpacity(0.2),
+                              ).focusColor,
                             ),
                           ),
                         ),
@@ -192,9 +199,9 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                       BlockButtonWidget(
                         text: Text(
                           S.of(context).login,
-                          style: TextStyle(color: Colors.black54),
+                          style: TextStyle(color: Colors.white70),
                         ),
-                        color: Colors.black54,
+                        color: Colors.black,
                         onPressed: () {
                           _con.login();
                         },

@@ -23,9 +23,9 @@ class OrderController extends ControllerMVC {
   }
 
   void getCurrentUserStatus() {
-    userRepo.userRepository.getCurrentUser().asStream().listen((event) async {
+    userRepo.getCurrentUser().asStream().listen((event) async {
       driverAvailability =
-          (await userRepo.userRepository.getCurrentUser()).available == true;
+          (await userRepo.getCurrentUser()).available == true;
       setState(() {});
     });
   }

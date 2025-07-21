@@ -404,7 +404,7 @@ class _SettingsWidgetState extends StateMVC<SettingsWidget> {
       );
       
       // Update on server
-      await userRepo.userRepository.updateDriverLocation(position.latitude, position.longitude);
+      await userRepo.updateDriverLocation(position.latitude, position.longitude);
       
       // Save locally
       SharedPreferences prefs = await SharedPreferences.getInstance();

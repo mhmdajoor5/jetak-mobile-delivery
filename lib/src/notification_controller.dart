@@ -328,6 +328,8 @@ class NotificationController {
 
   static Future<void> getDeviceToken() async {
     try {
+      await FirebaseMessaging.instance.getAPNSToken();
+      
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         print('🔑 FCM Token: $token');

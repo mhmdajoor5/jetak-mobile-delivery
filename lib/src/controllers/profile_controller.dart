@@ -18,7 +18,7 @@ class ProfileController extends ControllerMVC {
   }
 
   void listenForUser() {
-    userRepository.getCurrentUser().then((user) {
+    getCurrentUser().then((user) {
       setState(() {
         user = user;
       });

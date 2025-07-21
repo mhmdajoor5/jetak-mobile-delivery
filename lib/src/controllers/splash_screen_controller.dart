@@ -43,7 +43,6 @@ class SplashScreenController extends ControllerMVC {
       if (settingRepo.setting.value.appName != '' &&
           settingRepo.setting.value.mainColor != null) {
         progress.value["Setting"] = 41;
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
         progress.notifyListeners();
       }
     });
@@ -62,6 +61,9 @@ class SplashScreenController extends ControllerMVC {
       await fcmOnMessageListeners();
     } catch (e) {}
     Timer(Duration(seconds: 20), () {
+      if(userRepo.currentUser.value.auth == null) {
+        Navigator.of(scaffoldKey.currentContext!).pushReplacementNamed('/Login');
+      }      
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text(S.of(state!.context).verify_your_internet_connection),
