@@ -49,7 +49,7 @@ Future<UserModel.User> login(UserModel.User user) async {
       print('🔍 Login Response Status: ${response.statusCode}');
       print('🔍 Login Response Headers: ${response.headers}');
       print(
-        '🔍 Login Response Body (first 200 chars): ${response.data.toString().substring(0, Math.min<int>(10, response.data.length))}',
+        '🔍 Login Response Body (first 200 chars): ${response.data.toString()}',
       );
 
       // فحص Content-Type
@@ -71,7 +71,7 @@ Future<UserModel.User> login(UserModel.User user) async {
 
         // التحقق من أن الـ JSON valid
         try {
-          Map<String, dynamic> responseData = response.data;
+          Map<dynamic, dynamic> responseData = response.data;
 
           if (responseData['data'] != null) {
             setCurrentUser(responseData);
@@ -163,7 +163,7 @@ Future<void> updateDriverAvailability(bool value) async {
   }
   final String _apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}${currentUser.value.id}/update_availability?$_apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}${currentUser.value.id}/update_availability?$_apiToken';
   final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
@@ -188,7 +188,7 @@ Future<dynamic> upload(Document body) async {
     ],
   );
   final String url =
-      '${GlobalConfiguration().getString('base_url')}api/uploads';
+      '${GlobalConfiguration().getValue('base_url')}api/uploads';
   var request = http.MultipartRequest("POST", Uri.parse(url));
   // request.fields['file'] = body.file.toString();
   request.fields['uuid'] = body.uuid!;
@@ -204,7 +204,7 @@ Future<UserModel.User> register(UserModel.User user) async {
     middlewares: [HttpLogger(logLevel: LogLevel.BODY)],
   );
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}register';
+      '${GlobalConfiguration().getValue('api_base_url')}register';
   final client = http.Client();
   final response = await httpWithMiddleware.post(
     Uri.parse(url),
@@ -237,7 +237,7 @@ Future<UserModel.User> getCurrentUserAsync() async {
 
 Future<bool> resetPassword(UserModel.User user) async {
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}send_reset_link_email';
+      '${GlobalConfiguration().getValue('api_base_url')}send_reset_link_email';
   final client = http.Client();
   final response = await client.post(
     Uri.parse(url),
@@ -261,7 +261,7 @@ Future<void> logout() async {
 void setCurrentUser(jsonString) async {
   try {
     print(
-      '🔍 setCurrentUser called with: ${jsonString.substring(0, Math.min<int>(200, jsonString.length))}...',
+      '🔍 setCurrentUser called with: ${jsonString}',
     );
 
     // التحقق من أن jsonString ليس HTML
@@ -334,7 +334,7 @@ Future<CreditCard> getCreditCard() async {
 Future<UserModel.User> update(UserModel.User user) async {
   final String _apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}users/${currentUser.value.id}?$_apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}users/${currentUser.value.id}?$_apiToken';
   final client = http.Client();
   final response = await client.post(
     Uri.parse(url),
@@ -350,7 +350,7 @@ Future<Stream<Address>> getAddresses() async {
   UserModel.User _user = currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}&';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$_apiToken&search=user_id:${_user.id}&searchFields=user_id:=&orderBy=is_default&sortedBy=desc';
+      '${GlobalConfiguration().getValue('api_base_url')}delivery_addresses?$_apiToken&search=user_id:${_user.id}&searchFields=user_id:=&orderBy=is_default&sortedBy=desc';
   try {
     final client = http.Client();
     final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
@@ -374,7 +374,7 @@ Future<Address> addAddress(Address address) async {
   final String _apiToken = 'api_token=${_user.apiToken}';
   address.userId = _user.id;
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses?$_apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}delivery_addresses?$_apiToken';
   final client = http.Client();
   try {
     final response = await client.post(
@@ -394,7 +394,7 @@ Future<Address> updateAddress(Address address) async {
   final String _apiToken = 'api_token=${_user.apiToken}';
   address.userId = _user.id;
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
   final client = http.Client();
   try {
     final response = await client.put(
@@ -413,7 +413,7 @@ Future<Address> removeDeliveryAddress(Address address) async {
   UserModel.User _user = userRepo.currentUser.value;
   final String _apiToken = 'api_token=${_user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}delivery_addresses/${address.id}?$_apiToken';
   final client = http.Client();
   try {
     final response = await client.delete(

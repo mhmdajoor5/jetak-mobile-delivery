@@ -20,11 +20,11 @@ class OrderHistoryController {
         stream = await orderRepo.getOrdersHistory();
       }
       
-      final orders = await stream.toList();
+      final List<Order> orders = await stream.toList();
       print('📋 OrderHistoryController: Received ${orders.length} orders from repository');
       
       // تحويل Order objects إلى OrderHistoryModel objects
-      final historyModels = orders.map((order) {
+      final List<OrderHistoryModel> historyModels = orders.map((order) {
         print('📋 Processing order ${order.id}: status=${order.orderStatus?.status}');
         
         // حساب المبلغ الإجمالي
@@ -37,7 +37,7 @@ class OrderHistoryController {
         
         // إضافة الضرائب ورسوم التوصيل
         totalAmount += (order.tax ?? 0) + (order.deliveryFee ?? 0);
-        
+        print("Order Details ${order.toString()}");
         return OrderHistoryModel(
           orderNumber: order.id ?? 'غير محدد',
           clientName: order.user?.name ?? 'عميل غير محدد',
@@ -46,6 +46,7 @@ class OrderHistoryController {
           date: order.dateTime ?? DateTime.now(),
           amount: totalAmount,
           status: order.orderStatus?.status ?? 'غير محدد',
+          foodOrders: order.foodOrders,
         );
       }).toList();
       

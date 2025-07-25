@@ -636,7 +636,7 @@ Future<Map<String, dynamic>> testConnection() async {
   print('   - User Email: ${user.email}');
   print('   - API Token Length: ${user.apiToken?.length ?? 0}');
   print(
-    '   - API Token (first 20 chars): ${user.apiToken?.substring(0, Math.min<int>(20, user.apiToken?.length ?? 0))}...',
+    '   - API Token (first 20 chars): ${user.apiToken?.toString()}',
   );
   print('   - Token is null: ${user.apiToken == null}');
   print('   - Token is empty: ${user.apiToken?.isEmpty ?? true}');

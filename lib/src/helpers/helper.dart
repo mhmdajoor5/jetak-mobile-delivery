@@ -387,18 +387,20 @@ class Helper {
   }
 
   static String trans(String text, BuildContext context) {
+    print(text);
     switch (text) {
-      case "App\Notifications\StatusChangedOrder":
+      case "App\\Notifications\\StatusChangedOrder":
         return S.of(context).order_satatus_changed;
-      case "App\Notifications\NewOrder":
+      case "App\\Notifications\\NewOrder":
         return S.of(context).new_order_from_costumer;
-      case "App\Notifications\AssignedOrder":
+      case "App\\Notifications\\AssignedOrder":
         return S.of(context).your_have_an_order_assigned_to_you;
       case "km":
         return S.of(context).km;
       case "mi":
         return S.of(context).mi;
-      
+      case 'fcm':
+      return "Test Notifications";
       default:
              return S.of(context).order_satatus_changed;
     }

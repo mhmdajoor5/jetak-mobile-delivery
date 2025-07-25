@@ -16,19 +16,21 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
   try {
     // استخدام API endpoint الصحيح للطلبات المعلقة
     final baseUrl = GlobalConfiguration().getValue('api_base_url');
-    final url = '${baseUrl}orders?api_token=${user.apiToken!}';
+    final url = '${baseUrl}driver/driver-candidate-orders/${user.id}';
     
-    final response = await http.get(
-      Uri.parse(url).replace(queryParameters: {
+    final response = await http.post(
+      Uri.parse(url),
+      body: json.encode({
         'api_token': user.apiToken!,
-        //  'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
-        // // 'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
-        // 'searchFields': 'driver_id:=;order_status_id:=',
-        // 'searchJoin': 'and',
-         'orderBy': 'id',
+        'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
+        // 'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
+        'searchFields': 'driver_id:=;order_status_id:=',
+        'searchJoin': 'and',
+        'orderBy': 'id',
         'sortedBy': 'desc',
-        'limit': '100'
+        'limit': '20'
       }),
+     
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -44,19 +46,19 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
       print(jsonData);
       
       // تحويل البيانات لتتناسب مع PendingOrderModel
-      final ordersData = jsonData['data'] ?? [];
+      final ordersData = jsonData['orders'] ?? [];
       
       if (ordersData is List) {
         print('📋 Found ${ordersData.length} pending orders');
         
         // تحويل البيانات لصيغة PendingOrderModel
         final convertedOrders = ordersData.map((order) {
-          print('🔍 Converting Order ${order['id']}:');
+          print('🔍 Converting Order ${order['order_id']}:');
           print('  - User: ${order['user']}');
           print('  - Delivery Address: ${order['delivery_address']}');
           
           return {
-            'order_id': order['id'],
+            'order_id': order['order_id'],
             'tax': (order['tax'] ?? 0.0).toDouble(),
             'delivery_fee': (order['delivery_fee'] ?? 0.0).toDouble(),
             'hint': order['hint'],

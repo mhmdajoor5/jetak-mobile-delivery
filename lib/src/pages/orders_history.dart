@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
 import 'package:flutter/material.dart';
 import '../controllers/order_history_controller.dart';
 import '../models/order_history_model.dart';
@@ -225,7 +227,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     return Padding(
       padding: EdgeInsets.only(left: 8),
       child: FilterChip(
-        label: Text(label),
+        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : ColorsManager.selection, fontSize: 14, fontWeight:isSelected? FontWeight.bold: FontWeight.normal)),
         selected: isSelected,
         onSelected: (selected) {
           if (selected) {
@@ -235,8 +237,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             _loadData();
           }
         },
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-        checkmarkColor: Theme.of(context).primaryColor,
+        backgroundColor: ColorsManager.selection.withValues(alpha: .2),
+        selectedColor: ColorsManager.selection,
+        side: BorderSide(color: ColorsManager.selection),
+        checkmarkColor: ColorsManager.success,
       ),
     );
   }
@@ -334,7 +338,21 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 _buildInfoRow(Icons.location_on, 'العنوان', order.deliveryAddress, maxLines: 2),
                 
                 SizedBox(height: 12),
-                
+                Wrap(
+                  children: List.generate(order.foodOrders?.length??0, (index) => ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(imageUrl: order.foodOrders?[index].food?.image?.url??'', width: 50, height: 50, 
+                    errorWidget: (context, url, error) => Column(
+                      children: [
+                        Icon(Icons.error),
+                        Text('No image', style: TextStyle(color: Colors.grey, fontSize: 8),),
+                      ],
+                    ),
+                    placeholder: (context, url) => CircularProgressIndicator(),
+                    ), 
+                    )),
+                ), 
+                SizedBox(height: 12),
                 // Bottom Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

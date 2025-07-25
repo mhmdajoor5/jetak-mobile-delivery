@@ -45,37 +45,30 @@ class _NotificationItemWidgetState extends StateMVC<NotificationItemWidget> {
     Container(
       height: 100,
       color: Colors.black12,
-      child: OnSlide(
-      
-        backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.black54,
-        items: <ActionItems>[
-          ActionItems(
-              icon: (notification.read ?? false)
-                  ? Icon(
-                      Icons.panorama_fish_eye,
-                      color: Theme.of(context).cardColor,
-                    )
-                  : Icon(
-                      Icons.brightness_1,
-                      color: Theme.of(context).cardColor,
-                    ),
-              onPress: () {
-                if ((notification.read ?? false)) {
+      child: SwipeableWidget(
+        actionExtent: 80,
+        // backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.black54,
+        actions: <SwipeAction>[
+          SwipeAction(
+            iconColor: Colors.green,
+            icon: (notification.read ?? false)
+                ? Icons.check_circle_outline_rounded
+                : Icons.check_circle_rounded,
+            onTap: () {
+              if ((notification.read ?? false)) {
                   onMarkAsUnRead();
                 } else {
                   onMarkAsRead();
                 }
               },
-              backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.black54),
-          ActionItems(
-              icon: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Icon(Icons.delete, color: Theme.of(context).canvasColor),  
-              ),
-              onPress: () {
+              backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.grey.shade100),
+          SwipeAction(
+            iconColor: Colors.red,
+              icon: Icons.delete,
+              onTap: () {
                 onRemoved();
               },
-              backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.black54),
+              backgroundColor: (notification.read ?? false) ? Theme.of(context).scaffoldBackgroundColor : Colors.white),
         ],
         child: Container(
           margin: EdgeInsets.symmetric(vertical: 10),
