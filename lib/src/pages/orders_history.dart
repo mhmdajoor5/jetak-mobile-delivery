@@ -212,11 +212,13 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16),
         children: [
-          _buildFilterChip('delivered', 'مكتملة'),
-          _buildFilterChip('pending', 'معلقة'),
-          _buildFilterChip('preparing', 'قيد التحضير'),
-          _buildFilterChip('cancelled', 'ملغية'),
-          _buildFilterChip('all_completed', 'الكل'),
+          _buildFilterChip( 'Order Received', 'Order Received'),
+          _buildFilterChip('Preparing', 'Preparing'),
+          _buildFilterChip('Ready', 'Ready'),
+          _buildFilterChip('On the Way', 'On the Way'),
+          _buildFilterChip('Delivered', 'Delivered'),
+          _buildFilterChip('Accepted', 'Accepted'),
+          _buildFilterChip('Rejected', 'Rejected'),
         ],
       ),
     );

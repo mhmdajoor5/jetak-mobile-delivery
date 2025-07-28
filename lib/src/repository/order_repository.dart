@@ -116,7 +116,7 @@ Future<Stream<Order>> getOrdersHistory() async {
         .transform(json.decoder)
         .map((data) {
           final result = Helper.getData(data as Map<String, dynamic>);
-          print('📋 Order History Response:');
+          print('📋 Order History Response: ${result}');
           print('   - Number of orders found: ${(result as List).length}');
           
           // Log details of first order for debugging

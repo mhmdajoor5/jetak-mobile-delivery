@@ -14,7 +14,9 @@ class OrderHistoryController {
       Stream<Order> stream;
       if (statusIds != null && statusIds.isNotEmpty) {
         print('📋 Using custom status IDs: ${statusIds.join(', ')}');
-        stream = await orderRepo.getOrdersByStatuses(statusIds);
+       
+        // stream = await orderRepo.getOrdersByStatuses(statusIds);
+         stream = await orderRepo.getOrdersHistory();
       } else {
         print('📋 Using default delivered orders (status 5)');
         stream = await orderRepo.getOrdersHistory();
