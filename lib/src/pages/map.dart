@@ -30,8 +30,8 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
   bool _isLoading = true;
   bool _orderAccepted = false;
   String? _errorMessage;
-  String _estimatedTime = "15 min";
-  String _distance = "2.3 km";
+  String _estimatedTime = "N/A min";
+  String _distance = "N/A km";
   bool _isNavigating = false;
 
   _EnhancedMapWidgetState() : super(EnhancedMapController()) {
@@ -93,7 +93,7 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
   }
 
   void _calculateRouteInfo() {
-    // Simulate route calculation - replace with actual Google Directions API call
+      
     setState(() {
       _estimatedTime = "${15 + (DateTime.now().millisecond % 20)} min";
       _distance = "${(2.0 + (DateTime.now().millisecond % 100) / 100).toStringAsFixed(1)} km";

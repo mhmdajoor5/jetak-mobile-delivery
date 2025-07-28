@@ -286,7 +286,7 @@ class EnhancedMapController extends ControllerMVC {
         ),
         icon: await _createCustomMarkerIcon(
           Icons.flag,
-          Colors.red,
+          Colors.green,
           size: 48,
         ),
         infoWindow: InfoWindow(
@@ -295,7 +295,24 @@ class EnhancedMapController extends ControllerMVC {
         ),
       ));
     }
-    
+    orders.forEach((order) async {
+      allMarkers.add(Marker(
+        markerId: MarkerId(order.orderId.toString()),
+        position: LatLng(
+          order.deliveryAddress!.latitude,
+          order.deliveryAddress!.longitude,
+        ),
+        icon: await _createCustomMarkerIcon(
+          Icons.flag,
+          Colors.grey,
+          size: 48,
+        ),
+        infoWindow: InfoWindow(
+          title: 'Order #${order.orderId}',
+          snippet: order.customerName,
+        ),
+      ));
+    }); 
     setState(() {});
   }
 
