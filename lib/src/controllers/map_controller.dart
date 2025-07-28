@@ -20,7 +20,7 @@ class EnhancedMapController extends ControllerMVC {
   PendingOrderModel? currentOrder;
   List<PendingOrderModel> orders = <PendingOrderModel>[];
   List<Marker> allMarkers = <Marker>[];
-  Address? currentAddress;
+  Address? currentAddress = sett.myAddress.value;
   Set<Polyline> polylines = {};
   CameraPosition? cameraPosition;
   MapsUtil mapsUtil = MapsUtil();
