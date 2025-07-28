@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
+import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
+import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/order_controller.dart';
 import '../elements/EmptyOrdersWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
+import '../models/route_argument.dart';
 
 class OrdersWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState>? parentScaffoldKey;
@@ -488,7 +490,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                             color: Colors.orange[50],
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: Colors.orange.withOpacity(0.2),
+                                              color: Colors.orange.withValues(alpha: 0.2),
                                               width: 1,
                                             ),
                                           ),
@@ -534,8 +536,14 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                   ),
                                                   onPressed: () {
                                                     if (order.deliveryAddress!.latitude != null && order.deliveryAddress!.longitude != null) {
-                                                      launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=${order.deliveryAddress!.latitude},${order.deliveryAddress!.longitude}"));
-                                                    }else{
+                                                      Navigator.of(context).pushNamed(
+                                                        '/Map',
+                                                        arguments: RouteArgument(
+                                                          param:{"current_order" :order,"pending_orders" :_con.pendingOrdersModel, },
+                                                          id: order.orderId.toString(),
+                                                        ),
+                                                      );
+                                                    } else {
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text("لا يوجد معلومات عن الموقع"))
                                                       );
@@ -567,7 +575,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     backgroundColor: Colors.blue[600],
                                                     foregroundColor: Colors.white,
                                                     elevation: 0,
-                                                    shadowColor: Colors.blue.withOpacity(0.3),
+                                                    shadowColor: Colors.blue.withValues(alpha: 0.3),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(6),
                                                     ),
@@ -576,6 +584,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                 ),
                                               ),
                                             ),
+                                            SizedBox(width: 12),
+
                                             // Accept Button with enhanced design
                                             Expanded(
                                               child: SizedBox(
@@ -586,7 +596,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     backgroundColor: Colors.green[600],
                                                     foregroundColor: Colors.white,
                                                     elevation: 0,
-                                                    shadowColor: Colors.green.withOpacity(0.3),
+                                                    shadowColor: Colors.green.withValues(alpha: 0.3),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(12),
                                                     ),
@@ -621,7 +631,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     backgroundColor: Colors.red[600],
                                                     foregroundColor: Colors.white,
                                                     elevation: 0,
-                                                    shadowColor: Colors.red.withOpacity(0.3),
+                                                    shadowColor: Colors.red.withValues(alpha: 0.3),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(12),
                                                     ),
@@ -1463,10 +1473,10 @@ Widget _buildOrderItem(FoodOrder item) {
                 ),
                 Spacer(),
                 Text(
-                  '${(item.price.toStringAsFixed(2))* (item.quantity ?? 1)} ₪',
+                  '${((item.price)* (item.quantity ?? 1)).toStringAsFixed(2)} ₪',
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,  
                     color: Colors.green[700],
                   ),
                 ),

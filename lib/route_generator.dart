@@ -7,6 +7,7 @@ import 'src/pages/forget_password.dart';
 import 'src/pages/help.dart';
 import 'src/pages/languages.dart';
 import 'src/pages/login.dart';
+import 'src/pages/map.dart';
 import 'src/pages/notifications.dart';
 import 'src/pages/order.dart';
 import 'src/pages/order_notification_screen.dart';
@@ -48,6 +49,11 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => SettingsWidget());
       case '/Complete-profile':
         return MaterialPageRoute(builder: (_) => CompleteYourProfileWidget());
+      case '/Map':
+        return MaterialPageRoute(builder: (_) => EnhancedMapWidget(
+          routeArgument: args as RouteArgument,
+          parentScaffoldKey: GlobalKey<ScaffoldState>(),
+        ));
       case '/Debug':
         return MaterialPageRoute(builder: (_) => DebugScreen());
       default:
