@@ -3,6 +3,7 @@ import '../models/order.dart';
 import '../repository/order_repository.dart' as orderRepo;
 
 class OrderHistoryController {
+
   Future<List<OrderHistoryModel>> getOrdersHistory({List<String>? statusIds}) async {
     try {
       print('📋 OrderHistoryController: Starting to fetch orders history...');
@@ -15,8 +16,8 @@ class OrderHistoryController {
       if (statusIds != null && statusIds.isNotEmpty) {
         print('📋 Using custom status IDs: ${statusIds.join(', ')}');
        
-        // stream = await orderRepo.getOrdersByStatuses(statusIds);
-         stream = await orderRepo.getOrdersHistory();
+        stream = await orderRepo.getOrdersByStatuses(statusIds);
+        //  stream = await orderRepo.getOrdersHistory();
       } else {
         print('📋 Using default delivered orders (status 5)');
         stream = await orderRepo.getOrdersHistory();

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
 
+import 'package:flutter/rendering.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 
@@ -141,7 +142,7 @@ Future<Stream<Order>> getOrdersHistory() async {
 }
 
 // Debug function to check all available order statuses
-Future<void> debugOrderStatuses() async {
+Future<List<OrderStatus>> debugOrderStatuses() async {
   print('🔍 Fetching all order statuses...');
   try {
     final Stream<OrderStatus> stream = await getOrderStatus();
@@ -151,9 +152,11 @@ Future<void> debugOrderStatuses() async {
     for (var status in statuses) {
       print('   - ID: ${status.id}, Status: ${status.status}');
     }
+    return statuses;
   } catch (e) {
     print('❌ Error fetching order statuses: $e');
   }
+  return [];
 }
 
 // Function to get orders by multiple status IDs

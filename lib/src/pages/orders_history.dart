@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
+import 'package:deliveryboy/src/models/order_status.dart';
 import 'package:flutter/material.dart';
 import '../controllers/order_history_controller.dart';
 import '../models/order_history_model.dart';
+import '../repository/order_repository.dart' as orderRepo;
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -139,35 +141,46 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildStatisticsSection() {
     return Container(
+      height: 150,
       padding: EdgeInsets.all(16),
-      child: Row(
+      child: ListView(
+        scrollDirection: Axis.horizontal,
         children: [
-          Expanded(
-            child: _buildStatCard(
-              'مكتملة',
-              '${statistics['total_delivered'] ?? 0}',
-              Icons.check_circle,
-              Colors.green,
-            ),
+          _buildStatCard(
+            'مكتملة',
+            '${statistics['total_delivered'] ?? 0}',
+            Icons.check_circle,
+            Colors.green,
           ),
           SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'معلقة',
-              '${statistics['total_pending'] ?? 0}',
-              Icons.schedule,
-              Colors.orange,
-            ),
+          _buildStatCard(
+            'معلقة',
+            '${statistics['total_pending'] ?? 0}',
+            Icons.schedule,
+            Colors.orange,
+          ),
+            SizedBox(width: 12),
+          _buildStatCard(
+            'ملغية',
+            '${statistics['total_cancelled'] ?? 0}',
+            Icons.cancel,
+            Colors.red,
           ),
           SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'الأرباح',
-              '${(statistics['total_earnings'] ?? 0.0).toStringAsFixed(0)} ₪',
-              Icons.monetization_on,
-              Colors.blue,
-            ),
+          _buildStatCard(
+            'متوسط سعر الطلب',
+            '${statistics['average_order_value'].toStringAsFixed(2) ?? 0}',
+            Icons.monetization_on_rounded,
+            Colors.blue,
           ),
+          SizedBox(width: 12),
+          _buildStatCard(
+            'الأرباح',
+            '${(statistics['total_earnings'] ?? 0.0).toStringAsFixed(0)} ₪',
+            Icons.arrow_circle_up_rounded,
+            Colors.blue,
+          ),
+        
         ],
       ),
     );
@@ -175,11 +188,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
+      width: 120,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: .6)),
       ),
       child: Column(
         children: [
@@ -206,21 +220,28 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Widget _buildFilterTabs() {
-    return SizedBox(
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          _buildFilterChip( 'Order Received', 'Order Received'),
-          _buildFilterChip('Preparing', 'Preparing'),
-          _buildFilterChip('Ready', 'Ready'),
-          _buildFilterChip('On the Way', 'On the Way'),
-          _buildFilterChip('Delivered', 'Delivered'),
-          _buildFilterChip('Accepted', 'Accepted'),
-          _buildFilterChip('Rejected', 'Rejected'),
-        ],
-      ),
+    return FutureBuilder<List<OrderStatus>>(
+      future: orderRepo.debugOrderStatuses(),
+      builder:(context, snapshot) {
+        if(snapshot.hasData){
+        return  SizedBox(
+          height: 50,
+          child: ListView.builder(
+            itemCount: snapshot.data?.length ?? 0,
+            itemBuilder: (context, index) =>_buildFilterChip(snapshot.data![index].status??"", snapshot.data![index].status??""),
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            
+          ),
+                
+        );
+        }else if(snapshot.connectionState==ConnectionState.waiting){
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+        else{
+          return const Center(child: Text("حدث خطأ"));
+        }
+      } 
     );
   }
 
