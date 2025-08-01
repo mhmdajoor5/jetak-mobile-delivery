@@ -19,7 +19,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   bool isLoading = true;
   List<OrderHistoryModel> orders = [];
   Map<String, dynamic> statistics = {};
-
+  List<OrderStatus> orderStatuses = [];
   @override
   void initState() {
     super.initState();
@@ -224,11 +224,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       future: orderRepo.debugOrderStatuses(),
       builder:(context, snapshot) {
         if(snapshot.hasData){
+        orderStatuses = snapshot.data!;
         return  SizedBox(
           height: 50,
           child: ListView.builder(
-            itemCount: snapshot.data?.length ?? 0,
-            itemBuilder: (context, index) =>_buildFilterChip(snapshot.data![index].status??"", snapshot.data![index].status??""),
+            itemCount: orderStatuses.length,
+            itemBuilder: (context, index) =>_buildFilterChip(orderStatuses[index].status??"", orderStatuses[index].status??""),
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16),
             
@@ -291,6 +292,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       ),
     );
   }
+  ///class OrderStatus {
+  ///String? id;
+  ///String? status;
 
   Widget _buildOrdersList() {
     return ListView.builder(
@@ -319,35 +323,121 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                         color: Colors.black87,
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(order.status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _getStatusColor(order.status).withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getStatusIcon(order.status),
-                            size: 16,
-                            color: _getStatusColor(order.status),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            order.status,
-                            style: TextStyle(
-                              color: _getStatusColor(order.status),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                   PopupMenuButton<Map<String, dynamic>>(
+  onSelected: (selectedStatus) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+
+      print('Selected status: ${selectedStatus['status']} with ID: ${selectedStatus['id']}');
+      
+      // Update order status
+      final updatedOrder = await orderRepo.acceptOrderWithStatus(
+        order.orderNumber!, 
+        selectedStatus['id'].toString(),
+      );
+
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Order status updated to ${selectedStatus['status']}'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    await  _refreshData();
+    } catch (e) {
+      // Close loading dialog if still open
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update status: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      
+      print('Error updating order status: $e');
+    }
+  },
+  itemBuilder: (BuildContext context) {
+    return orderStatuses.map((status) {
+      return PopupMenuItem<Map<String, dynamic>>(
+        value: {
+          'id': status.id,
+          'status': status.status,
+        },
+        child: Row(
+          children: [
+            Icon(
+              _getStatusIcon(status.status!),
+              size: 16,
+              color: _getStatusColor(status.status!),
+            ),
+            SizedBox(width: 8),
+            Text(status.status!),
+            Spacer(),
+            Text(
+              'ID: ${status.id}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  },
+  child: Container(
+    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: _getStatusColor(order.status).withValues(alpha: .1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: _getStatusColor(order.status).withValues(alpha: .3),
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          _getStatusIcon(order.status),
+          size: 16,
+          color: _getStatusColor(order.status),
+        ),
+        SizedBox(width: 4),
+        Text(
+          order.status,
+          style: TextStyle(
+            color: _getStatusColor(order.status),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+        SizedBox(width: 4),
+        Icon(
+          Icons.arrow_drop_down,
+          size: 16,
+          color: _getStatusColor(order.status),
+        ),
+      ],
+    ),
+  ),
+)
                   ],
                 ),
                 
