@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/rendering.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
@@ -372,40 +373,25 @@ Future<Order> acceptOrderWithStatus(String orderId, String statusId) async {
       throw Exception('User not authenticated');
     }
 
-    // Debug: Print the URL being called
-    print('Calling API URL: $uri');
-    print('Order ID: $orderId');
-    print('Status ID: $statusId');
-    print('API Token: ${user.apiToken?.substring(0, 10)}...'); // Only show first 10 chars for security
 
     Map<String, dynamic> queryParams = {};
     queryParams['api_token'] =  user.apiToken;
     queryParams['status'] = statusId;
     uri = uri.replace(queryParameters: queryParams);
 
-    print('Final URL with params: $uri');
 
-   final Dio dio = Dio();
+   final Dio dio = Dio()..interceptors.add(PrettyDioLogger());
     final response = await dio.put(
-      uri.path,
+     "http://carrytechnologies.co/api/driver/orders/$orderId",
       queryParameters: queryParams,
-      
+      data: json.encode(queryParams),
     );
 
-    print('Response Status Code: ${response.statusCode}');
-    print('Response Headers: ${response.headers}');
-    print('Response Body (first 500 chars): ${response.data.length > 500 ? response.data.substring(0, 1000) + "..." : response.data}');
-
-    // Check if response is HTML (error page)
-    if (response.data.trim().startsWith('<!DOCTYPE html') || 
-        response.data.trim().startsWith('<html')) {
-      throw Exception('Server returned HTML instead of JSON. Status: ${response.statusCode}. This usually means the API endpoint is incorrect or the server encountered an error.');
-    }
 
     // Handle different response status codes
     if (response.statusCode == 200 || response.statusCode == 201) {
       try {
-        final responseData = json.decode(response.data);
+        final responseData = response.data;
         if (responseData['data'] != null) {
           return Order.fromJSON(responseData['data']);
         } else {
