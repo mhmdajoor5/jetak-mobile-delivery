@@ -165,7 +165,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
                  OrderHistoryPage();
           break;
         case 3:
-          widget.currentPage = MapWidget(
+          widget.currentPage = EnhancedMapWidget(
               parentScaffoldKey: widget.scaffoldKey,
               routeArgument: widget.routeArgument);
           break;
@@ -175,14 +175,14 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: onWillPop,
+    return PopScope(
+      onPopInvokedWithResult:(didPop, result)async =>await onWillPop(),
       child: Scaffold(
         key: widget.scaffoldKey,
         drawer: DrawerWidget(),
         body: widget.currentPage,
         bottomNavigationBar: Container(
-          height: 85,
+          height: 100,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -198,13 +198,13 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black12,
                 blurRadius: 20,
                 offset: Offset(0, -5),
                 spreadRadius: 5,
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black12,
                 blurRadius: 10,
                 offset: Offset(0, -2),
               ),
@@ -216,6 +216,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
               topRight: Radius.circular(25),
             ),
             child: BottomNavigationBar(
+              
               type: BottomNavigationBarType.fixed,
               selectedItemColor: Colors.transparent,
               selectedFontSize: 0,
@@ -225,6 +226,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
               backgroundColor: Colors.transparent,
               unselectedItemColor: Colors.transparent,
               currentIndex: widget.currentTab,
+
               onTap: (int i) {
                 print(i);
                 _selectTab(i);
@@ -277,23 +279,18 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       curve: Curves.easeInOut,
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: EdgeInsets.all(isSelected ? 12 : 8),
             decoration: BoxDecoration(
-              gradient: isSelected
-                  ? LinearGradient(
-                      colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
+             color: color.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: color.withOpacity(0.3),
+                        color: color.withValues(alpha:0.1),
                         blurRadius: 8,
                         offset: Offset(0, 4),
                       ),
@@ -303,7 +300,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             child: Icon(
               icon,
               color: isSelected ? color : Colors.grey[500],
-              size: isSelected ? 26 : 22,
+              size: isSelected ? 22 : 20,
             ),
           ),
           SizedBox(height: 4),

@@ -16,19 +16,21 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
   try {
     // استخدام API endpoint الصحيح للطلبات المعلقة
     final baseUrl = GlobalConfiguration().getValue('api_base_url');
-    final url = '${baseUrl}orders?api_token=${user.apiToken!}';
+    final url = '${baseUrl}driver/driver-candidate-orders/$driverId';
     
-    final response = await http.get(
-      Uri.parse(url).replace(queryParameters: {
+    final response = await http.post(
+      Uri.parse(url),
+      body: json.encode({
         'api_token': user.apiToken!,
-        //  'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
-        // // 'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
-        // 'searchFields': 'driver_id:=;order_status_id:=',
-        // 'searchJoin': 'and',
-         'orderBy': 'id',
+        'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
+        // 'search': 'driver_id:null;order_status_id:1', // طلبات بدون سائق و pending
+        'searchFields': 'driver_id:=;order_status_id:=',
+        'searchJoin': 'and',
+        'orderBy': 'id',
         'sortedBy': 'desc',
-        'limit': '100'
+        'limit': '20'
       }),
+     
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -44,19 +46,19 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
       print(jsonData);
       
       // تحويل البيانات لتتناسب مع PendingOrderModel
-      final ordersData = jsonData['data'] ?? [];
+      final ordersData = jsonData['orders'] ?? [];
       
       if (ordersData is List) {
         print('📋 Found ${ordersData.length} pending orders');
         
         // تحويل البيانات لصيغة PendingOrderModel
         final convertedOrders = ordersData.map((order) {
-          print('🔍 Converting Order ${order['id']}:');
+          print('🔍 Converting Order ${order['order_id']}:');
           print('  - User: ${order['user']}');
           print('  - Delivery Address: ${order['delivery_address']}');
           
           return {
-            'order_id': order['id'],
+            'order_id': order['order_id'],
             'tax': (order['tax'] ?? 0.0).toDouble(),
             'delivery_fee': (order['delivery_fee'] ?? 0.0).toDouble(),
             'hint': order['hint'],
@@ -78,11 +80,11 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
       print('❌ Response body: ${response.body}');
       
       // إرجاع بيانات وهمية للاختبار
-      return _getMockPendingOrders();
+      return {};
     }
   } catch (e) {
     print('❌ Exception in getPendingOrders: $e');
-    return _getMockPendingOrders();
+    return {};
   }
 }
 
@@ -158,73 +160,73 @@ Future<Map<String, dynamic>> rejectOrder({required String orderId}) async {
   }
 }
 
-// بيانات وهمية للاختبار
-Map<String, dynamic> _getMockPendingOrders() {
-  print('🔄 Returning mock pending orders for testing...');
-  return {
-    'orders': [
-      {
-        'order_id': 123,
-        'tax': 5.0,
-        'delivery_fee': 10.0,
-        'hint': 'طلب تجريبي - قرب الباب الرئيسي',
-        'updated_at': DateTime.now().toIso8601String(),
-        'order_status': {'id': 1, 'status': 'Pending'},
-        'user': {
-          'id': 456,
-          'name': 'أحمد محمد العميل',
-          'phone': '+970599123456',
-          'email': 'ahmed@example.com',
-        },
-        'food_orders': [
-          {
-            'id': 789,
-            'quantity': 2,
-            'price': 15.0,
-            'food': {'id': 101, 'name': 'شاورما لحمة', 'price': 7.5},
-          },
-          {
-            'id': 790,
-            'quantity': 1,
-            'price': 8.0,
-            'food': {'id': 102, 'name': 'عصير برتقال', 'price': 8.0},
-          }
-        ],
-        'delivery_address': {
-          'id': 999,
-          'address': 'شارع عمر المختار، بناية النور، الطابق الثالث، غزة',
-          'latitude': 31.5017,
-          'longitude': 34.4668,
-        }
-      },
-      {
-        'order_id': 124,
-        'tax': 3.0,
-        'delivery_fee': 8.0,
-        'hint': 'عند الإشارة الضوئية',
-        'updated_at': DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
-        'order_status': {'id': 1, 'status': 'Pending'},
-        'user': {
-          'id': 457,
-          'name': 'فاطمة أحمد',
-          'phone': '+970599654321',
-          'email': 'fatima@example.com',
-        },
-        'food_orders': [
-          {
-            'id': 791,
-            'quantity': 1,
-            'price': 25.0,
-            'food': {'id': 103, 'name': 'بيتزا مارجريتا', 'price': 25.0},
-          }
-        ],
-        'delivery_address': {
-          'id': 1000,
-          'address': 'حي الرمال، شارع الجلاء، بجانب مسجد النور، غزة',
-          'latitude': 31.5203,
-          'longitude': 34.4776,
-        }
-      }
-    ]
-  };
-}
+// // بيانات وهمية للاختبار
+// Map<String, dynamic> _getMockPendingOrders() {
+//   print('🔄 Returning mock pending orders for testing...');
+//   return {
+//     'orders': [
+//       {
+//         'order_id': 123,
+//         'tax': 5.0,
+//         'delivery_fee': 10.0,
+//         'hint': 'طلب تجريبي - قرب الباب الرئيسي',
+//         'updated_at': DateTime.now().toIso8601String(),
+//         'order_status': {'id': 1, 'status': 'Pending'},
+//         'user': {
+//           'id': 456,
+//           'name': 'أحمد محمد العميل',
+//           'phone': '+970599123456',
+//           'email': 'ahmed@example.com',
+//         },
+//         'food_orders': [
+//           {
+//             'id': 789,
+//             'quantity': 2,
+//             'price': 15.0,
+//             'food': {'id': 101, 'name': 'شاورما لحمة', 'price': 7.5},
+//           },
+//           {
+//             'id': 790,
+//             'quantity': 1,
+//             'price': 8.0,
+//             'food': {'id': 102, 'name': 'عصير برتقال', 'price': 8.0},
+//           }
+//         ],
+//         'delivery_address': {
+//           'id': 999,
+//           'address': 'شارع عمر المختار، بناية النور، الطابق الثالث، غزة',
+//           'latitude': 31.5017,
+//           'longitude': 34.4668,
+//         }
+//       },
+//       {
+//         'order_id': 124,
+//         'tax': 3.0,
+//         'delivery_fee': 8.0,
+//         'hint': 'عند الإشارة الضوئية',
+//         'updated_at': DateTime.now().subtract(Duration(minutes: 5)).toIso8601String(),
+//         'order_status': {'id': 1, 'status': 'Pending'},
+//         'user': {
+//           'id': 457,
+//           'name': 'فاطمة أحمد',
+//           'phone': '+970599654321',
+//           'email': 'fatima@example.com',
+//         },
+//         'food_orders': [
+//           {
+//             'id': 791,
+//             'quantity': 1,
+//             'price': 25.0,
+//             'food': {'id': 103, 'name': 'بيتزا مارجريتا', 'price': 25.0},
+//           }
+//         ],
+//         'delivery_address': {
+//           'id': 1000,
+//           'address': 'حي الرمال، شارع الجلاء، بجانب مسجد النور، غزة',
+//           'latitude': 31.5203,
+//           'longitude': 34.4776,
+//         }
+//       }
+//     ]
+//   };
+// }

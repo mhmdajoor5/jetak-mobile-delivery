@@ -1,3 +1,4 @@
+import 'package:deliveryboy/src/models/food_order.dart';
 import 'package:intl/intl.dart';
 
 class OrderHistoryModel {
@@ -9,6 +10,8 @@ class OrderHistoryModel {
   final double amount;
   final String status;
 
+  final List<FoodOrder>? foodOrders;
+  
   OrderHistoryModel({
     required this.orderNumber,
     required this.clientName,
@@ -17,6 +20,7 @@ class OrderHistoryModel {
     required this.date,
     required this.amount,
     required this.status,
+    required this.foodOrders,
   });
 
   // Formatted date string
@@ -110,6 +114,7 @@ class OrderHistoryModel {
       'deliveryAddress': deliveryAddress,
       'date': date.toIso8601String(),
       'amount': amount,
+      'foodOrders': foodOrders,
       'status': status,
     };
   }
@@ -124,6 +129,10 @@ class OrderHistoryModel {
       date: DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
       amount: (map['amount'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'غير محدد',
+      foodOrders: map['foodOrders'] != null
+          ? List.from(map['foodOrders']).map((element) => FoodOrder.fromJSON(element)).toList()
+          : <FoodOrder>[],
+      
     );
   }
 
@@ -145,6 +154,7 @@ class OrderHistoryModel {
       date: date ?? this.date,
       amount: amount ?? this.amount,
       status: status ?? this.status,
+      foodOrders: foodOrders ?? this.foodOrders,
     );
   }
 

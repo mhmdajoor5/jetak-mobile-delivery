@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
 
+import 'package:dio/dio.dart';
+import 'package:flutter/rendering.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,7 +15,27 @@ import '../models/order_status.dart';
 import '../models/order_status_history.dart';
 import '../models/user.dart';
 import '../repository/user_repository.dart' as userRepo;
+Future<bool> changeOrderStatus({required int statusId})async{
+  Uri uri = Helper.getUri('Api/driver/orders/$statusId');
+  Map<String, dynamic> queryParams = {};
+  User user = userRepo.currentUser.value;
 
+  queryParams['api_token'] = user.apiToken;
+  uri = uri.replace(queryParameters: queryParams);
+
+  try {
+    final res = await http.get(uri);
+    final data = json.decode(res.body);
+    if(res.statusCode == 200){
+      return true;
+    }
+    return false;
+
+  }catch(e){
+    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+    return false;
+  }
+}
 Future<Stream<Order>> getOrders() async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> queryParams = {};
@@ -116,7 +138,7 @@ Future<Stream<Order>> getOrdersHistory() async {
         .transform(json.decoder)
         .map((data) {
           final result = Helper.getData(data as Map<String, dynamic>);
-          print('📋 Order History Response:');
+          print('📋 Order History Response: ${result}');
           print('   - Number of orders found: ${(result as List).length}');
           
           // Log details of first order for debugging
@@ -141,7 +163,7 @@ Future<Stream<Order>> getOrdersHistory() async {
 }
 
 // Debug function to check all available order statuses
-Future<void> debugOrderStatuses() async {
+Future<List<OrderStatus>> debugOrderStatuses() async {
   print('🔍 Fetching all order statuses...');
   try {
     final Stream<OrderStatus> stream = await getOrderStatus();
@@ -151,9 +173,11 @@ Future<void> debugOrderStatuses() async {
     for (var status in statuses) {
       print('   - ID: ${status.id}, Status: ${status.status}');
     }
+    return statuses;
   } catch (e) {
     print('❌ Error fetching order statuses: $e');
   }
+  return [];
 }
 
 // Function to get orders by multiple status IDs
@@ -337,6 +361,79 @@ Stream<Order> _getMockOrdersStream() {
   return Stream.fromIterable(mockOrders);
 }
 
+// Enhanced backend method with better debugging
+Future<Order> acceptOrderWithStatus(String orderId, String statusId) async {
+  try {
+    Uri uri = Helper.getUri('api/manager/orders/$orderId');
+    User user = userRepo.currentUser.value;
+    
+    // Check if user has valid token
+    if (user.apiToken == null || user.apiToken!.isEmpty) {
+      throw Exception('User not authenticated');
+    }
+
+    // Debug: Print the URL being called
+    print('Calling API URL: $uri');
+    print('Order ID: $orderId');
+    print('Status ID: $statusId');
+    print('API Token: ${user.apiToken?.substring(0, 10)}...'); // Only show first 10 chars for security
+
+    Map<String, dynamic> queryParams = {};
+    queryParams['api_token'] =  user.apiToken;
+    queryParams['status'] = statusId;
+    uri = uri.replace(queryParameters: queryParams);
+
+    print('Final URL with params: $uri');
+
+   final Dio dio = Dio();
+    final response = await dio.put(
+      uri.path,
+      queryParameters: queryParams,
+      
+    );
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Headers: ${response.headers}');
+    print('Response Body (first 500 chars): ${response.data.length > 500 ? response.data.substring(0, 1000) + "..." : response.data}');
+
+    // Check if response is HTML (error page)
+    if (response.data.trim().startsWith('<!DOCTYPE html') || 
+        response.data.trim().startsWith('<html')) {
+      throw Exception('Server returned HTML instead of JSON. Status: ${response.statusCode}. This usually means the API endpoint is incorrect or the server encountered an error.');
+    }
+
+    // Handle different response status codes
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
+        final responseData = json.decode(response.data);
+        if (responseData['data'] != null) {
+          return Order.fromJSON(responseData['data']);
+        } else {
+          // Some APIs return the order directly without 'data' wrapper
+          return Order.fromJSON(responseData);
+        }
+      } catch (jsonError) {
+        throw Exception('Failed to parse JSON response: $jsonError. Response: ${response.data}');
+      }
+    } else if (response.statusCode == 401) {
+      throw Exception('Unauthorized: Invalid or expired token');
+    } else if (response.statusCode == 404) {
+      throw Exception('Order not found. Check if the order ID is correct: $orderId');
+    } else if (response.statusCode == 422) {
+      try {
+        final errorData = json.decode(response.data);
+        throw Exception('Validation error: ${errorData['message'] ?? 'Invalid data'}');
+      } catch (jsonError) {
+        throw Exception('Validation error (Status: ${response.statusCode}): ${response.data}');
+      }
+    } else {
+      throw Exception('Server error: ${response.statusCode} - ${response.statusMessage}. Response: ${response.data}');
+    }
+  } catch (e) {
+    print('Error updating order status: $e');
+    rethrow;
+  }
+}
 Future<Map<String, dynamic>> acceptOrderWithId(String orderId) async {
   Uri uri = Helper.getUri('api/driver/accept-order-by-driver');
   // api/driver/accept-order-by-driver
@@ -636,7 +733,7 @@ Future<Map<String, dynamic>> testConnection() async {
   print('   - User Email: ${user.email}');
   print('   - API Token Length: ${user.apiToken?.length ?? 0}');
   print(
-    '   - API Token (first 20 chars): ${user.apiToken?.substring(0, Math.min<int>(20, user.apiToken?.length ?? 0))}...',
+    '   - API Token (first 20 chars): ${user.apiToken?.toString()}',
   );
   print('   - Token is null: ${user.apiToken == null}');
   print('   - Token is empty: ${user.apiToken?.isEmpty ?? true}');

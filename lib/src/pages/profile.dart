@@ -43,7 +43,7 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
           onPressed: () => widget.parentScaffoldKey.currentState?.openDrawer(),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.black54,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         actions: <Widget>[
@@ -60,9 +60,7 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
 
       key: _con.scaffoldKey,
       body:
-          _con.user.apiToken == null
-              ? CircularLoadingWidget(height: 500)
-              : SingleChildScrollView(
+           SingleChildScrollView(
                 //              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                 child: Column(
                   children: <Widget>[

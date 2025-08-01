@@ -1,6 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
+import 'package:deliveryboy/src/models/order_status.dart';
 import 'package:flutter/material.dart';
 import '../controllers/order_history_controller.dart';
 import '../models/order_history_model.dart';
+import '../repository/order_repository.dart' as orderRepo;
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -15,7 +19,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   bool isLoading = true;
   List<OrderHistoryModel> orders = [];
   Map<String, dynamic> statistics = {};
-
+  List<OrderStatus> orderStatuses = [];
   @override
   void initState() {
     super.initState();
@@ -137,35 +141,46 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildStatisticsSection() {
     return Container(
+      height: 150,
       padding: EdgeInsets.all(16),
-      child: Row(
+      child: ListView(
+        scrollDirection: Axis.horizontal,
         children: [
-          Expanded(
-            child: _buildStatCard(
-              'مكتملة',
-              '${statistics['total_delivered'] ?? 0}',
-              Icons.check_circle,
-              Colors.green,
-            ),
+          _buildStatCard(
+            'مكتملة',
+            '${statistics['total_delivered'] ?? 0}',
+            Icons.check_circle,
+            Colors.green,
           ),
           SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'معلقة',
-              '${statistics['total_pending'] ?? 0}',
-              Icons.schedule,
-              Colors.orange,
-            ),
+          _buildStatCard(
+            'معلقة',
+            '${statistics['total_pending'] ?? 0}',
+            Icons.schedule,
+            Colors.orange,
+          ),
+            SizedBox(width: 12),
+          _buildStatCard(
+            'ملغية',
+            '${statistics['total_cancelled'] ?? 0}',
+            Icons.cancel,
+            Colors.red,
           ),
           SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'الأرباح',
-              '${(statistics['total_earnings'] ?? 0.0).toStringAsFixed(0)} ₪',
-              Icons.monetization_on,
-              Colors.blue,
-            ),
+          _buildStatCard(
+            'متوسط سعر الطلب',
+            '${statistics['average_order_value'].toStringAsFixed(2) ?? 0}',
+            Icons.monetization_on_rounded,
+            Colors.blue,
           ),
+          SizedBox(width: 12),
+          _buildStatCard(
+            'الأرباح',
+            '${(statistics['total_earnings'] ?? 0.0).toStringAsFixed(0)} ₪',
+            Icons.arrow_circle_up_rounded,
+            Colors.blue,
+          ),
+        
         ],
       ),
     );
@@ -173,11 +188,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
+      width: 120,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: .6)),
       ),
       child: Column(
         children: [
@@ -204,19 +220,29 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Widget _buildFilterTabs() {
-    return SizedBox(
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          _buildFilterChip('delivered', 'مكتملة'),
-          _buildFilterChip('pending', 'معلقة'),
-          _buildFilterChip('preparing', 'قيد التحضير'),
-          _buildFilterChip('cancelled', 'ملغية'),
-          _buildFilterChip('all_completed', 'الكل'),
-        ],
-      ),
+    return FutureBuilder<List<OrderStatus>>(
+      future: orderRepo.debugOrderStatuses(),
+      builder:(context, snapshot) {
+        if(snapshot.hasData){
+        orderStatuses = snapshot.data!;
+        return  SizedBox(
+          height: 50,
+          child: ListView.builder(
+            itemCount: orderStatuses.length,
+            itemBuilder: (context, index) =>_buildFilterChip(orderStatuses[index].status??"", orderStatuses[index].status??""),
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            
+          ),
+                
+        );
+        }else if(snapshot.connectionState==ConnectionState.waiting){
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+        else{
+          return const Center(child: Text("حدث خطأ"));
+        }
+      } 
     );
   }
 
@@ -225,7 +251,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     return Padding(
       padding: EdgeInsets.only(left: 8),
       child: FilterChip(
-        label: Text(label),
+        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : ColorsManager.selection, fontSize: 14, fontWeight:isSelected? FontWeight.bold: FontWeight.normal)),
         selected: isSelected,
         onSelected: (selected) {
           if (selected) {
@@ -235,8 +261,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             _loadData();
           }
         },
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-        checkmarkColor: Theme.of(context).primaryColor,
+        backgroundColor: ColorsManager.selection.withValues(alpha: .2),
+        selectedColor: ColorsManager.selection,
+        side: BorderSide(color: ColorsManager.selection),
+        checkmarkColor: ColorsManager.success,
       ),
     );
   }
@@ -264,6 +292,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       ),
     );
   }
+  ///class OrderStatus {
+  ///String? id;
+  ///String? status;
 
   Widget _buildOrdersList() {
     return ListView.builder(
@@ -292,35 +323,121 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                         color: Colors.black87,
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(order.status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _getStatusColor(order.status).withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getStatusIcon(order.status),
-                            size: 16,
-                            color: _getStatusColor(order.status),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            order.status,
-                            style: TextStyle(
-                              color: _getStatusColor(order.status),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                   PopupMenuButton<Map<String, dynamic>>(
+  onSelected: (selectedStatus) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+
+      print('Selected status: ${selectedStatus['status']} with ID: ${selectedStatus['id']}');
+      
+      // Update order status
+      final updatedOrder = await orderRepo.acceptOrderWithStatus(
+        order.orderNumber!, 
+        selectedStatus['id'].toString(),
+      );
+
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Order status updated to ${selectedStatus['status']}'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    await  _refreshData();
+    } catch (e) {
+      // Close loading dialog if still open
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update status: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      
+      print('Error updating order status: $e');
+    }
+  },
+  itemBuilder: (BuildContext context) {
+    return orderStatuses.map((status) {
+      return PopupMenuItem<Map<String, dynamic>>(
+        value: {
+          'id': status.id,
+          'status': status.status,
+        },
+        child: Row(
+          children: [
+            Icon(
+              _getStatusIcon(status.status!),
+              size: 16,
+              color: _getStatusColor(status.status!),
+            ),
+            SizedBox(width: 8),
+            Text(status.status!),
+            Spacer(),
+            Text(
+              'ID: ${status.id}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  },
+  child: Container(
+    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: _getStatusColor(order.status).withValues(alpha: .1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: _getStatusColor(order.status).withValues(alpha: .3),
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          _getStatusIcon(order.status),
+          size: 16,
+          color: _getStatusColor(order.status),
+        ),
+        SizedBox(width: 4),
+        Text(
+          order.status,
+          style: TextStyle(
+            color: _getStatusColor(order.status),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+        SizedBox(width: 4),
+        Icon(
+          Icons.arrow_drop_down,
+          size: 16,
+          color: _getStatusColor(order.status),
+        ),
+      ],
+    ),
+  ),
+)
                   ],
                 ),
                 
@@ -334,7 +451,21 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 _buildInfoRow(Icons.location_on, 'العنوان', order.deliveryAddress, maxLines: 2),
                 
                 SizedBox(height: 12),
-                
+                Wrap(
+                  children: List.generate(order.foodOrders?.length??0, (index) => ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(imageUrl: order.foodOrders?[index].food?.image?.url??'', width: 50, height: 50, 
+                    errorWidget: (context, url, error) => Column(
+                      children: [
+                        Icon(Icons.error),
+                        Text('No image', style: TextStyle(color: Colors.grey, fontSize: 8),),
+                      ],
+                    ),
+                    placeholder: (context, url) => CircularProgressIndicator(),
+                    ), 
+                    )),
+                ), 
+                SizedBox(height: 12),
                 // Bottom Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

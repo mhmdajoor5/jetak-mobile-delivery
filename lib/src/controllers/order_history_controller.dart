@@ -3,6 +3,7 @@ import '../models/order.dart';
 import '../repository/order_repository.dart' as orderRepo;
 
 class OrderHistoryController {
+
   Future<List<OrderHistoryModel>> getOrdersHistory({List<String>? statusIds}) async {
     try {
       print('📋 OrderHistoryController: Starting to fetch orders history...');
@@ -14,17 +15,19 @@ class OrderHistoryController {
       Stream<Order> stream;
       if (statusIds != null && statusIds.isNotEmpty) {
         print('📋 Using custom status IDs: ${statusIds.join(', ')}');
+       
         stream = await orderRepo.getOrdersByStatuses(statusIds);
+        //  stream = await orderRepo.getOrdersHistory();
       } else {
         print('📋 Using default delivered orders (status 5)');
         stream = await orderRepo.getOrdersHistory();
       }
       
-      final orders = await stream.toList();
+      final List<Order> orders = await stream.toList();
       print('📋 OrderHistoryController: Received ${orders.length} orders from repository');
       
       // تحويل Order objects إلى OrderHistoryModel objects
-      final historyModels = orders.map((order) {
+      final List<OrderHistoryModel> historyModels = orders.map((order) {
         print('📋 Processing order ${order.id}: status=${order.orderStatus?.status}');
         
         // حساب المبلغ الإجمالي
@@ -37,7 +40,7 @@ class OrderHistoryController {
         
         // إضافة الضرائب ورسوم التوصيل
         totalAmount += (order.tax ?? 0) + (order.deliveryFee ?? 0);
-        
+        print("Order Details ${order.toString()}");
         return OrderHistoryModel(
           orderNumber: order.id ?? 'غير محدد',
           clientName: order.user?.name ?? 'عميل غير محدد',
@@ -46,6 +49,7 @@ class OrderHistoryController {
           date: order.dateTime ?? DateTime.now(),
           amount: totalAmount,
           status: order.orderStatus?.status ?? 'غير محدد',
+          foodOrders: order.foodOrders,
         );
       }).toList();
       

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
+import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
+import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -8,6 +10,7 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 import '../controllers/order_controller.dart';
 import '../elements/EmptyOrdersWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
+import '../models/route_argument.dart';
 
 class OrdersWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState>? parentScaffoldKey;
@@ -42,7 +45,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
   }
 
   void _startAutoRefresh() {
-    _refreshTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+    _refreshTimer = Timer.periodic(Duration(seconds: 180), (timer) {
       if (_con.driverAvailability) {
         _con.refreshOrders();
         setState(() {
@@ -80,7 +83,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          '🚚 Delivery pendingOrdersModel',
+          '🚚 Delivery Orders',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -109,7 +112,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         color: Colors.green,
         child: SingleChildScrollView(
           physics: AlwaysScrollableScrollPhysics(),
-          child: Column(
+          child: Column( 
             children: <Widget>[
               // Driver Status Card
               Container(
@@ -120,7 +123,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
@@ -278,9 +281,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                 ),
 
               // pendingOrdersModel List
-              _con.pendingOrdersModel.isEmpty
-                  ? EmptyOrdersWidget()
-                  : Column(
+              if (_con.pendingOrdersModel.isEmpty) EmptyOrdersWidget() else Column(
                     children: [
                       SizedBox(height: 16),
                       ListView.builder(
@@ -289,7 +290,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                         itemCount: _con.pendingOrdersModel.length,
                         itemBuilder: (context, index) {
                           final order = _con.pendingOrdersModel[index];
-                          
+
                           // Debugging: Print detailed order information
                           print('🖼️ UI Display Debug - Order $index:');
                           print('  - Order ID: ${order.orderId}');
@@ -489,7 +490,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                             color: Colors.orange[50],
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: Colors.orange.withOpacity(0.2),
+                                              color: Colors.orange.withValues(alpha: 0.2),
                                               width: 1,
                                             ),
                                           ),
@@ -534,7 +535,19 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     size: 18,
                                                   ),
                                                   onPressed: () {
-                                                    // Directions functionality
+                                                    if (order.deliveryAddress!.latitude != null && order.deliveryAddress!.longitude != null) {
+                                                      Navigator.of(context).pushNamed(
+                                                        '/Map',
+                                                        arguments: RouteArgument(
+                                                          param:{"current_order" :order,"pending_orders" :_con.pendingOrdersModel, },
+                                                          id: order.orderId.toString(),
+                                                        ),
+                                                      );
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("لا يوجد معلومات عن الموقع"))
+                                                      );
+                                                    }
                                                   },
                                                   padding: EdgeInsets.all(6),
                                                   constraints: BoxConstraints(
@@ -552,17 +565,38 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                         // Enhanced Action Buttons
                                         Row(
                                           children: [
+                                            // Show Order Button with clean and Detailed design
+                                            Expanded(
+                                              child: SizedBox(
+                                                height: 48,
+                                                child: ElevatedButton(
+                                                  onPressed: () => _showOrderDetailsBottomSheet(context, order),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.blue[600],
+                                                    foregroundColor: Colors.white,
+                                                    elevation: 0,
+                                                    shadowColor: Colors.blue.withValues(alpha: 0.3),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                  ),
+                                                  child: Icon(Icons.remove_red_eye_rounded , color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 12),
+
                                             // Accept Button with enhanced design
                                             Expanded(
                                               child: SizedBox(
                                                 height: 48,
                                                 child: ElevatedButton(
-                                                  onPressed: () => _showAcceptDialog(context, order),
+                                                  onPressed: () => _showAcceptBottomSheet(context, order),
                                                   style: ElevatedButton.styleFrom(
                                                     backgroundColor: Colors.green[600],
                                                     foregroundColor: Colors.white,
                                                     elevation: 0,
-                                                    shadowColor: Colors.green.withOpacity(0.3),
+                                                    shadowColor: Colors.green.withValues(alpha: 0.3),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(12),
                                                     ),
@@ -592,12 +626,12 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                               child: SizedBox(
                                                 height: 48,
                                                 child: ElevatedButton(
-                                                  onPressed: () => _showRejectDialog(context, order),
+                                                  onPressed: () => _showRejectBottomSheet(context, order),
                                                   style: ElevatedButton.styleFrom(
                                                     backgroundColor: Colors.red[600],
                                                     foregroundColor: Colors.white,
                                                     elevation: 0,
-                                                    shadowColor: Colors.red.withOpacity(0.3),
+                                                    shadowColor: Colors.red.withValues(alpha: 0.3),
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(12),
                                                     ),
@@ -653,292 +687,849 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
               ),
     );
   }
+void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async {
+  final result = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      margin: EdgeInsets.only(top: 60),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          // Header
+          Container(
+            margin: EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.green[600],
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'قبول الطلب',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'تأكيد قبول طلب العميل',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Order Info Card
+          Container(
+            margin: EdgeInsets.all(24),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!, width: 1),
+            ),
+            child: Column(
+              children: [
+                _buildInfoRow('رقم الطلب', '#${order.orderId}', Colors.green[700]),
+                SizedBox(height: 12),
+                _buildInfoRow('العميل', order.customerName ?? 'غير محدد', Colors.black87),
+                SizedBox(height: 12),
+                _buildInfoRow('المبلغ', '${(order.tax + order.deliveryFee).toStringAsFixed(2)} ₪', Colors.green[700]),
+              ],
+            ),
+          ),
+          
+          // Action Buttons
+          Container(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 34),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'إلغاء',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'قبول الطلب',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
-     void _showAcceptDialog(BuildContext context, PendingOrderModel order) async {
-     final confirmed = await showDialog<bool>(
-       context: context,
-       barrierDismissible: false,
-       builder: (context) => AlertDialog(
-         shape: RoundedRectangleBorder(
-           borderRadius: BorderRadius.circular(16),
-         ),
-         title: Container(
-           padding: EdgeInsets.all(12),
-           decoration: BoxDecoration(
-             color: Colors.green[50],
-             borderRadius: BorderRadius.circular(8),
-           ),
-           child: Row(
-             children: [
-               Container(
-                 padding: EdgeInsets.all(6),
-                 decoration: BoxDecoration(
-                   color: Colors.green[600],
-                   borderRadius: BorderRadius.circular(6),
-                 ),
-                 child: Icon(Icons.check_circle, color: Colors.white, size: 20),
-               ),
-               SizedBox(width: 12),
-               Expanded(
-                 child: Text(
-                   'تأكيد قبول الطلب',
-                   style: TextStyle(
-                     fontSize: 18,
-                     fontWeight: FontWeight.bold,
-                     color: Colors.green[800],
-                   ),
-                 ),
-               ),
-             ],
-           ),
-         ),
-         content: Container(
-           padding: EdgeInsets.symmetric(vertical: 8),
-           child: Column(
-             mainAxisSize: MainAxisSize.min,
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               Text(
-                 'هل تريد قبول هذا الطلب؟',
-                 style: TextStyle(
-                   fontSize: 16,
-                   fontWeight: FontWeight.w500,
-                   color: Colors.black87,
-                 ),
-               ),
-               SizedBox(height: 12),
-               Container(
-                 padding: EdgeInsets.all(12),
-                 decoration: BoxDecoration(
-                   color: Colors.grey[50],
-                   borderRadius: BorderRadius.circular(8),
-                   border: Border.all(color: Colors.grey[200]!),
-                 ),
-                 child: Column(
-                   children: [
-                     Row(
-                       children: [
-                         Text('رقم الطلب: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                         Text('#${order.orderId}', style: TextStyle(color: Colors.green[700])),
-                       ],
-                     ),
-                     SizedBox(height: 4),
-                     Row(
-                       children: [
-                         Text('العميل: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                         Expanded(child: Text(order.customerName ?? 'غير محدد')),
-                       ],
-                     ),
-                     SizedBox(height: 4),
-                     Row(
-                       children: [
-                         Text('المبلغ: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                         Text('${(order.tax + order.deliveryFee).toStringAsFixed(2)} ₪', 
-                              style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold)),
-                       ],
-                     ),
-                   ],
-                 ),
-               ),
-             ],
-           ),
-         ),
-         actions: [
-           TextButton(
-             onPressed: () => Navigator.of(context).pop(false),
-             child: Text(
-               'إلغاء',
-               style: TextStyle(
-                 color: Colors.grey[600],
-                 fontSize: 16,
-               ),
-             ),
-           ),
-           ElevatedButton(
-             onPressed: () => Navigator.of(context).pop(true),
-             style: ElevatedButton.styleFrom(
-               backgroundColor: Colors.green[600],
-               foregroundColor: Colors.white,
-               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-               shape: RoundedRectangleBorder(
-                 borderRadius: BorderRadius.circular(8),
-               ),
-             ),
-             child: Row(
-               mainAxisSize: MainAxisSize.min,
-               children: [
-                 Icon(Icons.check, size: 18),
-                 SizedBox(width: 6),
-                 Text('قبول الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-               ],
-             ),
-           ),
-         ],
-       ),
-     );
-     
-     if (confirmed == true) {
-       // Show loading dialog
-       showDialog(
-         context: context,
-         barrierDismissible: false,
-         builder: (context) => AlertDialog(
-           content: Row(
-             children: [
-               CircularProgressIndicator(),
-               SizedBox(width: 16),
-               Text('جاري قبول الطلب...'),
-             ],
-           ),
-         ),
-       );
-       
-       await _con.acceptOrder(order.orderId.toString());
-       Navigator.of(context).pop(); // Close loading dialog
-     }
-   }
-
-   void _showRejectDialog(BuildContext context, PendingOrderModel order) async {
-     final confirmed = await showDialog<bool>(
-       context: context,
-       barrierDismissible: false,
-       builder: (context) => AlertDialog(
-         shape: RoundedRectangleBorder(
-           borderRadius: BorderRadius.circular(16),
-         ),
-         title: Container(
-           padding: EdgeInsets.all(12),
-           decoration: BoxDecoration(
-             color: Colors.red[50],
-             borderRadius: BorderRadius.circular(8),
-           ),
-           child: Row(
-             children: [
-               Container(
-                 padding: EdgeInsets.all(6),
-                 decoration: BoxDecoration(
-                   color: Colors.red[600],
-                   borderRadius: BorderRadius.circular(6),
-                 ),
-                 child: Icon(Icons.cancel, color: Colors.white, size: 20),
-               ),
-               SizedBox(width: 12),
-               Expanded(
-                 child: Text(
-                   'تأكيد رفض الطلب',
-                   style: TextStyle(
-                     fontSize: 18,
-                     fontWeight: FontWeight.bold,
-                     color: Colors.red[800],
-                   ),
-                 ),
-               ),
-             ],
-           ),
-         ),
-         content: Container(
-           padding: EdgeInsets.symmetric(vertical: 8),
-           child: Column(
-             mainAxisSize: MainAxisSize.min,
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               Text(
-                 'هل تريد رفض هذا الطلب؟',
-                 style: TextStyle(
-                   fontSize: 16,
-                   fontWeight: FontWeight.w500,
-                   color: Colors.black87,
-                 ),
-               ),
-               SizedBox(height: 8),
-               Text(
-                 'سيتم إشعار العميل برفض الطلب',
-                 style: TextStyle(
-                   fontSize: 14,
-                   color: Colors.grey[600],
-                 ),
-               ),
-               SizedBox(height: 12),
-               Container(
-                 padding: EdgeInsets.all(12),
-                 decoration: BoxDecoration(
-                   color: Colors.grey[50],
-                   borderRadius: BorderRadius.circular(8),
-                   border: Border.all(color: Colors.grey[200]!),
-                 ),
-                 child: Column(
-                   children: [
-                     Row(
-                       children: [
-                         Text('رقم الطلب: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                         Text('#${order.orderId}', style: TextStyle(color: Colors.red[700])),
-                       ],
-                     ),
-                     SizedBox(height: 4),
-                     Row(
-                       children: [
-                         Text('العميل: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                         Expanded(child: Text(order.customerName ?? 'غير محدد')),
-                       ],
-                     ),
-                   ],
-                 ),
-               ),
-             ],
-           ),
-         ),
-         actions: [
-           TextButton(
-             onPressed: () => Navigator.of(context).pop(false),
-             child: Text(
-               'إلغاء',
-               style: TextStyle(
-                 color: Colors.grey[600],
-                 fontSize: 16,
-               ),
-             ),
-           ),
-           ElevatedButton(
-             onPressed: () => Navigator.of(context).pop(true),
-             style: ElevatedButton.styleFrom(
-               backgroundColor: Colors.red[600],
-               foregroundColor: Colors.white,
-               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-               shape: RoundedRectangleBorder(
-                 borderRadius: BorderRadius.circular(8),
-               ),
-             ),
-             child: Row(
-               mainAxisSize: MainAxisSize.min,
-               children: [
-                 Icon(Icons.close, size: 18),
-                 SizedBox(width: 6),
-                 Text('رفض الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-               ],
-             ),
-           ),
-         ],
-       ),
-     );
-     
-     if (confirmed == true) {
-       // Show loading dialog
-       showDialog(
-         context: context,
-         barrierDismissible: false,
-         builder: (context) => AlertDialog(
-           content: Row(
-             children: [
-               CircularProgressIndicator(),
-               SizedBox(width: 16),
-               Text('جاري رفض الطلب...'),
-             ],
-           ),
-         ),
-       );
-       
-       await _con.rejectOrder(order.orderId.toString());
-       Navigator.of(context).pop(); // Close loading dialog
-     }
+  if (result == true) {
+    _showLoadingBottomSheet(context, 'جاري قبول الطلب...');
+    await _con.acceptOrder(order.orderId.toString());
+    Navigator.of(context).pop(); // Close loading bottom sheet
   }
+}
+
+void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async {
+  final result = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      margin: EdgeInsets.only(top: 60),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          // Header
+          Container(
+            margin: EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.cancel_outlined,
+                    color: Colors.red[600],
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'رفض الطلب',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'سيتم إشعار العميل برفض الطلب',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Order Info Card
+          Container(
+            margin: EdgeInsets.all(24),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!, width: 1),
+            ),
+            child: Column(
+              children: [
+                _buildInfoRow('رقم الطلب', '#${order.orderId}', Colors.red[700]),
+                SizedBox(height: 12),
+                _buildInfoRow('العميل', order.customerName ?? 'غير محدد', Colors.black87),
+              ],
+            ),
+          ),
+          
+          // Action Buttons
+          Container(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 34),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'إلغاء',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[600],
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.close, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'رفض الطلب',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  if (result == true) {
+    _showLoadingBottomSheet(context, 'جاري رفض الطلب...');
+    await _con.rejectOrder(order.orderId.toString());
+    Navigator.of(context).pop(); // Close loading bottom sheet
+  }
+}
+
+// Helper method for info rows
+Widget _buildInfoRow(String label, String value, Color? valueColor) {
+  return Row(
+    children: [
+      Text(
+        '$label: ',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.grey[700],
+        ),
+      ),
+      Expanded(
+        child: Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: valueColor ?? Colors.black87,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// Loading bottom sheet helper
+void _showLoadingBottomSheet(BuildContext context, String message) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isDismissible: false,
+    enableDrag: false,
+    builder: (context) => Container(
+      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Container(
+        padding: EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Container(
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.receipt_long_outlined,
+                      color: Colors.blue[600],
+                      size: 24,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'تفاصيل الطلب #${order.orderId}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                         order.updatedAt  ,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(order.orderStatus.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusText(order.orderStatus.status),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _getStatusColor(order.orderStatus.status),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Customer Information
+                    _buildSectionCard(
+                      title: 'معلومات العميل',
+                      icon: Icons.person_outline,
+                      color: Colors.blue,
+                      children: [
+                        _buildDetailRow('الاسم', order.customerName ?? 'غير محدد'),
+                        if (order.user.phone != null) ...[
+                          SizedBox(height: 12),
+                          _buildDetailRow('الهاتف', order.user.phone!),
+                        ],
+                        if (order.user.email != null) ...[
+                          SizedBox(height: 12),
+                          _buildDetailRow('البريد الإلكتروني', order.user.email!),
+                        ],
+                      ],
+                    ),
+                    
+                    SizedBox(height: 16),
+                    
+                    // Delivery Information
+                    _buildSectionCard(
+                      title: 'معلومات التوصيل',
+                      icon: Icons.location_on_outlined,
+                      color: Colors.orange,
+                      children: [
+                        _buildDetailRow('العنوان', order.deliveryAddress?.address ?? 'غير محدد'),
+                        if (order.hint != null) ...[
+                          SizedBox(height: 12),
+                          _buildDetailRow('ملاحظات التوصيل', order.hint!),
+                        ],
+                        // SizedBox(height: 12),
+                        // _buildDetailRow('وقت التوصيل المطلوب', order. ?? 'في أقرب وقت'),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 16),
+                    
+                    // Order Items
+                    _buildSectionCard(
+                      title: 'عناصر الطلب',
+                      icon: Icons.shopping_bag_outlined,
+                      color: Colors.green,
+                      children: [
+                        if (order.foodOrders != null && order.foodOrders!.isNotEmpty) ...[
+                          ...order.foodOrders!.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            var item = entry.value;
+                            return Column(
+                              children: [
+                                if (index > 0) ...[
+                                  SizedBox(height: 12),
+                                  Divider(color: Colors.grey[200], height: 1),
+                                  SizedBox(height: 12),
+                                ],
+                                _buildOrderItem(item),
+                              ],
+                            );
+                          }).toList(),
+                        ] else ...[
+                          Text(
+                            'لا توجد عناصر في الطلب',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    
+                    SizedBox(height: 16),
+                    
+                    // Payment Summary
+                    _buildSectionCard(
+                      title: 'ملخص الدفع',
+                      icon: Icons.payment_outlined,
+                      color: Colors.purple,
+                      children: [
+                        _buildDetailRow('المجموع الفرعي', '${order.foodOrders.fold<double>(0, (sum, order) => sum + order.price * order.quantity).toStringAsFixed(2)} ₪'),
+                        SizedBox(height: 12),
+                        _buildDetailRow('الضريبة', '${order.tax.toStringAsFixed(2)} ₪'),
+                        SizedBox(height: 12),
+                        _buildDetailRow('رسوم التوصيل', '${order.deliveryFee.toStringAsFixed(2)} ₪'),
+                        if (order.deliveryFee > 0) ...[
+                          SizedBox(height: 12),
+                          _buildDetailRow('الضريبة', '-${order.tax.toStringAsFixed(2)} ₪', 
+                            valueColor: Colors.green[600]),
+                        ],
+                        SizedBox(height: 16),
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'المجموع الكلي',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                '${order.foodOrders.fold<double>(0, (sum, order) => sum + order.price * order.quantity).toInt() + order.tax.toInt() + order.deliveryFee.toInt()} ₪',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    if (order.hint != null) ...[
+                      SizedBox(height: 16),
+                      _buildSectionCard(
+                        title: 'ملاحظات إضافية',
+                        icon: Icons.note_outlined,
+                        color: Colors.grey,
+                        children: [
+                          Text(
+                            order.hint!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// Helper method to build section cards
+Widget _buildSectionCard({
+  required String title,
+  required IconData icon,
+  required MaterialColor color,
+  required List<Widget> children,
+}) {
+  return Container(
+    padding: EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.grey[200]!),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.02),
+          blurRadius: 8,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: color[600],
+                size: 18,
+              ),
+            ),
+            SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        ...children,
+        
+      ],
+    ),
+  );
+}
+
+// Helper method for detail rows
+Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 100,
+        child: Text(
+          '$label:',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+      ),
+      Expanded(
+        child: Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: valueColor ?? Colors.black87,
+            height: 1.3,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+// Helper method for order items
+Widget _buildOrderItem(FoodOrder item) {
+  return Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child:Icon(
+                    Icons.fastfood_outlined,
+                    color: Colors.grey[600],
+                    size: 24,
+                  ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.food.name ?? 'عنصر غير محدد',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                
+                ],
+             
+            ),
+          ),
+        ],
+      ),
+
+            Row(
+              children: [
+                Text(
+                  'الكمية: ${item.quantity ?? 1}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  '${((item.price)* (item.quantity ?? 1)).toStringAsFixed(2)} ₪',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,  
+                    color: Colors.green[700],
+                  ),
+                ),
+              ],
+            ),
+    
+    ],
+  );
+}
+
+// Helper methods for status and date formatting
+Color _getStatusColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'pending':
+      return Colors.orange;
+    case 'accepted':
+      return Colors.green;
+    case 'rejected':
+      return Colors.red;
+    case 'delivered':
+      return Colors.blue;
+    default:
+      return Colors.grey;
+  }
+}
+
+String _getStatusText(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'pending':
+      return 'في الانتظار';
+    case 'accepted':
+      return 'مقبول';
+    case 'rejected':
+      return 'مرفوض';
+    case 'delivered':
+      return 'تم التوصيل';
+    default:
+      return 'غير محدد';
+  }
+}
+
+String _formatOrderDate(DateTime? date) {
+  if (date == null) return 'تاريخ غير محدد';
+  
+  final now = DateTime.now();
+  final difference = now.difference(date);
+  
+  if (difference.inDays == 0) {
+    return 'اليوم ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  } else if (difference.inDays == 1) {
+    return 'أمس ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  } else {
+    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+}
 }
