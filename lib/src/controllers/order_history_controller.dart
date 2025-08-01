@@ -66,17 +66,23 @@ class OrderHistoryController {
   Future<List<OrderHistoryModel>> getOrdersByStatus(String statusName) async {
     try {
       // Map common status names to IDs
-      Map<String, List<String>> statusMapping = {
-        'delivered': ['5'], // Delivered orders
-        'completed': ['5'], // Alias for delivered
-        'pending': ['1'], // Pending orders
-        'accepted': ['2'], // Accepted orders
-        'preparing': ['3'], // In preparation
-        'ready': ['4'], // Ready for pickup
-        'on_the_way': ['6'], // On the way
-        'cancelled': ['7'], // Cancelled orders
-        'all_completed': ['5', '6'], // All completed statuses
-      };
+Map<String, List<String>> statusMapping = {
+  'delivered': ['5'],           // Delivered orders
+  'completed': ['5'],           // Alias for delivered
+  'pending': ['1'],             // Order Received (pending)
+  'order_received': ['1'],      // Order Received
+  'accepted': ['6'],            // Accepted orders
+  'preparing': ['2'],           // Preparing/In preparation
+  'ready': ['3'],               // Ready for pickup
+  'on_the_way': ['4'],          // On the way
+  'on the way': ['4'],          // Alternative spelling
+  'cancelled': ['7'],           // Rejected/Cancelled orders
+  'rejected': ['7'],            // Rejected orders
+  'all_completed': ['5'],       // Only delivered is truly completed
+  'all_active': ['1', '2', '3', '4', '6'], // All active statuses (not delivered/rejected)
+  'in_progress': ['2', '3', '4'], // Orders being processed
+};
+
       
       List<String>? statusIds = statusMapping[statusName.toLowerCase()];
       
