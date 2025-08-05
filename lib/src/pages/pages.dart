@@ -97,6 +97,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       final prefs = await SharedPreferences.getInstance();
       final int? orderId = prefs.getInt('last_order_id');
       await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId ?? 0);
+
       
     } catch (e) {
       print('❌ Error getting position: $e');
@@ -133,13 +134,14 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
          
          // Use the order_id from shared preferences if available
          await userRepo.updateDriverLocation(lat, lng, orderId ?? 0);
+     // Use the order_id from shared preferences if available
+         // await userRepo.updateDriverLocation(lat, lng, order_id ?? 0);
         } else {
           print('⚠️ Last known location is too old');
         }
       }
     } catch (e) {
       print('❌ Error using last known location: $e');
-      rethrow;
     }
   }
 
@@ -158,20 +160,19 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     setState(() {
       widget.currentTab = tabItem == 3 ? 1 : tabItem;
       switch (tabItem) {
-
         case 0:
           widget.currentPage =
-              OrdersWidget(parentScaffoldKey: widget.scaffoldKey);
+              ProfileWidget(parentScaffoldKey: widget.scaffoldKey);
           break;
         case 1:
           widget.currentPage =
-              ProfileWidget(parentScaffoldKey: widget.scaffoldKey);
+              OrdersWidget(parentScaffoldKey: widget.scaffoldKey);
           break;
         case 2:
           widget.currentPage =
                  OrderHistoryPage();
           break;
-        }
+      }
     });
   }
 
@@ -200,13 +201,13 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(5),
+                color: Colors.black12,
                 blurRadius: 20,
                 offset: Offset(0, -5),
                 spreadRadius: 5,
               ),
               BoxShadow(
-                color: Colors.black.withAlpha(5),
+                color: Colors.black12,
                 blurRadius: 10,
                 offset: Offset(0, -2),
               ),
@@ -234,40 +235,33 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
                 _selectTab(i);
               },
               items: [
-                // Home Tab (Center with special design)
-                BottomNavigationBarItem(
-                  label: "",
-                  icon: _buildNavItem(
-                    icon: Icons.home_rounded,
-                    isSelected: widget.currentTab == 0,
-                    color: Colors.blue,
-                    label: 'Home',
-                  ),
-                  
-                ),
                 // Profile Tab
                 BottomNavigationBarItem(
                   icon: _buildNavItem(
                     icon: Icons.person_rounded,
-                    isSelected: widget.currentTab == 1,
-                    color: Colors.blue,
+                    isSelected: widget.currentTab == 0,
+                    color: Colors.purple[600]!,
                     label: 'Profile',
                   ),
                   label: "",
                 ),
-                
+                // Home Tab (Center with special design)
+                BottomNavigationBarItem(
+                  label: "",
+                  icon: _buildCenterNavItem(
+                    isSelected: widget.currentTab == 1,
+                  ),
+                ),
                 // History Tab
-                 BottomNavigationBarItem(
+                BottomNavigationBarItem(
                   icon: _buildNavItem(
                     icon: Icons.history_rounded,
                     isSelected: widget.currentTab == 2,
-                    color: Colors.blue,
+                    color: Colors.orange[600]!,
                     label: 'History',
                   ),
                   label: "",
                 ),
-                // Map Tab
-               
               ],
             ),
           ),
@@ -294,12 +288,12 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
           Container(
             padding: EdgeInsets.all(isSelected ? 12 : 8),
             decoration: BoxDecoration(
-             color:isSelected? Colors.grey.shade200:Colors.transparent,
+             color: color.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: isSelected?Colors.grey.withValues(alpha: .1):Colors.transparent,
+                        color: color.withValues(alpha:0.1),
                         blurRadius: 8,
                         offset: Offset(0, 4),
                       ),
@@ -308,7 +302,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             ),
             child: Icon(
               icon,
-              color: isSelected ? color : Colors.grey.withValues(alpha: .6),
+              color: isSelected ? color : Colors.grey[500],
               size: isSelected ? 22 : 20,
             ),
           ),
@@ -318,7 +312,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             style: TextStyle(
               fontSize: isSelected ? 11 : 10,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? color : Colors.grey.withValues(alpha: .1),
+              color: isSelected ? color : Colors.grey[500],
               letterSpacing: 0.3,
             ),
           ),
@@ -327,7 +321,72 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     );
   }
 
-  
+  // Helper method to build center nav item (Home)
+  Widget _buildCenterNavItem({required bool isSelected}) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(top: isSelected ? 0 : 5),
+      child: Container(
+        width: isSelected ? 55 : 50,
+        height: isSelected ? 55 : 50,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isSelected
+                ? [
+                    Color(0xFF4A90E2),
+                    Color(0xFF357ABD),
+                    Color(0xFF2E6DA4),
+                  ]
+                : [
+                    Colors.grey[400]!,
+                    Colors.grey[500]!,
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(isSelected ? 18 : 15),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? Colors.blue.withOpacity(0.4)
+                  : Colors.grey.withOpacity(0.2),
+              blurRadius: isSelected ? 15 : 8,
+              offset: Offset(0, isSelected ? 8 : 4),
+              spreadRadius: isSelected ? 2 : 0,
+            ),
+            if (isSelected)
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.2),
+                blurRadius: 25,
+                offset: Offset(0, 12),
+              ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background pulse effect when selected
+            if (isSelected)
+              AnimatedContainer(
+                duration: Duration(milliseconds: 600),
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            Icon(
+              Icons.home_rounded,
+              color: Colors.white,
+              size: isSelected ? 28 : 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<bool> onWillPop() {
     DateTime now = DateTime.now();
