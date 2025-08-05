@@ -5,6 +5,8 @@ import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
 import 'package:deliveryboy/src/controllers/order_history_controller.dart';
 import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/order_status.dart';
+import 'package:deliveryboy/src/models/pending_order_model.dart' hide OrderStatus;
+import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -839,19 +841,18 @@ Future<void> _handleStartOrder(OrderHistoryModel order,) async {
         duration: Duration(seconds: 2),
       ),
     );
-    // final PendingOrderModel pendingOrderModel = PendingOrderModel.fromOrderHistoryModel(order);
-    // final List<PendingOrderModel> pendingOrdersModel = orders.map((e) => PendingOrderModel.fromOrderHistoryModel(e)).toList();
+    final PendingOrderModel pendingOrderModel = PendingOrderModel(orderId: order.id??0, tax: order.tax??0, deliveryFee: order.deliveryFee??0, updatedAt: order.formattedDate??DateTime.now().toString(), 
+    orderStatus: OrderStatus.fromJSON(order.orderStatus?.toMap()??{}), user: OrderUser(id:int.parse(order.user?.id.toString()??"0"), name: order.user?.name??'',
+       email: order.user?.email??'', phone: order.user?.phone??'',), foodOrders: [], );
+    final List<PendingOrderModel> pendingOrdersModel = orders.map((e) => PendingOrderModel(orderId: e.id??0, tax: e.tax??0, deliveryFee: e.deliveryFee??0, updatedAt: e.formattedDate??DateTime.now().toString(), orderStatus: OrderStatus.fromJSON(e.orderStatus?.toMap()??{}), user: OrderUser(id:int.parse(e.user?.id.toString()??"0"), name: e.user?.name??'', email: e.user?.email??'', phone: e.user?.phone??'',), foodOrders: e.foodOrders??[])).toList();
     if (mounted) {
-      print('Navigating to OrderTracking');
-      // print('Current Order: ${pendingOrderModel.toJson()}');
-      // print('Pending Orders: ${pendingOrdersModel}');
-      //  Navigator.of(context).pushNamed(
-      //                                                   '/OrderTracking',
-      //                                                   arguments: RouteArgument(
-      //                                                     param:{"current_order" :pendingOrderModel,"pending_orders" :pendingOrdersModel, },
-      //                                                     id: order.orderNumber,
-      //                                                   ),
-      //                                                 );  
+       Navigator.of(context).pushNamed(
+                                                        '/OrderTracking',
+                                                        arguments: RouteArgument(
+                                                          param:{"current_order" :pendingOrderModel,"pending_orders" :pendingOrdersModel, },
+                                                          id: order.id.toString(),
+                                                        ),
+                                                      );  
     }
     await _refreshData();
     

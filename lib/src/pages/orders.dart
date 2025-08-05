@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
+import 'package:deliveryboy/src/models/food_order.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/cupertino.dart';
@@ -1250,7 +1251,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                       icon: Icons.payment_outlined,
                       color: Colors.purple,
                       children: [
-                        _buildDetailRow('المجموع الفرعي', '${order.foodOrders.fold<double>(0, (sum, order) => sum + order.price * order.quantity).toStringAsFixed(2)} ₪'),
+                        _buildDetailRow('المجموع الفرعي', '${order.foodOrders.fold<double>(0, (sum, order) => sum + (order.price??0) * (order.quantity??1)).toStringAsFixed(2)} ₪'),
                         SizedBox(height: 12),
                         _buildDetailRow('الضريبة', '${order.tax.toStringAsFixed(2)} ₪'),
                         SizedBox(height: 12),
@@ -1280,7 +1281,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                                 ),
                               ),
                               Text(
-                                '${order.foodOrders.fold<double>(0, (sum, order) => sum + order.price * order.quantity).toInt() + order.tax.toInt() + order.deliveryFee.toInt()} ₪',
+                                '${order.foodOrders.fold<double>(0, (sum, order) => sum + (order.price??0) * (order.quantity??1)).toInt() + order.tax.toInt() + order.deliveryFee.toInt()} ₪',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1439,7 +1440,7 @@ Widget _buildOrderItem(FoodOrder item) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.food.name ?? 'عنصر غير محدد',
+                  item.food?.name ?? 'عنصر غير محدد',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1465,7 +1466,7 @@ Widget _buildOrderItem(FoodOrder item) {
                 ),
                 Spacer(),
                 Text(
-                  '${((item.price)* (item.quantity ?? 1)).toStringAsFixed(2)} ₪',
+                  '${((item.price??0)* (item.quantity ?? 1)).toStringAsFixed(2)} ₪',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,  

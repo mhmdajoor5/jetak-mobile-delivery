@@ -600,7 +600,7 @@ class EnhancedMapController extends ControllerMVC {
     
     subTotal = 0;
     for (var food in currentOrder!.foodOrders) {
-      subTotal += food.quantity * food.price;
+      subTotal += (food.quantity??1) * (food.price??0);
     }
     
     deliveryFee = currentOrder!.deliveryFee ?? 0;

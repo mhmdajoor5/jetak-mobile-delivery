@@ -41,6 +41,13 @@ class OrderHistoryController {
         // إضافة الضرائب ورسوم التوصيل
         totalAmount += (order.tax ?? 0) + (order.deliveryFee ?? 0);
         return OrderHistoryModel(
+          foodTotal: totalAmount,
+          deliveryFee: order.deliveryFee ?? 0,
+          tax: order.tax ?? 0,
+          hint: order.hint,
+          payment: order.payment,
+          userId: int.tryParse( order.user?.id ?? '0' )?? 0,
+          
           id: int.tryParse( order.id ?? '0' )?? 0,
           user: order.user,
           deliveryAddress: order.deliveryAddress ,

@@ -615,7 +615,7 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      _con.currentOrder?.foodOrders[index].food.name ?? '',
+                      _con.currentOrder?.foodOrders[index].food?.name ?? '',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(width: 8),

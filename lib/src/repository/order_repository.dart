@@ -117,7 +117,7 @@ Future<Stream<Order>> getOrdersHistory() async {
   queryParams['with'] =
       'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
   queryParams['search'] =
-      'driver.id:${user.id};order_status_id:5;delivery_address_id:null'; // Use 5 for delivered but add debug
+      'driver.id:${user.id};order_status_id:3;delivery_address_id:null'; // Use 5 for delivered but add debug
   queryParams['searchFields'] =
       'driver.id:=;order_status_id:=;delivery_address_id:<>';
   queryParams['searchJoin'] = 'and';
@@ -128,7 +128,7 @@ Future<Stream<Order>> getOrdersHistory() async {
   print('🔍 Order History API Request:');
   print('   - URL: $uri');
   print('   - Driver ID: ${user.id}');
-  print('   - Looking for status ID: 5 (delivered)');
+  print('   - Looking for status ID: 3 (ready)');
 
   try {
     final client = http.Client();
@@ -232,7 +232,7 @@ Future<Order> onTheWayOrder(Order order) async {
   }
   final String apiToken = 'api_token=${user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}orders/${order.id}?$apiToken';
   final client = http.Client();
   final response = await client.put(
     Uri.parse(url),
@@ -249,7 +249,7 @@ Future<Order> deliveredOrder(Order order) async {
   }
   final String apiToken = 'api_token=${user.apiToken}';
   final String url =
-      '${GlobalConfiguration().getString('api_base_url')}orders/${order.id}?$apiToken';
+      '${GlobalConfiguration().getValue('api_base_url')}orders/${order.id}?$apiToken';
   final client = http.Client();
   final response = await client.put(
     Uri.parse(url),

@@ -4,6 +4,9 @@
 
 import 'dart:convert';
 
+import 'package:deliveryboy/src/models/food_order.dart';
+import 'package:deliveryboy/src/models/order_status.dart';
+
 
 PendingOrdersModel PendingOrdersModelFromJson(String str) =>
     PendingOrdersModel.fromJson(json.decode(str));
@@ -59,7 +62,7 @@ class PendingOrderModel {
         deliveryFee: (json["delivery_fee"] ?? 0.0).toDouble(),
         hint: json["hint"],
         updatedAt: json["updated_at"] ?? "",
-        orderStatus: OrderStatus.fromJson(json["order_status"] ?? {}),
+        orderStatus: OrderStatus.fromJSON(json["order_status"] ?? {}),
         user: OrderUser.fromJson(json["user"] ?? {}),
         foodOrders: List<FoodOrder>.from((json["food_orders"] ?? []).map((x) => FoodOrder.fromJson(x))),
         deliveryAddress: json["delivery_address"] != null ? DeliveryAddress.fromJson(json["delivery_address"]) : null,
@@ -71,7 +74,7 @@ class PendingOrderModel {
     "delivery_fee": deliveryFee,
     "hint": hint,
     "updated_at": updatedAt,
-    "order_status": orderStatus.toJson(),
+    "order_status": orderStatus.toMap(),
     "user": user.toJson(),
     "food_orders": List<dynamic>.from(foodOrders.map((x) => x.toJson())),
     "delivery_address": deliveryAddress?.toJson(),
@@ -82,27 +85,6 @@ class PendingOrderModel {
   String get address => deliveryAddress?.address ?? "Address not available";
   double get latitude => deliveryAddress?.latitude ?? 0.0;
   double get longitude => deliveryAddress?.longitude ?? 0.0;
-}
-
-class OrderStatus {
-  int id;
-  String status;
-
-  OrderStatus({
-    required this.id,
-    required this.status,
-  });
-
-  factory OrderStatus.fromJson(Map<String, dynamic> json) =>
-      OrderStatus(
-        id: json["id"] ?? 0,
-        status: json["status"] ?? "Unknown",
-      );
-
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "status": status,
-  };
 }
 
 class OrderUser {
@@ -134,59 +116,59 @@ class OrderUser {
   };
 }
 
-class FoodOrder {
-  int id;
-  int quantity;
-  double price;
-  Food food;
+// class FoodOrder {
+//   int id;
+//   int quantity;
+//   double price;
+//   Food food;
 
-  FoodOrder({
-    required this.id,
-    required this.quantity,
-    required this.price,
-    required this.food,
-  });
+//   FoodOrder({
+//     required this.id,
+//     required this.quantity,
+//     required this.price,
+//     required this.food,
+//   });
 
-  factory FoodOrder.fromJson(Map<String, dynamic> json) =>
-      FoodOrder(
-        id: json["id"] ?? 0,
-        quantity: json["quantity"] ?? 0,
-        price: (json["price"] ?? 0.0).toDouble(),
-        food: Food.fromJson(json["food"] ?? {}),
-      );
+//   factory FoodOrder.fromJson(Map<String, dynamic> json) =>
+//       FoodOrder(
+//         id: json["id"] ?? 0,
+//         quantity: json["quantity"] ?? 0,
+//         price: (json["price"] ?? 0.0).toDouble(),
+//         food: Food.fromJson(json["food"] ?? {}),
+//       );
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "quantity": quantity,
-    "price": price,
-    "food": food.toJson(),
-  };
-}
+//   Map<String, dynamic> toJson() => {
+//     "id": id,
+//     "quantity": quantity,
+//     "price": price,
+//     "food": food.toJson(),
+//   };
+// }
 
-class Food {
-  int id;
-  String name;
-  double price;
+// class Food {
+//   int id;
+//   String name;
+//   double price;
 
-  Food({
-    required this.id,
-    required this.name,
-    required this.price,
-  });
+//   Food({
+//     required this.id,
+//     required this.name,
+//     required this.price,
+//   });
 
-  factory Food.fromJson(Map<String, dynamic> json) =>
-      Food(
-        id: json["id"] ?? 0,
-        name: json["name"] ?? "Unknown Food",
-        price: (json["price"] ?? 0.0).toDouble(),
-      );
+//   factory Food.fromJson(Map<String, dynamic> json) =>
+//       Food(
+//         id: json["id"] ?? 0,
+//         name: json["name"] ?? "Unknown Food",
+//         price: (json["price"] ?? 0.0).toDouble(),
+//       );
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "price": price,
-  };
-}
+//   Map<String, dynamic> toJson() => {
+//     "id": id,
+//     "name": name,
+//     "price": price,
+//   };
+// }
 
 class DeliveryAddress {
   int id;
