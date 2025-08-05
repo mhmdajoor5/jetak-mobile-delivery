@@ -93,8 +93,8 @@ class FoodController extends ControllerMVC {
   Future<void> refreshFood() async {
     var id = food!.id;
     food = Food();
-    listenForFavorite(foodId: id);
-    listenForFood(foodId: id, message: 'Food refreshed successfuly');
+    listenForFavorite(foodId: id.toString());
+    listenForFood(foodId: id.toString(), message: 'Food refreshed successfuly');
   }
 
   void calculateTotal() {

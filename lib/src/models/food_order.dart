@@ -4,56 +4,53 @@ import '../models/extra.dart';
 import '../models/food.dart';
 
 class FoodOrder {
-  String? id;
-  double? price;
-  double? quantity;
-  List<Extra>? extras;
-  Food? food;
-  DateTime? dateTime;
-  FoodOrder();
+  final int? id;
+  final double? price;
+  final int? quantity;
+  final int? foodId;
+  final int? orderId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final List<dynamic>? customFields;
+  final Food? food;
+  final List<dynamic>? extras;
 
-  FoodOrder.fromJSON(Map<String, dynamic> jsonMap) {
-    try {
-      id = jsonMap['id']?.toString() ?? '';
-      price = jsonMap['price'] != null ? jsonMap['price'].toDouble() : 0.0;
-      quantity =
-          jsonMap['quantity'] != null ? jsonMap['quantity'].toDouble() : 0.0;
-      food =
-          (jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food())
-              as Food?;
-      dateTime =
-          jsonMap['updated_at'] != null
-              ? DateTime.parse(jsonMap['updated_at'])
-              : DateTime.now();
-      extras =
-          jsonMap['extras'] != null
-              ? List.from(
-                jsonMap['extras'],
-              ).map((element) => Extra.fromJSON(element)).toList()
-              : <Extra>[];
-    } catch (e) {
-      id = '';
-      price = 0.0;
-      quantity = 0.0;
-      food = Food();
-      dateTime = DateTime.now();
-      extras = <Extra>[];
-      print(CustomTrace(StackTrace.current, message: e.toString()));
-    }
-  }
+  FoodOrder({
+    this.id,
+    this.price,
+    this.quantity,
+    this.foodId,
+    this.orderId,
+    this.createdAt,
+    this.updatedAt,
+    this.customFields,
+    this.food,
+    this.extras,
+  });
 
-  Map toMap() {
-    var map = <String, dynamic>{};
-    map["id"] = id;
-    map["price"] = price;
-    map["quantity"] = quantity;
-    map["food_id"] = food?.id;
-    map["extras"] = extras?.map((element) => element.id).toList();
-    return map;
-  }
+  factory FoodOrder.fromJson(Map<String, dynamic> json) => FoodOrder(
+        id: json["id"],
+        price: (json["price"])?.toDouble(),
+        quantity: json["quantity"],
+        foodId: json["food_id"],
+        orderId: json["order_id"],
+        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+        customFields: json["custom_fields"],
+        food: json["food"] == null ? null : Food.fromJson(json["food"]),
+        extras: json["extras"],
+      );
 
-  @override
-  String toString() {
-    return 'FoodOrder(id: $id, price: $price, quantity: $quantity, extras: $extras, food: $food, dateTime: $dateTime)';
-  }
+  Map<String, dynamic>? toJson() => {
+        "id": id,
+        "price": price,
+        "quantity": quantity,
+        "food_id": foodId,
+        "order_id": orderId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "custom_fields": customFields,
+        "food": food?.toJson(),
+        "extras": extras,
+      };
 }

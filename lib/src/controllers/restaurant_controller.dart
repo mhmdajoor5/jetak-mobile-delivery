@@ -84,14 +84,14 @@ class RestaurantController extends ControllerMVC {
   }
 
   Future<void> refreshRestaurant() async {
-    var id = restaurant.id;
+    var id = restaurant.id.toString();
     restaurant = Restaurant();
     galleries.clear();
     reviews.clear();
     featuredFoods.clear();
-    listenForRestaurant(id: id ??"", message: S.of(state!.context).restaurant_refreshed_successfuly);
-    listenForRestaurantReviews(id: id??"");
-    listenForGalleries(id??"");
-    listenForFeaturedFoods(id??"");
+    listenForRestaurant(id: id, message: S.of(state!.context).restaurant_refreshed_successfuly);
+    listenForRestaurantReviews(id: id);
+    listenForGalleries(id);
+    listenForFeaturedFoods(id);
   }
 }

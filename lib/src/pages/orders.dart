@@ -537,7 +537,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                   onPressed: () {
                                                     if (order.deliveryAddress!.latitude != null && order.deliveryAddress!.longitude != null) {
                                                       Navigator.of(context).pushNamed(
-                                                        '/Map',
+                                                        '/OrderTracking',
                                                         arguments: RouteArgument(
                                                           param:{"current_order" :order,"pending_orders" :_con.pendingOrdersModel, },
                                                           id: order.orderId.toString(),

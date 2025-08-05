@@ -49,8 +49,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => SettingsWidget());
       case '/Complete-profile':
         return MaterialPageRoute(builder: (_) => CompleteYourProfileWidget());
-      case '/Map':
-        return MaterialPageRoute(builder: (_) => EnhancedMapWidget(
+      case '/OrderTracking':
+        return MaterialPageRoute(builder: (_) => OrderTracking(
           routeArgument: args as RouteArgument,
           parentScaffoldKey: GlobalKey<ScaffoldState>(),
         ));

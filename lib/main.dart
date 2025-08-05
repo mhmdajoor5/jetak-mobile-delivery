@@ -113,6 +113,7 @@ class _MyAppState extends State<MyApp> {
                       foregroundColor: Colors.white,
                     ),
                     brightness: Brightness.light,
+                    scaffoldBackgroundColor: Colors.white,
                     // accentColor: config.Colors().mainColor(1),
                     dividerColor: config.Colors().accentColor(0.1),
                     focusColor: config.Colors().accentColor(1),

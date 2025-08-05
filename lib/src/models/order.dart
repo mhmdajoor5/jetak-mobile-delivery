@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:deliveryboy/src/controllers/order_history_controller.dart';
+
 import '../helpers/custom_trace.dart';
 import '../models/address.dart';
 import '../models/food_order.dart';
@@ -50,7 +52,7 @@ class Order {
           jsonMap['food_orders'] != null
               ? List.from(
                 jsonMap['food_orders'],
-              ).map((element) => FoodOrder.fromJSON(element)).toList()
+              ).map((element) => FoodOrder.fromJson(element)).toList()
               : <FoodOrder>[];
     } catch (e) {
       id = '';
@@ -67,14 +69,14 @@ class Order {
     }
   }
 
-  Map toMap() {
+  Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["user_id"] = user?.id;
     map["order_status_id"] = orderStatus?.id;
     map["tax"] = tax;
     map["delivery_fee"] = deliveryFee;
-    map["foods"] = foodOrders?.map((element) => element.toMap()).toList();
+    map["foods"] = foodOrders?.map((element) => element.toJson()).toList();
     map["payment"] = payment?.toMap();
     if (deliveryAddress?.id != null && deliveryAddress?.id != 'null') {
       map["delivery_address_id"] = deliveryAddress?.id;
@@ -82,14 +84,14 @@ class Order {
     return map;
   }
 
-  Map onTheWayMap() {
+  Map<String, dynamic> onTheWayMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["order_status_id"] = 4;
     return map;
   }
 
-  Map deliveredMap() {
+  Map<String, dynamic> deliveredMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["order_status_id"] = 5;

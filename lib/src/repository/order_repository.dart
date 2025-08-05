@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
 
+import 'package:deliveryboy/src/constants/const/api_endpoints.dart';
+import 'package:deliveryboy/src/controllers/order_history_controller.dart';
+import 'package:deliveryboy/src/models/pending_order_model.dart' hide OrderStatus;
 import 'package:dio/dio.dart';
 import 'package:flutter/rendering.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
@@ -16,27 +20,27 @@ import '../models/order_status.dart';
 import '../models/order_status_history.dart';
 import '../models/user.dart';
 import '../repository/user_repository.dart' as userRepo;
-Future<bool> changeOrderStatus({required int statusId})async{
-  Uri uri = Helper.getUri('Api/driver/orders/$statusId');
-  Map<String, dynamic> queryParams = {};
-  User user = userRepo.currentUser.value;
+// Future<bool> changeOrderStatus({required int statusId})async{
+//   Uri uri = Helper.getUri('Api/driver/orders/$statusId');
+//   Map<String, dynamic> queryParams = {};
+//   User user = userRepo.currentUser.value;
 
-  queryParams['api_token'] = user.apiToken;
-  uri = uri.replace(queryParameters: queryParams);
+//   queryParams['api_token'] = user.apiToken;
+//   uri = uri.replace(queryParameters: queryParams);
 
-  try {
-    final res = await http.get(uri);
-    final data = json.decode(res.body);
-    if(res.statusCode == 200){
-      return true;
-    }
-    return false;
+//   try {
+//     final res = await http.get(uri);
+//     final data = json.decode(res.body);
+//     if(res.statusCode == 200){
+//       return true;
+//     }
+//     return false;
 
-  }catch(e){
-    print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return false;
-  }
-}
+//   }catch(e){
+//     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
+//     return false;
+//   }
+// }
 Future<Stream<Order>> getOrders() async {
   Uri uri = Helper.getUri('api/orders');
   Map<String, dynamic> queryParams = {};
@@ -45,7 +49,7 @@ Future<Stream<Order>> getOrders() async {
 
   queryParams['api_token'] = user.apiToken;
   queryParams['with'] =
-      'driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
+      'user;driver;foodOrders;foodOrders.food;foodOrders.extras;orderStatus;deliveryAddress;payment';
   queryParams['search'] =
       'driver.id:${user.id};order_status_id:$orderStatusId;delivery_address_id:null';
   queryParams['searchFields'] =
@@ -176,9 +180,10 @@ Future<List<OrderStatus>> debugOrderStatuses() async {
     }
     return statuses;
   } catch (e) {
+    
     print('❌ Error fetching order statuses: $e');
+    return [];
   }
-  return [];
 }
 
 // Function to get orders by multiple status IDs
@@ -363,9 +368,10 @@ Stream<Order> _getMockOrdersStream() {
 }
 
 // Enhanced backend method with better debugging
-Future<Order> acceptOrderWithStatus(String orderId, String statusId) async {
+Future<Order> changeOrderStatus(String orderId, String statusId) async {
   try {
-    Uri uri = Helper.getUri('api/manager/orders/$orderId');
+    // Use the helper to get the base URL with proper scheme (http/https)
+    Uri uri = Helper.getUri('api/driver/orders/$orderId');
     User user = userRepo.currentUser.value;
     
     // Check if user has valid token
@@ -373,18 +379,36 @@ Future<Order> acceptOrderWithStatus(String orderId, String statusId) async {
       throw Exception('User not authenticated');
     }
 
-
-    Map<String, dynamic> queryParams = {};
-    queryParams['api_token'] =  user.apiToken;
-    queryParams['status'] = statusId;
-    uri = uri.replace(queryParameters: queryParams);
-
-
-   final Dio dio = Dio()..interceptors.add(PrettyDioLogger());
+    print('🔄 Updating order status. Order: $orderId, Status: $statusId');
+    
+    Map<String, dynamic> queryParams = {
+      'api_token': user.apiToken,
+      'order_status_id': statusId,
+    };
+    
+    // Log the full request URL for debugging
+    print('🌐 Request URL: ${uri.toString()}');
+    print('📤 Request Params: $queryParams');
+    
+    final dio = Dio()..interceptors.add(PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseHeader: true,
+      responseBody: true,
+      error: true,
+      compact: false,
+    ));
+    
     final response = await dio.put(
-     "http://carrytechnologies.co/api/driver/orders/$orderId",
+      uri.toString(),
       queryParameters: queryParams,
       data: json.encode(queryParams),
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
     );
 
 
@@ -557,6 +581,43 @@ Future<Map<String, dynamic>> updateDriverLocation(
         'api_token': user.apiToken,
         'latitude': latitude,
         'longitude': longitude,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': 'Location updated successfully'};
+    } else {
+      return {'success': false, 'message': 'Failed to update location'};
+    }
+  } catch (e) {
+    print('Error updating location: $e');
+    return {'success': false, 'message': 'Network error: $e'};
+  }
+}
+
+
+Future<Map<String, dynamic>> updateOrderDriverLocation(
+  double latitude,
+  double longitude,
+  int orderId,
+) async {
+  Uri uri = Uri.parse (ApiEndpoints.baseUrl+ ApiEndpoints.updateDriverLocation);
+  User user = userRepo.currentUser.value;
+
+  try {
+    final client = http.Client();
+    final response = await client.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'api_token': user.apiToken,
+        'latitude': latitude,
+        'longitude': longitude,
+        'order_id': orderId,
+        'driver_id': user.id,
       }),
     );
 

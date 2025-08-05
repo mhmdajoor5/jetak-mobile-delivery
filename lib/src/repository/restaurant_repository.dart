@@ -33,11 +33,11 @@ Future<Stream<Restaurant>> getNearRestaurants(Address myLocation, Address areaLo
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-      return Restaurant.fromJSON(data);
+      return Restaurant.fromJson(data);
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return Stream.value(Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJson({}));
   }
 }
 
@@ -60,11 +60,11 @@ Future<Stream<Restaurant>> getPopularRestaurants(Address myLocation) async {
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-      return Restaurant.fromJSON(data);
+      return Restaurant.fromJson(data);
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return Stream.value(Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJson({}));
   }
 }
 
@@ -86,11 +86,11 @@ Future<Stream<Restaurant>> searchRestaurants(String search, Address address) asy
     final streamedRest = await client.send(http.Request('get', uri));
 
     return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-      return Restaurant.fromJSON(data);
+      return Restaurant.fromJson(data);
     });
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return Stream.value(Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJson({}));
   }
 }
 
@@ -108,10 +108,10 @@ Future<Stream<Restaurant>> getRestaurant(String id, Address address) async {
     final client = http.Client();
     final streamedRest = await client.send(http.Request('get', uri));
 
-    return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).map((data) => Restaurant.fromJSON(data));
+    return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).map((data) => Restaurant.fromJson(data));
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: uri.toString()).toString());
-    return Stream.value(Restaurant.fromJSON({}));
+    return Stream.value(Restaurant.fromJson({}));
   }
 }
 

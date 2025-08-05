@@ -17,7 +17,7 @@ Future<Stream<Food>> getTrendingFoods() async {
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-    return Food.fromJSON(data);
+    return Food.fromJson(data);
   });
 }
 
@@ -27,8 +27,8 @@ Future<Stream<Food>> getFood(String foodId) async {
   final client = http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).map((data) {
-    print(Food.fromJSON(data).restaurant!.toMap());
-    return Food.fromJSON(data);
+    print(Food.fromJson(data).restaurant!.toJson());
+    return Food.fromJson(data);
   });
 }
 
@@ -39,7 +39,7 @@ Future<Stream<Food>> getFoodsByCategory(categoryId) async {
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-    return Food.fromJSON(data);
+    return Food.fromJson(data);
   });
 }
 
@@ -116,7 +116,7 @@ Future<Stream<Food>> getFoodsOfRestaurant(String restaurantId) async {
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-    return Food.fromJSON(data);
+    return Food.fromJson(data);
   });
 }
 
@@ -128,18 +128,18 @@ Future<Stream<Food>> getTrendingFoodsOfRestaurant(String restaurantId) async {
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-    return Food.fromJSON(data);
+    return Food.fromJson(data);
   });
 }
 
 Future<Stream<Food>> getFeaturedFoodsOfRestaurant(String restaurantId) async {
   // TODO Featured foods only
-  final String url = '${GlobalConfiguration().getString('api_base_url')}foods?with=restaurant&search=restaurant_id:$restaurantId&searchFields=restaurant_id:=';
+  final String url = '${GlobalConfiguration().getValue<String>('api_base_url')}foods?with=restaurant&search=restaurant_id:$restaurantId&searchFields=restaurant_id:=';
 
   final client = http.Client();
   final streamedRest = await client.send(http.Request('get', Uri.parse(url)));
 
   return streamedRest.stream.transform(utf8.decoder).transform(json.decoder).map((data) => Helper.getData(data as Map<String,dynamic>)).expand((data) => (data as List)).map((data) {
-    return Food.fromJSON(data);
+    return Food.fromJson(data);
   });
 }

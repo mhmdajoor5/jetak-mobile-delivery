@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:global_configuration/global_configuration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../user_repository.dart' as userRepo;
 
 Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async {
@@ -113,6 +114,16 @@ Future<Map<String, dynamic>> acceptOrder({required String orderId}) async {
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       print('✅ Order $orderId accepted successfully');
+      
+      // Save the accepted order ID to SharedPreferences
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_order_id', int.tryParse(orderId) ?? 0);
+        print('✅ Saved last_order_id: $orderId to SharedPreferences');
+      } catch (e) {
+        print('❌ Error saving last_order_id to SharedPreferences: $e');
+      }
+      
       return {'success': true, 'message': 'Order accepted successfully', 'data': jsonData};
     } else {
       print('❌ Failed to accept order: ${response.statusCode}');

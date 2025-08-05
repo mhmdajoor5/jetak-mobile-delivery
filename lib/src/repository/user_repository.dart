@@ -120,13 +120,13 @@ Future<UserModel.User> login(UserModel.User user) async {
   );
 }
 
-Future<void> updateDriverLocation(double lat, double lng) async {
+Future<void> updateDriverLocation(double lat, double lng, int orderId) async {
   if (currentUser.value.id == null) {
     print('❌ updateDriverLocation: User not authenticated');
     return;
   }
   
-  print('📍 Updating driver location: lat=$lat, lng=$lng');
+  print('📍 Updating driver location: lat=$lat, lng=$lng, orderId=$orderId');
   
   try {
     final response = await http.post(
@@ -140,6 +140,7 @@ Future<void> updateDriverLocation(double lat, double lng) async {
         'driver_id': currentUser.value.id,
         'latitude': lat,
         'longitude': lng,
+        'order_id': orderId,
       }),
   );
 

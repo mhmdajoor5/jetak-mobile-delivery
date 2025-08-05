@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../generated/l10n.dart';
 import '../helpers/driver_status_helper.dart';
@@ -40,18 +41,9 @@ class OrderController extends ControllerMVC {
 
 
   void listenForOrders({String? message}) async {
-    print('🔍 Checking user authentication status...');
     final currentUser = userRepo.currentUser.value;
 
-    print('🔍 User Authentication Check:');
-    print('   - User ID: ${currentUser.id}');
-    print('   - User Email: ${currentUser.email}');
-    print('   - Has API Token: ${currentUser.apiToken != null}');
-    print('   - Token Length: ${currentUser.apiToken?.length ?? 0}');
-    print('   - Is User Logged In: ${currentUser.id != null && currentUser.apiToken != null}');
-
     if (currentUser.apiToken == null || currentUser.apiToken!.isEmpty) {
-      print('❌ CRITICAL: User has no API token!');
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text('⚠️ Authentication Error: Please login again'),
@@ -62,16 +54,9 @@ class OrderController extends ControllerMVC {
       return;
     }
 
-    // Test connection
-    print('🔍 Running API connection test...');
     try {
       final testResult = await orderRepo.testConnection();
-      print('🔍 Test Result Summary:');
-      print('   - Success: ${testResult['success']}');
-      print('   - Issue Type: ${testResult['issue'] ?? 'unknown'}');
-      print('   - Message: ${testResult['message']}');
-      print('   - Status Code: ${testResult['status_code']}');
-
+    
       if (!testResult['success']) {
         String userMessage = '';
         Color messageColor = Colors.red;
@@ -112,42 +97,23 @@ class OrderController extends ControllerMVC {
         }
       }
     } catch (testError) {
-      print('❌ Test Connection Error: $testError');
     }
 
 
     // Fetch pending orders using new repo
     try {
-      print('🔍 Fetching pending orders...');
       final response = await pendingRepo.getPendingOrders(driverId: currentUser.id.toString());
-
-      print('🔍 Controller - Raw API Response:');
-      print(response);
 
       // Parse response into PendingOrdersModel
       final parsedOrders = PendingOrdersModel.fromJson(response);
       
-      print('🔍 Controller - Parsed Orders:');
-      print('  - Number of orders: ${parsedOrders.orders.length}');
       
-      for (int i = 0; i < parsedOrders.orders.length; i++) {
-        final order = parsedOrders.orders[i];
-        print('🔍 Controller - Order $i:');
-        print('  - Order ID: ${order.orderId}');
-        print('  - Customer Name (getter): ${order.customerName}');
-        print('  - User Name (direct): ${order.user.name}');
-        print('  - User Object: ${order.user}');
-        print('  - Address (getter): ${order.address}');
-        print('  - Delivery Address Object: ${order.deliveryAddress}');
-        print('  - Full Order Object: $order');
-      }
 
       // Update your list
       setState(() {
         pendingOrdersModel = parsedOrders.orders;
       });
 
-      print('✅ Controller - Updated state with ${pendingOrdersModel.length} pending orders');
 
       if (message != null) {
         ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
@@ -156,8 +122,6 @@ class OrderController extends ControllerMVC {
       }
 
     } catch (err) {
-      print('❌ Error fetching pending orders: $err');
-      print('❌ Error details: ${err.toString()}');
       ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text('❌ Failed to fetch pending orders: ${err.toString()}'),
@@ -176,12 +140,10 @@ class OrderController extends ControllerMVC {
     });
 
     try {
-      print('✅ Controller - Starting accept process for order $orderID');
       
       final result = await orderRepo.acceptOrderWithId(orderID);
 
       if (result['success']) {
-        print('✅ Controller - Order $orderID accepted successfully');
         
         // Remove the order from pending list
         setState(() {

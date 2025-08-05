@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:deliveryboy/src/models/order_history_model.dart';
+
 PendingOrdersModel PendingOrdersModelFromJson(String str) =>
     PendingOrdersModel.fromJson(json.decode(str));
 
@@ -49,7 +51,8 @@ class PendingOrderModel {
     required this.foodOrders,
     this.deliveryAddress,
   });
-
+  
+  
   factory PendingOrderModel.fromJson(Map<dynamic, dynamic> json) =>
       PendingOrderModel(
         orderId: json["order_id"] ?? 0,

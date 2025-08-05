@@ -36,7 +36,7 @@ class FoodOrderItemWidget extends StatelessWidget {
                 height: 60,
                 width: 60,
                 fit: BoxFit.cover,
-                imageUrl: foodOrder?.food?.image?.thumb,
+                imageUrl: foodOrder?.food?.media?.firstOrNull?.url,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
