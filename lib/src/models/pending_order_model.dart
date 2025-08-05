@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:deliveryboy/src/models/order_history_model.dart';
 
 PendingOrdersModel PendingOrdersModelFromJson(String str) =>
     PendingOrdersModel.fromJson(json.decode(str));

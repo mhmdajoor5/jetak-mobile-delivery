@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../generated/l10n.dart';
 import '../helpers/driver_status_helper.dart';

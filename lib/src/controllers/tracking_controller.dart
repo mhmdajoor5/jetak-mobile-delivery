@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:deliveryboy/src/controllers/order_history_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -10,7 +9,6 @@ import '../../generated/l10n.dart';
 import '../models/order.dart';
 import '../models/order_status.dart';
 import '../models/order_status_history.dart';
-import '../network/api_client.dart';
 import '../repository/order_repository.dart';
 
 class TrackingController extends ControllerMVC {

@@ -18,7 +18,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 //LocationData locationData;
 
 Future<Setting> initSettings() async {
-  Setting _setting;
+  Setting setting;
   final String url = '${GlobalConfiguration().getValue('api_base_url')}settings';
   try {
     final response = await http.get(Uri.parse(url), headers: {HttpHeaders.contentTypeHeader: 'application/json'});
@@ -26,14 +26,14 @@ Future<Setting> initSettings() async {
       if (json.decode(response.body)['data'] != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('settings', json.encode(json.decode(response.body)['data']));
-        _setting = Setting.fromJSON(json.decode(response.body)['data']);
+        setting = Setting.fromJSON(json.decode(response.body)['data']);
         if (prefs.containsKey('language')) {
-          _setting.mobileLanguage.value = Locale(prefs.getString('language')!, '');
+          setting.mobileLanguage.value = Locale(prefs.getString('language')!, '');
         } else {
-          _setting.mobileLanguage.value = Locale('en', '');
+          setting.mobileLanguage.value = Locale('en', '');
         }
-        _setting.brightness.value = prefs.getBool('isDark') ?? false ? Brightness.dark : Brightness.light;
-        setting.value = _setting;
+        setting.brightness.value = prefs.getBool('isDark') ?? false ? Brightness.dark : Brightness.light;
+        setting.value = setting;
         // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
         setting.notifyListeners();
       }
@@ -48,34 +48,34 @@ Future<Setting> initSettings() async {
 }
 
 Future<dynamic> setCurrentLocation() async {
-  var location = new Location();
-  final whenDone = new Completer();
-  Address _address = new Address();
+  var location = Location();
+  final whenDone = Completer();
+  Address address = Address();
   location.requestService().then((value) async {
-    location.getLocation().then((_locationData) async {
-      String _addressName = '';
-      _address = Address.fromJSON({'address': _addressName, 'latitude': _locationData?.latitude, 'longitude': _locationData?.longitude});
+    location.getLocation().then((locationData) async {
+      String addressName = '';
+      address = Address.fromJSON({'address': addressName, 'latitude': locationData.latitude, 'longitude': locationData.longitude});
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('my_address', json.encode(_address.toMap()));
-      whenDone.complete(_address);
+      await prefs.setString('my_address', json.encode(address.toMap()));
+      whenDone.complete(address);
     }).timeout(Duration(seconds: 10), onTimeout: () async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('my_address', json.encode(_address.toMap()));
-      whenDone.complete(_address);
+      await prefs.setString('my_address', json.encode(address.toMap()));
+      whenDone.complete(address);
       return null;
     }).catchError((e) {
-      whenDone.complete(_address);
+      whenDone.complete(address);
     });
   });
   return whenDone.future;
 }
 
-Future<Address> changeCurrentLocation(Address _address) async {
-  if (!_address.isUnknown()) {
+Future<Address> changeCurrentLocation(Address address) async {
+  if (!address.isUnknown()) {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('delivery_address', json.encode(_address.toMap()));
+    await prefs.setString('delivery_address', json.encode(address.toMap()));
   }
-  return _address;
+  return address;
 }
 
 Future<Address> getCurrentLocation() async {
@@ -102,28 +102,24 @@ void setBrightness(Brightness brightness) async {
 }
 
 Future<void> setDefaultLanguage(String language) async {
-  if (language != null) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', language);
-  }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('language', language);
 }
 
 Future<String> getDefaultLanguage(String defaultLanguage) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.containsKey('language')) {
-    defaultLanguage = await prefs.get('language') as String;
+    defaultLanguage = prefs.get('language') as String;
   }
   return defaultLanguage;
 }
 
 Future<void> saveMessageId(String messageId) async {
-  if (messageId != null) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('google.message_id', messageId);
-  }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('google.message_id', messageId);
 }
 
 Future<String> getMessageId() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  return await prefs.get('google.message_id') as String;
+  return prefs.get('google.message_id') as String;
 }

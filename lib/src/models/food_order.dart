@@ -1,6 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import '../helpers/custom_trace.dart';
-import '../models/extra.dart';
 import '../models/food.dart';
 
 class FoodOrder {

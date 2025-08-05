@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:deliveryboy/src/controllers/order_history_controller.dart';
 
 import '../helpers/custom_trace.dart';
 import '../models/address.dart';

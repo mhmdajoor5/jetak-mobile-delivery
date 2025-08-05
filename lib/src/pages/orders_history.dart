@@ -5,7 +5,6 @@ import 'package:deliveryboy/src/constants/theme/colors_manager.dart';
 import 'package:deliveryboy/src/controllers/order_history_controller.dart';
 import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/order_status.dart';
-import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -705,12 +704,12 @@ Widget _buildActionButton(OrderHistoryModel order) {
 }
 
 // Add this state variable to your class
-Set<String> _loadingOrders = {};
+final Set<String> _loadingOrders = {};
 Future<void> _handleStartOrder(OrderHistoryModel order,) async {
   print('🚀 1. _handleStartOrder called with order: ${order.id}');
   
   // Validate order data
-  if (order == null || order.id == null) {
+  if (order.id == null) {
     print('❌ Invalid order data');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Invalid order data')),
@@ -794,10 +793,6 @@ Future<void> _handleStartOrder(OrderHistoryModel order,) async {
         order.id.toString(), 
         onTheWayStatus.id.toString(),
       );
-      
-      if (updatedOrder == null) {
-        throw Exception('Failed to update order status: Server returned null');
-      }
       
       print('✅ Order status updated successfully');
       

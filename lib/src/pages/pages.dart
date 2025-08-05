@@ -11,7 +11,6 @@ import '../repository/user_repository.dart' as userRepo;
 import '../../generated/l10n.dart';
 import '../elements/DrawerWidget.dart';
 import '../models/route_argument.dart';
-import '../pages/map.dart';
 import '../pages/orders.dart';
 import '../pages/orders_history.dart';
 import '../pages/profile.dart';

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
-import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,7 +9,6 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 import '../controllers/order_controller.dart';
 import '../elements/EmptyOrdersWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
-import '../models/route_argument.dart';
 
 class OrdersWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState>? parentScaffoldKey;
@@ -535,20 +533,14 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     size: 18,
                                                   ),
                                                   onPressed: () {
-                                                    if (order.deliveryAddress!.latitude != null && order.deliveryAddress!.longitude != null) {
-                                                      Navigator.of(context).pushNamed(
-                                                        '/OrderTracking',
-                                                        arguments: RouteArgument(
-                                                          param:{"current_order" :order,"pending_orders" :_con.pendingOrdersModel, },
-                                                          id: order.orderId.toString(),
-                                                        ),
-                                                      );
-                                                    } else {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("لا يوجد معلومات عن الموقع"))
-                                                      );
-                                                    }
-                                                  },
+                                                    Navigator.of(context).pushNamed(
+                                                      '/OrderTracking',
+                                                      arguments: RouteArgument(
+                                                        param:{"current_order" :order,"pending_orders" :_con.pendingOrdersModel, },
+                                                        id: order.orderId.toString(),
+                                                      ),
+                                                    );
+                                                                                                    },
                                                   padding: EdgeInsets.all(6),
                                                   constraints: BoxConstraints(
                                                     minWidth: 32,
@@ -1056,7 +1048,7 @@ void _showLoadingBottomSheet(BuildContext context, String message) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
+            SizedBox(
               width: 48,
               height: 48,
               child: CircularProgressIndicator(
@@ -1189,10 +1181,10 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                           SizedBox(height: 12),
                           _buildDetailRow('الهاتف', order.user.phone!),
                         ],
-                        if (order.user.email != null) ...[
-                          SizedBox(height: 12),
-                          _buildDetailRow('البريد الإلكتروني', order.user.email!),
-                        ],
+                        ...[
+                        SizedBox(height: 12),
+                        _buildDetailRow('البريد الإلكتروني', order.user.email),
+                      ],
                       ],
                     ),
                     
@@ -1222,8 +1214,8 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                       icon: Icons.shopping_bag_outlined,
                       color: Colors.green,
                       children: [
-                        if (order.foodOrders != null && order.foodOrders!.isNotEmpty) ...[
-                          ...order.foodOrders!.asMap().entries.map((entry) {
+                        if (order.foodOrders.isNotEmpty) ...[
+                          ...order.foodOrders.asMap().entries.map((entry) {
                             int index = entry.key;
                             var item = entry.value;
                             return Column(
@@ -1236,7 +1228,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                                 _buildOrderItem(item),
                               ],
                             );
-                          }).toList(),
+                          }),
                         ] else ...[
                           Text(
                             'لا توجد عناصر في الطلب',

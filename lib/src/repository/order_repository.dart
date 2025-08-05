@@ -3,14 +3,10 @@ import 'dart:io';
 import 'dart:math' as Math;
 
 import 'package:deliveryboy/src/constants/const/api_endpoints.dart';
-import 'package:deliveryboy/src/controllers/order_history_controller.dart';
-import 'package:deliveryboy/src/models/pending_order_model.dart' hide OrderStatus;
 import 'package:dio/dio.dart';
-import 'package:flutter/rendering.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
@@ -143,7 +139,7 @@ Future<Stream<Order>> getOrdersHistory() async {
         .transform(json.decoder)
         .map((data) {
           final result = Helper.getData(data as Map<String, dynamic>);
-          print('📋 Order History Response: ${result}');
+          print('📋 Order History Response: $result');
           print('   - Number of orders found: ${(result as List).length}');
           
           // Log details of first order for debugging

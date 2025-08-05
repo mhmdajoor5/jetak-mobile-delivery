@@ -3,15 +3,12 @@ import 'dart:async';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
 import 'package:deliveryboy/src/repository/order_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/map_controller.dart';
-import '../helpers/helper.dart';
-import '../models/order.dart';
 import '../models/route_argument.dart';
 
 class OrderTracking extends StatefulWidget {
@@ -151,7 +148,7 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
 
     for (var order in _con.orders) {
       if (order.deliveryAddress?.latitude != null && order.deliveryAddress?.longitude != null) {
-        final orderLocation = LatLng(order.deliveryAddress!.latitude!, order.deliveryAddress!.longitude!);
+        final orderLocation = LatLng(order.deliveryAddress!.latitude, order.deliveryAddress!.longitude);
         // Calculate distance using Geolocator's `distanceBetween`
         double distance = Geolocator.distanceBetween(
           currentPosition.latitude,
@@ -580,7 +577,7 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '${_con.currentOrder?.foodOrders?.length ?? 0} items',
+                  '${_con.currentOrder?.foodOrders.length ?? 0} items',
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
@@ -603,7 +600,7 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
           ),
           const SizedBox(height: 12),
           Column(
-            children: List.generate(_con.currentOrder?.foodOrders?.length ?? 0, (index) {
+            children: List.generate(_con.currentOrder?.foodOrders.length ?? 0, (index) {
               return Container( 
                 
                 margin: const EdgeInsets.only(bottom: 8),
@@ -618,12 +615,12 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      _con.currentOrder?.foodOrders?[index].food.name ?? '',
+                      _con.currentOrder?.foodOrders[index].food.name ?? '',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${_con.currentOrder?.foodOrders?[index].quantity} x ${_con.currentOrder?.foodOrders?[index].price} \$',
+                      '${_con.currentOrder?.foodOrders[index].quantity} x ${_con.currentOrder?.foodOrders[index].price} \$',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -648,7 +645,7 @@ class _OrderTrackingState extends StateMVC<OrderTracking> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
-                  final orderId = _con.currentOrder?.orderId?.toString();
+                  final orderId = _con.currentOrder?.orderId.toString();
                   if (orderId == null) return;
                   
                   setState(() => _isLoading = true);

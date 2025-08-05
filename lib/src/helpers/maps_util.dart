@@ -67,7 +67,7 @@ class MapsUtil {
       final uri = Uri.parse(_baseUrl).replace(queryParameters: params);
       
       if (kDebugMode) {
-        developer.log('MapsUtil - Requesting directions: ${uri.toString().replaceAll(_apiKey!, '***')}');
+        developer.log('MapsUtil - Requesting directions: ${uri.toString().replaceAll(_apiKey, '***')}');
       }
 
       // Make the HTTP request

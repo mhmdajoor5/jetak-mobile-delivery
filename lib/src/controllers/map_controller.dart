@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/app_config.dart' as config;
 import '../helpers/maps_util.dart';
 import '../models/address.dart';
-import '../models/order.dart';
 import '../models/pending_order_model.dart';
 import '../repository/orders/pending_order_repo.dart';
 import '../repository/settings_repository.dart' as sett;
@@ -43,8 +42,7 @@ class EnhancedMapController extends ControllerMVC {
   Completer<GoogleMapController> mapController = Completer();
 
   // Initialize repositories
-  EnhancedMapController() {
-  }
+  EnhancedMapController();
   
   // Update driver's current location
   Future<void> updateDriverLocation(double latitude, double longitude) async {
@@ -136,7 +134,7 @@ class EnhancedMapController extends ControllerMVC {
 
   Future<Marker> _createOrderMarker(PendingOrderModel order) async {
     return Marker(
-      markerId: MarkerId('order_${order?.orderId??""}'),
+      markerId: MarkerId('order_${order.orderId??""}'),
       position: LatLng(
         order.deliveryAddress!.latitude,
         order.deliveryAddress!.longitude,
@@ -230,15 +228,15 @@ class EnhancedMapController extends ControllerMVC {
          }); 
         }
         // Calculate center point between current location and destination
-        double centerLat = (currentAddress!.latitude! + currentOrder!.deliveryAddress!.latitude!) / 2;
-        double centerLng = (currentAddress!.longitude! + currentOrder!.deliveryAddress!.longitude!) / 2;
+        double centerLat = (currentAddress!.latitude! + currentOrder!.deliveryAddress!.latitude) / 2;
+        double centerLng = (currentAddress!.longitude! + currentOrder!.deliveryAddress!.longitude) / 2;
         
         // Calculate zoom level based on distance
         double distance = _calculateDistance(
           currentAddress!.latitude!,
           currentAddress!.longitude!,
-          currentOrder!.deliveryAddress!.latitude!,
-          currentOrder!.deliveryAddress!.longitude!,
+          currentOrder!.deliveryAddress!.latitude,
+          currentOrder!.deliveryAddress!.longitude,
         );
         
         double zoom = _getZoomLevelForDistance(distance);
@@ -251,8 +249,8 @@ class EnhancedMapController extends ControllerMVC {
             bearing: _calculateBearing(
               currentAddress!.latitude!,
               currentAddress!.longitude!,
-              currentOrder!.deliveryAddress!.latitude!,
-              currentOrder!.deliveryAddress!.longitude!,
+              currentOrder!.deliveryAddress!.latitude,
+              currentOrder!.deliveryAddress!.longitude,
             ),
           );
         });
@@ -569,8 +567,8 @@ class EnhancedMapController extends ControllerMVC {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
-            currentOrder!.deliveryAddress!.latitude!,
-            currentOrder!.deliveryAddress!.longitude!,
+            currentOrder!.deliveryAddress!.latitude,
+            currentOrder!.deliveryAddress!.longitude,
           ),
           zoom: 18,
           tilt: 60,
@@ -601,12 +599,12 @@ class EnhancedMapController extends ControllerMVC {
     if (currentOrder?.foodOrders == null) return;
     
     subTotal = 0;
-    currentOrder!.foodOrders?.forEach((food) {
-      subTotal += food.quantity! * food.price!;
-    });
+    for (var food in currentOrder!.foodOrders) {
+      subTotal += food.quantity * food.price;
+    }
     
     deliveryFee = currentOrder!.deliveryFee ?? 0;
-    taxAmount = (subTotal + deliveryFee) * currentOrder!.tax! / 100;
+    taxAmount = (subTotal + deliveryFee) * currentOrder!.tax / 100;
     total = subTotal + taxAmount + deliveryFee;
 
     setState(() {});
@@ -655,30 +653,28 @@ class EnhancedMapController extends ControllerMVC {
         
         );
         
-        if (acceptedOrder.orderId != null) {
-          setState(() {
-            currentOrder = acceptedOrder;
-          });
-          
-          // Remove the order from pending list
-          orders.removeWhere((order) => order.orderId == orderId);
-          
-          // Update UI for accepted order
-          getDirectionSteps();
-          calculateSubtotal();
-          
-          // Save the accepted order ID to SharedPreferences
-          try {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('last_order_id', int.tryParse(orderId) ?? 0);
-            print('✅ Saved last_order_id: $orderId to SharedPreferences');
-          } catch (e) {
-            print('❌ Error saving last_order_id to SharedPreferences: $e');
-          }
-          
-          return true;
+        setState(() {
+          currentOrder = acceptedOrder;
+        });
+        
+        // Remove the order from pending list
+        orders.removeWhere((order) => order.orderId == orderId);
+        
+        // Update UI for accepted order
+        getDirectionSteps();
+        calculateSubtotal();
+        
+        // Save the accepted order ID to SharedPreferences
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('last_order_id', int.tryParse(orderId) ?? 0);
+          print('✅ Saved last_order_id: $orderId to SharedPreferences');
+        } catch (e) {
+          print('❌ Error saving last_order_id to SharedPreferences: $e');
         }
-      }
+        
+        return true;
+            }
       
       // print('❌ Failed to accept order: ${response['message']}');
       return false;

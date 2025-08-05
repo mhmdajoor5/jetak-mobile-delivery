@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'package:deliveryboy/src/models/address.dart';
 import 'package:deliveryboy/src/models/order_status.dart';
 import 'package:deliveryboy/src/models/user.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'food_order.dart';
