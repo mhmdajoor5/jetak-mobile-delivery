@@ -15,9 +15,9 @@ class Cart {
     try {
       id = jsonMap['id'].toString();
       quantity = jsonMap['quantity'] != null ? jsonMap['quantity'].toDouble() : 0.0;
-      food = jsonMap['food'] != null ? Food.fromJSON(jsonMap['food']) : Food();
+      food = jsonMap['food'] != null ? Food.fromJson(jsonMap['food']) : Food();
       extras = jsonMap['extras'] != null ? List.from(jsonMap['extras']).map((element) => Extra.fromJSON(element)).toList() : [];
-      food?.price = getFoodPrice();
+      food!.copyWith(price: () => getFoodPrice());
     } catch (e) {
       id = '';
       quantity = 0.0;

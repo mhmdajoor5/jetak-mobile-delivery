@@ -362,7 +362,7 @@ class Helper {
 
   static String? fixImageUrl(String? url) {
     if (url == null || url.isEmpty) {
-      String baseUrl = GlobalConfiguration().getString('base_url');
+      String baseUrl = GlobalConfiguration().getValue('base_url');
       if (!baseUrl.endsWith('/')) {
         baseUrl += '/';
       }

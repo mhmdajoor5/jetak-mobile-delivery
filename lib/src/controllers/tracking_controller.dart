@@ -9,7 +9,6 @@ import '../../generated/l10n.dart';
 import '../models/order.dart';
 import '../models/order_status.dart';
 import '../models/order_status_history.dart';
-import '../network/api_client.dart';
 import '../repository/order_repository.dart';
 
 class TrackingController extends ControllerMVC {

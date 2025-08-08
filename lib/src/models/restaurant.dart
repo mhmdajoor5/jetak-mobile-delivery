@@ -1,79 +1,65 @@
-import '../helpers/custom_trace.dart';
-import '../models/media.dart';
+
+import 'package:deliveryboy/src/models/discount.dart';
+import 'package:deliveryboy/src/models/media.dart';
 
 class Restaurant {
-  String? id;
-  String? name;
-  Media? image;
-  String? rate;
-  String? address;
-  String? description;
-  String? phone;
-  String? mobile;
-  String? information;
-  double? deliveryFee;
-  double? adminCommission;
-  double? defaultTax;
-  String? latitude;
-  String? longitude;
-  bool? closed;
-  bool? availableForDelivery;
-  double? deliveryRange;
-  double? distance;
+  final int? id;
+  final String? name;
+  final double? deliveryFee;
+  final String? address;
+  final String? phone;
+  final double? defaultTax;
+  final bool? availableForDelivery;
+  final List<dynamic>? customFields;
+  final bool? hasMedia;
+  final dynamic rate;
+  final Discount? discount;
+  final List<Media>? media;
 
-  Restaurant();
+  Restaurant({
+    this.id,
+    this.name,
+    this.deliveryFee,
+    this.address,
+    this.phone,
+    this.defaultTax,
+    this.availableForDelivery,
+    this.customFields,
+    this.hasMedia,
+    this.rate,
+    this.discount,
+    this.media,
+  });
 
-  Restaurant.fromJSON(Map<String, dynamic> jsonMap) {
-    try {
-      id = jsonMap['id'].toString();
-      name = jsonMap['name'];
-      image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty ? Media.fromJSON(jsonMap['media'][0]) : Media();
-      rate = jsonMap['rate'] ?? '0';
-      deliveryFee = jsonMap['delivery_fee'] != null ? jsonMap['delivery_fee'].toDouble() : 0.0;
-      adminCommission = jsonMap['admin_commission'] != null ? jsonMap['admin_commission'].toDouble() : 0.0;
-      deliveryRange = jsonMap['delivery_range'] != null ? jsonMap['delivery_range'].toDouble() : 0.0;
-      address = jsonMap['address'];
-      description = jsonMap['description'];
-      phone = jsonMap['phone'];
-      mobile = jsonMap['mobile'];
-      defaultTax = jsonMap['default_tax'] != null ? jsonMap['default_tax'].toDouble() : 0.0;
-      information = jsonMap['information'];
-      latitude = jsonMap['latitude'];
-      longitude = jsonMap['longitude'];
-      closed = jsonMap['closed'] ?? false;
-      availableForDelivery = jsonMap['available_for_delivery'] ?? false;
-      distance = jsonMap['distance'] != null ? double.parse(jsonMap['distance'].toString()) : 0.0;
-    } catch (e) {
-      id = '';
-      name = '';
-      image = Media();
-      rate = '0';
-      deliveryFee = 0.0;
-      adminCommission = 0.0;
-      deliveryRange = 0.0;
-      address = '';
-      description = '';
-      phone = '';
-      mobile = '';
-      defaultTax = 0.0;
-      information = '';
-      latitude = '0';
-      longitude = '0';
-      closed = false;
-      availableForDelivery = false;
-      distance = 0.0;
-      print(CustomTrace(StackTrace.current, message: e.toString()));
-    }
-  }
+  factory Restaurant.fromJson(Map<String, dynamic> json) => Restaurant(
+        id: json["id"],
+        name: json["name"],
+        deliveryFee: (json["delivery_fee"])?.toDouble(),
+        address: json["address"],
+        phone: json["phone"],
+        defaultTax: (json["default_tax"])?.toDouble(),
+        availableForDelivery: json["available_for_delivery"],
+        customFields: json["custom_fields"],
+        hasMedia: json["has_media"],
+        rate: json["rate"],
+        discount: json["discount"] == null ? null : Discount.fromJson(json["discount"]),
+        media: json["media"] == null
+            ? null
+            : List<Media>.from(json["media"]!.map((x) => Media.fromJSON(x))),
+      );
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'latitude': latitude,
-      'longitude': longitude,
-      'delivery_fee': deliveryFee,
-      'distance': distance,
-    };
-  }
+  Map<String, dynamic>? toJson() => {
+        "id": id,
+        "name": name,
+        "delivery_fee": deliveryFee,
+        "address": address,
+        "phone": phone,
+        "default_tax": defaultTax,
+        "available_for_delivery": availableForDelivery,
+        "custom_fields": customFields,
+        "has_media": hasMedia,
+        "rate": rate,
+        "discount": discount?.toJson(),
+        "media": media == null ? null : List<Media>.from(media!.map((x) => x.toMap())),
+      };
 }

@@ -403,11 +403,12 @@ class _SettingsWidgetState extends StateMVC<SettingsWidget> {
         desiredAccuracy: LocationAccuracy.high,
       );
       
-      // Update on server
-      await userRepo.updateDriverLocation(position.latitude, position.longitude);
+      // Get the last order ID and save location
+      final prefs = await SharedPreferences.getInstance();
+      final int? orderId = prefs.getInt('last_order_id');
+      // await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId ?? 0);
       
       // Save locally
-      SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setDouble('last_lat', position.latitude);
       await prefs.setDouble('last_lng', position.longitude);
       await prefs.setInt('last_location_time', DateTime.now().millisecondsSinceEpoch);

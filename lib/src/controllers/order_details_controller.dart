@@ -82,7 +82,7 @@ class OrderDetailsController extends ControllerMVC {
   void doOnTheWayOrder(Order order) async {
     onTheWayOrder(order).then((value) {
       setState(() {
-        order.orderStatus?.id = '4';
+      order.orderStatus= order.orderStatus?.copyWith(id: "4");
       });
       // Reload status history after status change
       if (order.id != null) {
@@ -97,7 +97,7 @@ class OrderDetailsController extends ControllerMVC {
   void doDeliveredOrder(Order order) async {
     deliveredOrder(order).then((value) {
       setState(() {
-        order.orderStatus?.id = '5';
+        order.orderStatus= order.orderStatus?.copyWith(id: "5");
       });
       // Reload status history after status change
       if (order.id != null) {

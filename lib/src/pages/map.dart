@@ -1,52 +1,79 @@
+import 'dart:async';
+
 import 'package:deliveryboy/src/models/pending_order_model.dart';
+import 'package:deliveryboy/src/repository/order_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/map_controller.dart';
-import '../helpers/helper.dart';
-import '../models/order.dart';
 import '../models/route_argument.dart';
 
-class EnhancedMapWidget extends StatefulWidget {
+class OrderTracking extends StatefulWidget {
   final RouteArgument routeArgument;
   final GlobalKey<ScaffoldState> parentScaffoldKey;
 
-  const EnhancedMapWidget({
+  const OrderTracking({
     super.key,
     required this.routeArgument,
     required this.parentScaffoldKey,
   });
 
   @override
-  _EnhancedMapWidgetState createState() => _EnhancedMapWidgetState();
+  _OrderTrackingState createState() => _OrderTrackingState();
 }
 
-class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
+class _OrderTrackingState extends StateMVC<OrderTracking> {
   late EnhancedMapController _con;
-  bool _isLoading = true;
+  GoogleMapController? _mapController;
   bool _orderAccepted = false;
+  bool _isLoading = false;
+  Timer? _locationUpdateTimer;
   String? _errorMessage;
   String _estimatedTime = "N/A min";
   String _distance = "N/A km";
   bool _isNavigating = false;
 
-  _EnhancedMapWidgetState() : super(EnhancedMapController()) {
+  _OrderTrackingState() : super(EnhancedMapController()) {
     _con = (controller as EnhancedMapController);
   }
 
   @override
-  void initState() {
-    super.initState();
-    _initializeMap();
+  void dispose() {
+    _locationUpdateTimer?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+  
+  void _startLocationUpdates(int orderId) {
+    // Cancel any existing timer
+    _locationUpdateTimer?.cancel();
+    
+    // Start a new timer that updates location every 10 seconds
+    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      if (!mounted) return;
+      
+      try {
+        final position = await Geolocator.getCurrentPosition();
+        await updateOrderDriverLocation(
+          position.latitude,
+          position.longitude,
+          orderId,
+        );
+        debugPrint('Driver location updated for order: $orderId');
+      } catch (e) {
+        debugPrint('Error updating driver location: $e');
+      }
+    });
   }
 
   Future<void> _initializeMap() async {
     try {
       setState(() => _isLoading = true);
+      print("Current Order: ${widget.routeArgument.param["current_order"]}");
+      print("Pending Orders: ${widget.routeArgument.param["pending_orders"]}");
       _con.currentOrder = widget.routeArgument.param["current_order"] as PendingOrderModel;
       _con.orders= (widget.routeArgument.param["pending_orders"] as List<PendingOrderModel>);
       // Check location permissions
@@ -121,7 +148,7 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
 
     for (var order in _con.orders) {
       if (order.deliveryAddress?.latitude != null && order.deliveryAddress?.longitude != null) {
-        final orderLocation = LatLng(order.deliveryAddress!.latitude!, order.deliveryAddress!.longitude!);
+        final orderLocation = LatLng(order.deliveryAddress!.latitude, order.deliveryAddress!.longitude);
         // Calculate distance using Geolocator's `distanceBetween`
         double distance = Geolocator.distanceBetween(
           currentPosition.latitude,
@@ -550,7 +577,7 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '${_con.currentOrder?.foodOrders?.length ?? 0} items',
+                  '${_con.currentOrder?.foodOrders.length ?? 0} items',
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
@@ -573,7 +600,7 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
           ),
           const SizedBox(height: 12),
           Column(
-            children: List.generate(_con.currentOrder?.foodOrders?.length ?? 0, (index) {
+            children: List.generate(_con.currentOrder?.foodOrders.length ?? 0, (index) {
               return Container( 
                 
                 margin: const EdgeInsets.only(bottom: 8),
@@ -588,12 +615,12 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      _con.currentOrder?.foodOrders?[index].food.name ?? '',
+                      _con.currentOrder?.foodOrders[index].food?.name ?? '',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${_con.currentOrder?.foodOrders?[index].quantity} x ${_con.currentOrder?.foodOrders?[index].price} \$',
+                      '${_con.currentOrder?.foodOrders[index].quantity} x ${_con.currentOrder?.foodOrders[index].price} \$',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -617,9 +644,68 @@ class _EnhancedMapWidgetState extends StateMVC<EnhancedMapWidget> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  setState(() => _orderAccepted = true);
-                },
+                onPressed: () async {
+                  final orderId = _con.currentOrder?.orderId.toString();
+                  if (orderId == null) return;
+                  
+                  setState(() => _isLoading = true);
+                  
+                  try {
+                    // 1. Update driver's current location
+                    final position = await Geolocator.getCurrentPosition();
+                    await updateOrderDriverLocation(
+                    position.latitude, 
+                    position.longitude,
+                    _con.currentOrder!.orderId
+                    );
+                    
+                    // 2. Accept the order
+                    final success = await _con.acceptOrder(orderId);
+                    
+                    if (success) {
+                      setState(() => _orderAccepted = true);
+                      
+                      // Start periodic location updates
+                      _startLocationUpdates(int.parse(orderId));
+                      
+                      // 3. Navigate to tracking screen
+                      if (mounted) {
+                        Navigator.of(context).pushReplacementNamed(
+                          '/OrderDetails',
+                          arguments: RouteArgument(
+                            id: orderId,
+                            param: {
+                              'order': _con.currentOrder,
+                            },
+                          ),
+                        );
+                      }
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to accept order. Please try again.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    debugPrint('Error accepting order: $e');
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } finally {
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                    }
+                  }
+              },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.shadowColor,
                   foregroundColor: Colors.white,

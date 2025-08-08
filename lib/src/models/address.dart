@@ -10,6 +10,9 @@ class Address {
   double? longitude;
   bool? isDefault;
   String? userId;
+  DateTime? createdAt; // New field
+  DateTime? updatedAt; // New field
+  List<dynamic>? customFields; // New field
 
   Address();
 
@@ -21,6 +24,13 @@ class Address {
       latitude = jsonMap['latitude']?.toDouble();
       longitude = jsonMap['longitude']?.toDouble();
       isDefault = jsonMap['is_default'] ?? false;
+      userId = jsonMap['user_id']?.toString(); // userId was missing from your fromJSON
+      
+      // New fields from the extended JSON
+      createdAt = jsonMap['created_at'] != null ? DateTime.parse(jsonMap['created_at']) : null;
+      updatedAt = jsonMap['updated_at'] != null ? DateTime.parse(jsonMap['updated_at']) : null;
+      customFields = jsonMap['custom_fields'];
+      
     } catch (e) {
       print(CustomTrace(StackTrace.current, message: e.toString()));
     }
@@ -30,7 +40,7 @@ class Address {
     return latitude == null || longitude == null;
   }
 
-  Map toMap() {
+  Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["description"] = description;
@@ -39,6 +49,12 @@ class Address {
     map["longitude"] = longitude;
     map["is_default"] = isDefault;
     map["user_id"] = userId;
+    
+    // Adding new fields to the map
+    map['created_at'] = createdAt?.toIso8601String();
+    map['updated_at'] = updatedAt?.toIso8601String();
+    map['custom_fields'] = customFields;
+    
     return map;
   }
 

@@ -11,7 +11,6 @@ import '../repository/user_repository.dart' as userRepo;
 import '../../generated/l10n.dart';
 import '../elements/DrawerWidget.dart';
 import '../models/route_argument.dart';
-import '../pages/map.dart';
 import '../pages/orders.dart';
 import '../pages/orders_history.dart';
 import '../pages/profile.dart';
@@ -94,7 +93,10 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       await _saveLocationLocally(position.latitude, position.longitude);
       
       // إرسال الموقع للخادم
-      await userRepo.updateDriverLocation(position.latitude, position.longitude);
+      final prefs = await SharedPreferences.getInstance();
+      final int? orderId = prefs.getInt('last_order_id');
+      await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId ?? 0);
+
       
     } catch (e) {
       print('❌ Error getting position: $e');
@@ -109,7 +111,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       await prefs.setDouble('last_lat', lat);
       await prefs.setDouble('last_lng', lng);
       await prefs.setInt('last_location_time', DateTime.now().millisecondsSinceEpoch);
-      print('💾 Location saved locally');
+            print('💾 Location saved locally');
     } catch (e) {
       print('❌ Error saving location locally: $e');
     }
@@ -123,11 +125,16 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         double lng = prefs.getDouble('last_lng') ?? 0.0;
         int lastTime = prefs.getInt('last_location_time') ?? 0;
         
+        int? orderId = prefs.getInt('last_order_id');
         // استخدم آخر موقع فقط إذا كان حديث (أقل من 5 دقائق)
         int timeDiff = DateTime.now().millisecondsSinceEpoch - lastTime;
         if (timeDiff < 300000) { // 5 دقائق
           print('📍 Using last known location: lat=$lat, lng=$lng');
-          await userRepo.updateDriverLocation(lat, lng);
+         
+         // Use the order_id from shared preferences if available
+         await userRepo.updateDriverLocation(lat, lng, orderId ?? 0);
+     // Use the order_id from shared preferences if available
+         // await userRepo.updateDriverLocation(lat, lng, order_id ?? 0);
         } else {
           print('⚠️ Last known location is too old');
         }
@@ -163,11 +170,6 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         case 2:
           widget.currentPage =
                  OrderHistoryPage();
-          break;
-        case 3:
-          widget.currentPage = EnhancedMapWidget(
-              parentScaffoldKey: widget.scaffoldKey,
-              routeArgument: widget.routeArgument);
           break;
       }
     });

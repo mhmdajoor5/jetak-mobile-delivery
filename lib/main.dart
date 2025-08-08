@@ -2,7 +2,6 @@
 import 'src/notification_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:global_configuration/global_configuration.dart';
@@ -113,6 +112,7 @@ class _MyAppState extends State<MyApp> {
                       foregroundColor: Colors.white,
                     ),
                     brightness: Brightness.light,
+                    scaffoldBackgroundColor: Colors.white,
                     // accentColor: config.Colors().mainColor(1),
                     dividerColor: config.Colors().accentColor(0.1),
                     focusColor: config.Colors().accentColor(1),

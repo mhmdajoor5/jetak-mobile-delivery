@@ -40,12 +40,17 @@ class OrderHistoryController {
         
         // إضافة الضرائب ورسوم التوصيل
         totalAmount += (order.tax ?? 0) + (order.deliveryFee ?? 0);
-        print("Order Details ${order.toString()}");
         return OrderHistoryModel(
-          orderNumber: order.id ?? 'غير محدد',
-          clientName: order.user?.name ?? 'عميل غير محدد',
-          phoneNumber: order.user?.phone ?? 'غير محدد',
-          deliveryAddress: order.deliveryAddress?.address ?? 'عنوان غير محدد',
+          foodTotal: totalAmount,
+          deliveryFee: order.deliveryFee ?? 0,
+          tax: order.tax ?? 0,
+          hint: order.hint,
+          payment: order.payment,
+          userId: int.tryParse( order.user?.id ?? '0' )?? 0,
+          
+          id: int.tryParse( order.id ?? '0' )?? 0,
+          user: order.user,
+          deliveryAddress: order.deliveryAddress ,
           date: order.dateTime ?? DateTime.now(),
           amount: totalAmount,
           status: order.orderStatus?.status ?? 'غير محدد',
@@ -105,7 +110,7 @@ Map<String, List<String>> statusMapping = {
       final thirtyDaysAgo = DateTime.now().subtract(Duration(days: 30));
       
       return allOrders.where((order) => 
-        order.date.isAfter(thirtyDaysAgo)
+        order.date?.isAfter(thirtyDaysAgo) ?? false
       ).toList();
     } catch (e) {
       print('❌ Error getting recent orders: $e');
@@ -120,7 +125,7 @@ Map<String, List<String>> statusMapping = {
       final pendingOrders = await getOrdersByStatus('pending');
       final cancelledOrders = await getOrdersByStatus('cancelled');
       
-      double totalEarnings = deliveredOrders.fold(0.0, (sum, order) => sum + order.amount);
+      double totalEarnings = deliveredOrders.fold(0.0, (sum, order) => sum + (order.amount ?? 0.0));
       
       return {
         'total_delivered': deliveredOrders.length,

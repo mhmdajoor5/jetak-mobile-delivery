@@ -913,9 +913,9 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _getStatusColor(widget.order.orderStatus?.id),
+                  _getStatusColor(widget.order.orderStatus?.id.toString()),
                   _getStatusColor(
-                    widget.order.orderStatus?.id,
+                    widget.order.orderStatus?.id.toString(),
                   ).withOpacity(0.8),
                 ],
                 begin: Alignment.centerLeft,
@@ -928,7 +928,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
               boxShadow: [
                 BoxShadow(
                   color: _getStatusColor(
-                    widget.order.orderStatus?.id,
+                    widget.order.orderStatus?.id.toString(),
                   ).withOpacity(0.3),
                   blurRadius: 8,
                   offset: Offset(0, 4),
@@ -942,11 +942,11 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                 Container(
                   padding: EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    _getStatusIcon(widget.order.orderStatus?.id),
+                    _getStatusIcon(widget.order.orderStatus?.id.toString()),
                     color: Colors.white,
                     size: 12,
                   ),

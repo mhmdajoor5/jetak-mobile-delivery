@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/services.dart'; // For PlatformException
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/app_config.dart' as config;
 import '../helpers/maps_util.dart';
 import '../models/address.dart';
-import '../models/order.dart';
 import '../models/pending_order_model.dart';
 import '../repository/orders/pending_order_repo.dart';
 import '../repository/settings_repository.dart' as sett;
@@ -42,7 +42,27 @@ class EnhancedMapController extends ControllerMVC {
   Completer<GoogleMapController> mapController = Completer();
 
   // Initialize repositories
-  EnhancedMapController() {
+  EnhancedMapController();
+  
+  // Update driver's current location
+  Future<void> updateDriverLocation(double latitude, double longitude) async {
+    try {
+      // Update the current address with new coordinates
+      if (currentAddress != null) {
+        currentAddress!.latitude = latitude;
+        currentAddress!.longitude = longitude;
+        
+        // You can add additional logic here if needed, like saving to preferences
+        // or notifying other parts of the app about the location update
+        
+        setState(() {
+          // Trigger UI update if needed
+        });
+      }
+    } catch (e) {
+      debugPrint('Error updating driver location: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -52,15 +72,7 @@ class EnhancedMapController extends ControllerMVC {
   }
 
   void listenForPendingOrders({String? message}) async {
-    print('🔍 Checking user authentication status...');
     final currentUser = userRepo.currentUser.value;
-
-    print('🔍 User Authentication Check:');
-    print('   - User ID: ${currentUser.id}');
-    print('   - User Email: ${currentUser.email}');
-    print('   - Has API Token: ${currentUser.apiToken != null}');
-    print('   - Token Length: ${currentUser.apiToken?.length ?? 0}');
-    print('   - Is User Logged In: ${currentUser.id != null && currentUser.apiToken != null}');
 
     if (currentUser.apiToken == null || currentUser.apiToken!.isEmpty) {
       print('❌ CRITICAL: User has no API token!');
@@ -70,17 +82,11 @@ class EnhancedMapController extends ControllerMVC {
 
    // Fetch pending orders
     try {
-      print('🔍 Fetching pending orders...');
       final response = await getPendingOrders(driverId: currentUser.id.toString());
-
-      print('🔍 Controller - Raw API Response:');
-      print(response);
 
       // Parse response into PendingOrdersModel
       final parsedOrders = PendingOrdersModel.fromJson(response);
       
-      print('🔍 Controller - Parsed Orders:');
-      print('  - Number of orders: ${parsedOrders.orders.length}');
       
       // Clear existing orders and markers for pending orders
       setState(() {
@@ -95,11 +101,6 @@ class EnhancedMapController extends ControllerMVC {
       // Process each pending order
       for (int i = 0; i < parsedOrders.orders.length; i++) {
         final pendingOrder = parsedOrders.orders[i];
-        
-        print('🔍 Controller - Processing Order $i:');
-        print('  - Order ID: ${pendingOrder.orderId}');
-        print('  - Customer Name: ${pendingOrder.customerName}');
-        print('  - Address: ${pendingOrder.address}');
 
         // Convert PendingOrder to Order model if needed
         // You might need to create a conversion method
@@ -119,8 +120,6 @@ class EnhancedMapController extends ControllerMVC {
         }
       }
 
-      print('✅ Controller - Updated state with ${orders.length} pending orders');
-
       // If there's a current order, make sure it's properly set up
       if (currentOrder != null) {
         calculateSubtotal();
@@ -128,8 +127,6 @@ class EnhancedMapController extends ControllerMVC {
       }
 
     } catch (err) {
-      print('❌ Error fetching pending orders: $err');
-      print('❌ Error details: ${err.toString()}');
       rethrow;
     }
   }
@@ -137,7 +134,7 @@ class EnhancedMapController extends ControllerMVC {
 
   Future<Marker> _createOrderMarker(PendingOrderModel order) async {
     return Marker(
-      markerId: MarkerId('order_${order?.orderId??""}'),
+      markerId: MarkerId('order_${order.orderId??""}'),
       position: LatLng(
         order.deliveryAddress!.latitude,
         order.deliveryAddress!.longitude,
@@ -231,15 +228,15 @@ class EnhancedMapController extends ControllerMVC {
          }); 
         }
         // Calculate center point between current location and destination
-        double centerLat = (currentAddress!.latitude! + currentOrder!.deliveryAddress!.latitude!) / 2;
-        double centerLng = (currentAddress!.longitude! + currentOrder!.deliveryAddress!.longitude!) / 2;
+        double centerLat = (currentAddress!.latitude! + currentOrder!.deliveryAddress!.latitude) / 2;
+        double centerLng = (currentAddress!.longitude! + currentOrder!.deliveryAddress!.longitude) / 2;
         
         // Calculate zoom level based on distance
         double distance = _calculateDistance(
           currentAddress!.latitude!,
           currentAddress!.longitude!,
-          currentOrder!.deliveryAddress!.latitude!,
-          currentOrder!.deliveryAddress!.longitude!,
+          currentOrder!.deliveryAddress!.latitude,
+          currentOrder!.deliveryAddress!.longitude,
         );
         
         double zoom = _getZoomLevelForDistance(distance);
@@ -252,8 +249,8 @@ class EnhancedMapController extends ControllerMVC {
             bearing: _calculateBearing(
               currentAddress!.latitude!,
               currentAddress!.longitude!,
-              currentOrder!.deliveryAddress!.latitude!,
-              currentOrder!.deliveryAddress!.longitude!,
+              currentOrder!.deliveryAddress!.latitude,
+              currentOrder!.deliveryAddress!.longitude,
             ),
           );
         });
@@ -570,8 +567,8 @@ class EnhancedMapController extends ControllerMVC {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
-            currentOrder!.deliveryAddress!.latitude!,
-            currentOrder!.deliveryAddress!.longitude!,
+            currentOrder!.deliveryAddress!.latitude,
+            currentOrder!.deliveryAddress!.longitude,
           ),
           zoom: 18,
           tilt: 60,
@@ -602,12 +599,12 @@ class EnhancedMapController extends ControllerMVC {
     if (currentOrder?.foodOrders == null) return;
     
     subTotal = 0;
-    currentOrder!.foodOrders?.forEach((food) {
-      subTotal += food.quantity! * food.price!;
-    });
+    for (var food in currentOrder!.foodOrders) {
+      subTotal += (food.quantity??1) * (food.price??0);
+    }
     
     deliveryFee = currentOrder!.deliveryFee ?? 0;
-    taxAmount = (subTotal + deliveryFee) * currentOrder!.tax! / 100;
+    taxAmount = (subTotal + deliveryFee) * currentOrder!.tax / 100;
     total = subTotal + taxAmount + deliveryFee;
 
     setState(() {});
@@ -639,7 +636,7 @@ class EnhancedMapController extends ControllerMVC {
         print('❌ Cannot accept order: No authentication token');
         return false;
       }
-
+      
       // Call your order acceptance API
       // Replace this with your actual acceptance API call
       final response = await acceptOrder(
@@ -656,21 +653,28 @@ class EnhancedMapController extends ControllerMVC {
         
         );
         
-        if (acceptedOrder.orderId != null) {
-          setState(() {
-            currentOrder = acceptedOrder;
-          });
-          
-          // Remove the order from pending list
-          orders.removeWhere((order) => order.orderId == orderId);
-          
-          // Update UI for accepted order
-          getDirectionSteps();
-          calculateSubtotal();
-          
-          return true;
+        setState(() {
+          currentOrder = acceptedOrder;
+        });
+        
+        // Remove the order from pending list
+        orders.removeWhere((order) => order.orderId == orderId);
+        
+        // Update UI for accepted order
+        getDirectionSteps();
+        calculateSubtotal();
+        
+        // Save the accepted order ID to SharedPreferences
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('last_order_id', int.tryParse(orderId) ?? 0);
+          print('✅ Saved last_order_id: $orderId to SharedPreferences');
+        } catch (e) {
+          print('❌ Error saving last_order_id to SharedPreferences: $e');
         }
-      }
+        
+        return true;
+            }
       
       // print('❌ Failed to accept order: ${response['message']}');
       return false;
