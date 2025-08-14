@@ -95,7 +95,7 @@ dev_dependencies:
   # flutter_native_splash: ^2.4.6
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
 
 flutter_icons:
   android: "launcher_icon"
@@ -120,6 +120,7 @@ flutter:
     - assets/cfg/
     - assets/img/
     - assets/notification_sound.wav
+    - assets/langs.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

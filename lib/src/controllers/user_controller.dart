@@ -31,6 +31,49 @@ class UserController extends ControllerMVC {
     });
   }
 
+  Future<void> submitApplication(Map<String, Triple<bool, File, String>> uploadedFiles) async {
+    if (!agreedToPrivacy) {
+      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(content: Text("You must agree to the privacy policy.")),
+      );
+      return;
+    }
+
+    FocusScope.of(state!.context).unfocus();
+    loader = Helper.overlayLoader(state!.context);
+    Overlay.of(state!.context).insert(loader);
+
+    if (loginFormKey.currentState!.validate()) {
+      loginFormKey.currentState!.save();
+
+
+      user.document1 = uploadedFiles["document1"]!.third;
+      user.document2 = uploadedFiles["document2"]!.third;
+      user.document3 = uploadedFiles["document3"]!.third;
+      user.document4 = uploadedFiles["document4"]!.third;
+      user.document5 = uploadedFiles["document5"]!.third;
+
+      repository.register(user).then((value) async {
+        if (value != null && value.apiToken != null) {
+          Navigator.of(scaffoldKey.currentContext!).pushReplacementNamed('/Pages', arguments: 1);
+        } else {
+          ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+            SnackBar(content: Text(S.of(state!.context).wrong_email_or_password)),
+          );
+        }
+      }).catchError((e) {
+        ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+          SnackBar(content: Text(S.of(state!.context).thisAccountNotExist)),
+        );
+      }).whenComplete(() {
+        files.clear();
+        Helper.hideLoader(loader);
+      });
+    } else {
+      Helper.hideLoader(loader);
+    }
+  }
+
   void showLoader() {
     loader = Helper.overlayLoader(state!.context);
   }

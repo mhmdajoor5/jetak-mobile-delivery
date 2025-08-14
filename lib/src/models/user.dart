@@ -8,8 +8,17 @@ class User {
   String? name;
   String? email;
   String? password;
+  String? firstName;
+  String? lastName;
+  String? languagesSpoken;
+  String? dateOfBirth;
+  String? country;
+  String? vehicleType;
+  String? referralCode;
+  String? deliveryCity;
   String? apiToken;
   String? deviceToken;
+  String? languagesSpokenCode;
   String? phone;
   bool? verifiedPhone;
   String? verificationId;
@@ -26,21 +35,28 @@ class User {
   bool? auth;
   bool? available;
 
-//  String role;
-
   User();
 
   User.fromJSON(Map<String, dynamic> jsonMap) {
     try {
       id = jsonMap['id']?.toString() ?? '';
-      document1 = jsonMap['document1'].toString();
-      document2 = jsonMap['document2'].toString();
-      document3 = jsonMap['document3'].toString();
-      document4 = jsonMap['document4'].toString();
-      document5 = jsonMap['document5'].toString();
+      document1 = jsonMap['document1']?.toString() ?? '';
+      document2 = jsonMap['document2']?.toString() ?? '';
+      document3 = jsonMap['document3']?.toString() ?? '';
+      document4 = jsonMap['document4']?.toString() ?? '';
+      document5 = jsonMap['document5']?.toString() ?? '';
       available = jsonMap['available'];
-      name = jsonMap['name'] ?? '';
-      email = jsonMap['email'] ?? '';
+      name = jsonMap['name'] != null ? jsonMap['name'] : '';
+      email = jsonMap['email'] != null ? jsonMap['email'] : '';
+      firstName = jsonMap['firstName'] != null ? jsonMap['firstName'] : '';
+      lastName = jsonMap['lastName'] != null ? jsonMap['lastName'] : '';
+      languagesSpoken = jsonMap['languagesSpoken'] != null ? jsonMap['languagesSpoken'] : '';
+      dateOfBirth = jsonMap['dateOfBirth'] != null ? jsonMap['dateOfBirth'] : '';
+      country = jsonMap['country'] != null ? jsonMap['country'] : '';
+      deliveryCity = jsonMap['deliveryCity'] != null ? jsonMap['deliveryCity'] : '';
+      languagesSpokenCode = jsonMap['languagesSpokenCode']?.toString() ?? '';
+      vehicleType = jsonMap['vehicleType'] != null ? jsonMap['vehicleType'] : '';
+      referralCode = jsonMap['referralCode'] != null ? jsonMap['referralCode'] : '';
       apiToken = jsonMap['api_token'];
       deviceToken = jsonMap['device_token'];
       try {
@@ -67,13 +83,13 @@ class User {
       }
       image = jsonMap['media'] != null && (jsonMap['media'] as List).isNotEmpty
           ? Media.fromJSON(jsonMap['media'][0])
-          :   Media();
+          : Media();
     } catch (e) {
       print(e);
     }
   }
 
-  Map toMap() {
+  Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["document1"] = document1;
@@ -85,6 +101,15 @@ class User {
     map["email"] = email;
     map["name"] = name;
     map["password"] = password;
+    map["firstName"] = firstName;
+    map["lastName"] = lastName;
+    map["languagesSpoken"] = languagesSpoken;
+    map["dateOfBirth"] = dateOfBirth;
+    map["country"] = country;
+    map["deliveryCity"] = deliveryCity;
+    map["languagesSpokenCode"] = languagesSpokenCode;
+    map["vehicleType"] = vehicleType;
+    map["referralCode"] = referralCode;
     map["api_token"] = apiToken;
     if (deviceToken != null) {
       map["device_token"] = deviceToken;
@@ -100,7 +125,7 @@ class User {
     return map;
   }
 
-  Map toRestrictMap() {
+  Map<String, dynamic> toRestrictMap() {
     var map = <String, dynamic>{};
     map["id"] = id;
     map["document1"] = document1;
