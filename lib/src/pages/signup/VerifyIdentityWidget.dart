@@ -14,7 +14,11 @@ class VerifyIdentityWidget extends StatefulWidget {
 }
 
 class _VerifyIdentityWidgetState extends StateMVC<VerifyIdentityWidget> {
-  _VerifyIdentityWidgetState() : super(UserController());
+  late UserController _con;
+  
+  _VerifyIdentityWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
+  }
 
   bool agree = false;
 

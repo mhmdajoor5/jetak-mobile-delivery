@@ -27,9 +27,8 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
   Map<String, Triple<bool, File, String>> files = {};
   final TextEditingController _dateController = TextEditingController();
 
-  _SignUpWidgetState() : super(UserController()) {
-    _con = (controller as UserController?)!;
-
+  _SignUpWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
   }
 
   @override
@@ -43,7 +42,6 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        key: _con.scaffoldKey,
         resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: SingleChildScrollView(
@@ -449,21 +447,53 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                 return;
                               }
                               
-                              // Validate password match
-                              if (_con.user.password != _con.user.passwordConfirmation) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Passwords do not match')),
+                              // Validate form
+                              if (_con.loginFormKey.currentState!.validate()) {
+                                _con.loginFormKey.currentState!.save();
+                                
+                                // Set name from firstName and lastName if not set
+                                if (_con.user.name == null || _con.user.name!.isEmpty) {
+                                  String fullName = '';
+                                  if (_con.user.firstName != null && _con.user.firstName!.isNotEmpty) {
+                                    fullName += _con.user.firstName!;
+                                  }
+                                  if (_con.user.lastName != null && _con.user.lastName!.isNotEmpty) {
+                                    if (fullName.isNotEmpty) fullName += ' ';
+                                    fullName += _con.user.lastName!;
+                                  }
+                                  _con.user.name = fullName.trim();
+                                }
+                                
+                                // Print user data for debugging
+                                print('🔍 User data after form save:');
+                                print('  name: ${_con.user.name}');
+                                print('  email: ${_con.user.email}');
+                                print('  password: ${_con.user.password}');
+                                print('  firstName: ${_con.user.firstName}');
+                                print('  lastName: ${_con.user.lastName}');
+                                print('  phone: ${_con.user.phone}');
+                                print('  deliveryCity: ${_con.user.deliveryCity}');
+                                print('  vehicleType: ${_con.user.vehicleType}');
+                                print('  languagesSpoken: ${_con.user.languagesSpoken}');
+                                print('  dateOfBirth: ${_con.user.dateOfBirth}');
+                                print('  referralCode: ${_con.user.referralCode}');
+                                
+                                // Validate password match
+                                if (_con.user.password != _con.user.passwordConfirmation) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Passwords do not match')),
+                                  );
+                                  return;
+                                }
+                                
+                                // Navigate to the first document upload page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DrivingLicenseWidget(),
+                                  ),
                                 );
-                                return;
                               }
-                              
-                              // Navigate to the first document upload page
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DrivingLicenseWidget(),
-                                ),
-                              );
                             },
                             child: Text(
                               'Send Application',

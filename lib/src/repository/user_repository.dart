@@ -197,26 +197,178 @@ Future<dynamic> upload(Document body) async {
 }
 
 Future<UserModel.User> register(UserModel.User user) async {
-  HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
-    requestTimeout: Duration(seconds: 30),
-    middlewares: [HttpLogger(logLevel: LogLevel.BODY)],
-  );
-  final String url =
-      '${GlobalConfiguration().getValue('api_base_url')}register';
-  final client = http.Client();
-  final response = await httpWithMiddleware.post(
-    Uri.parse(url),
-    headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-    body: json.encode(user.toMap()),
-  );
-  if (response.statusCode == 200) {
-    setCurrentUser(response.body);
-    currentUser.value = UserModel.User.fromJSON(json.decode(response.body)['data']);
-  } else {
-    print(CustomTrace(StackTrace.current, message: response.body).toString());
-    throw Exception(response.body);
+  try {
+    print('🚀 Starting registration process...');
+    
+    // Create multipart request
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://carrytechnologies.co/api/driver/register'),
+    );
+
+    // Set name from firstName and lastName if not set
+    String fullName = user.name ?? '';
+    if (fullName.isEmpty && (user.firstName?.isNotEmpty == true || user.lastName?.isNotEmpty == true)) {
+      fullName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+    }
+    
+    // Add text fields
+    Map<String, String> fields = {
+      'name': fullName,
+      'email': user.email ?? '',
+      'password': user.password ?? '',
+      'password_confirmation': user.passwordConfirmation ?? '',
+      'firstName': user.firstName ?? '',
+      'lastName': user.lastName ?? '',
+      'phone': user.phone ?? '',
+      'languagesSpoken': user.languagesSpoken ?? '',
+      'languagesSpokenCode': user.languagesSpokenCode ?? '',
+      'dateOfBirth': user.dateOfBirth ?? '',
+      'deliveryCity': user.deliveryCity ?? '',
+      'vehicleType': user.vehicleType ?? '',
+      'referralCode': user.referralCode ?? '',
+      'bankName': user.bankName ?? '',
+      'accountNumber': user.accountNumber ?? '',
+      'branchNumber': user.branchNumber ?? '',
+    };
+    
+    // Print user data for debugging
+    print('🔍 User data to be sent:');
+    fields.forEach((key, value) {
+      print('  $key: $value');
+    });
+    
+    // Print raw user object for debugging
+    print('🔍 Raw user object:');
+    print('  user.name: ${user.name}');
+    print('  user.email: ${user.email}');
+    print('  user.password: ${user.password}');
+    print('  user.firstName: ${user.firstName}');
+    print('  user.lastName: ${user.lastName}');
+    print('  user.phone: ${user.phone}');
+    print('  user.deliveryCity: ${user.deliveryCity}');
+    print('  user.vehicleType: ${user.vehicleType}');
+    print('  user.languagesSpoken: ${user.languagesSpoken}');
+    print('  user.dateOfBirth: ${user.dateOfBirth}');
+    print('  user.referralCode: ${user.referralCode}');
+    print('  user.bankName: ${user.bankName}');
+    print('  user.accountNumber: ${user.accountNumber}');
+    print('  user.branchNumber: ${user.branchNumber}');
+    
+    request.fields.addAll(fields);
+
+    // Add files if they exist
+    List<String> documentFields = [
+      'drivingLicense',
+      'businessLicense', 
+      'accountingCertificate',
+      'taxCertificate',
+      'accountManagementCertificate',
+      'bankAccountDetails'
+    ];
+    
+    // Print file information
+    print('🔍 File information:');
+    for (String field in documentFields) {
+      String? filePath = _getDocumentPath(user, field);
+      if (filePath != null && filePath.isNotEmpty) {
+        File file = File(filePath);
+        if (file.existsSync()) {
+          print('  $field: ${file.path} (${file.lengthSync()} bytes)');
+        } else {
+          print('  $field: File not found - $filePath');
+        }
+      } else {
+        print('  $field: No file path');
+      }
+    }
+
+    for (String field in documentFields) {
+      String? filePath = _getDocumentPath(user, field);
+      if (filePath != null && filePath.isNotEmpty) {
+        try {
+          File file = File(filePath);
+          if (await file.exists()) {
+            var stream = http.ByteStream(file.openRead());
+            var length = await file.length();
+            var multipartFile = http.MultipartFile(
+              field,
+              stream,
+              length,
+              filename: filePath.split('/').last,
+            );
+            request.files.add(multipartFile);
+            print('✅ Added file for $field: ${filePath.split('/').last}');
+          } else {
+            print('⚠️ File not found for $field: $filePath');
+          }
+        } catch (e) {
+          print('❌ Error adding file for $field: $e');
+        }
+      } else {
+        print('⚠️ No file path for $field');
+      }
+    }
+
+    print('📤 Sending registration request...');
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    print('📥 Response status: ${response.statusCode}');
+    print('📥 Response body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
+        Map<String, dynamic> responseData = json.decode(response.body);
+        
+        if (responseData['data'] != null) {
+          setCurrentUser(response.body);
+          currentUser.value = UserModel.User.fromJSON(responseData['data']);
+          print('✅ Registration successful');
+          return currentUser.value;
+        } else {
+          print('❌ Response missing data field');
+          throw Exception('Invalid response format');
+        }
+      } catch (e) {
+        print('❌ JSON parsing error: $e');
+        throw Exception('Invalid response format');
+      }
+    } else {
+      print('❌ Registration failed with status: ${response.statusCode}');
+      print('❌ Error response: ${response.body}');
+      
+      try {
+        Map<String, dynamic> errorData = json.decode(response.body);
+        String errorMessage = errorData['message'] ?? 'Registration failed';
+        throw Exception(errorMessage);
+      } catch (e) {
+        throw Exception('Registration failed with status ${response.statusCode}');
+      }
+    }
+  } catch (e) {
+    print('❌ Registration error: $e');
+    throw Exception('Registration failed: $e');
   }
-  return currentUser.value;
+}
+
+String? _getDocumentPath(UserModel.User user, String field) {
+  switch (field) {
+    case 'drivingLicense':
+      return user.drivingLicense;
+    case 'businessLicense':
+      return user.businessLicense;
+    case 'accountingCertificate':
+      return user.accountingCertificate;
+    case 'taxCertificate':
+      return user.taxCertificate;
+    case 'accountManagementCertificate':
+      return user.accountManagementCertificate;
+    case 'bankAccountDetails':
+      return user.bankAccountDetails;
+    default:
+      return null;
+  }
 }
 
 Future<UserModel.User> getCurrentUserAsync() async {

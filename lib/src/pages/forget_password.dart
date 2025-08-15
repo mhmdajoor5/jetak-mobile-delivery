@@ -16,8 +16,8 @@ class ForgetPasswordWidget extends StatefulWidget {
 class _ForgetPasswordWidgetState extends StateMVC<ForgetPasswordWidget> {
   late UserController _con;
 
-  _ForgetPasswordWidgetState() : super(UserController()) {
-    _con = (controller as UserController?)!;
+  _ForgetPasswordWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
   }
   @override
   void initState() {
@@ -29,7 +29,6 @@ class _ForgetPasswordWidgetState extends StateMVC<ForgetPasswordWidget> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        key: _con.scaffoldKey,
         resizeToAvoidBottomInset: false,
         body: Stack(
           alignment: AlignmentDirectional.topCenter,

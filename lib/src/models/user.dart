@@ -120,6 +120,17 @@ class User {
     map["document3"] = document3;
     map["document4"] = document4;
     map["document5"] = document5;
+    // New document fields
+    map["drivingLicense"] = drivingLicense;
+    map["businessLicense"] = businessLicense;
+    map["accountingCertificate"] = accountingCertificate;
+    map["taxCertificate"] = taxCertificate;
+    map["accountManagementCertificate"] = accountManagementCertificate;
+    map["bankAccountDetails"] = bankAccountDetails;
+    // Bank account details
+    map["bankName"] = bankName;
+    map["accountNumber"] = accountNumber;
+    map["branchNumber"] = branchNumber;
     map["available"] = available;
     map["email"] = email;
     map["name"] = name;

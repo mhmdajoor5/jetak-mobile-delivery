@@ -18,8 +18,8 @@ class _CarryContractWidgetState
   String userName = "User"; // Default value, should be replaced with actual user name
   String approvedDate = "2024-01-01"; // Default value, should be replaced with actual date
 
-  _CarryContractWidgetState() : super(UserController()) {
-    _con = (controller as UserController?)!;
+  _CarryContractWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
   }
 
   @override

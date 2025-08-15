@@ -14,7 +14,11 @@ class SelectNationalityWidget extends StatefulWidget {
 }
 
 class _SelectNationalityWidgetState extends StateMVC<SelectNationalityWidget> {
-  _SelectNationalityWidgetState() : super(UserController());
+  late UserController _con;
+  
+  _SelectNationalityWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
+  }
 
   @override
   Widget build(BuildContext context) {

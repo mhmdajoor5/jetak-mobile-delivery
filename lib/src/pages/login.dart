@@ -19,8 +19,8 @@ class LoginWidget extends StatefulWidget {
 class _LoginWidgetState extends StateMVC<LoginWidget> {
   late UserController _con;
 
-  _LoginWidgetState() : super(UserController()) {
-    _con = (controller as UserController?)!;
+  _LoginWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
   }
 
   @override
@@ -36,7 +36,6 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        key: _con.scaffoldKey,
         resizeToAvoidBottomInset: false,
         body: Stack(
           alignment: AlignmentDirectional.topCenter,

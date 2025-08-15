@@ -23,15 +23,14 @@ class _CompleteYourProfileWidgetState
     extends StateMVC<CompleteYourProfileWidget> {
  late UserController  _con;
 
-  _CompleteYourProfileWidgetState() : super(UserController()) {
-    _con = (controller as UserController?)!;
+  _CompleteYourProfileWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      key: _con.scaffoldKey,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -88,8 +87,7 @@ class _CompleteYourProfileWidgetState
                                 .toList()
                                 .any((element) => !element);
                             if (_con.files.length < 5 || notAllUploaded) {
-                              ScaffoldMessenger.of(
-                                      _con.scaffoldKey.currentContext!)
+                              ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                 content: Text(
                                     "All documents are required to be uploaded!"),

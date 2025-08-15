@@ -13,19 +13,24 @@ import '../models/triple.dart';
 import '../repository/user_repository.dart' as repository;
 
 class UserController extends ControllerMVC {
+  static UserController? _instance;
+  
+  static UserController get instance {
+    _instance ??= UserController._internal();
+    return _instance!;
+  }
+  
   User user = User();
   bool hidePassword = true;
   bool loading = false;
   bool agreedToPrivacy = false;
- late GlobalKey<FormState> loginFormKey;
-  late GlobalKey<ScaffoldState> scaffoldKey;
- late FirebaseMessaging _firebaseMessaging;
- late OverlayEntry loader;
- late File registrationDocument;
-
-  UserController() {
+  late GlobalKey<FormState> loginFormKey;
+  late FirebaseMessaging _firebaseMessaging;
+  late OverlayEntry loader;
+  late File registrationDocument;
+  
+  UserController._internal() {
     loginFormKey = GlobalKey<FormState>();
-    scaffoldKey = GlobalKey<ScaffoldState>();
     _firebaseMessaging = FirebaseMessaging.instance;
     _firebaseMessaging.getToken().then((deviceToken) {
       user.deviceToken = deviceToken;
@@ -34,45 +39,14 @@ class UserController extends ControllerMVC {
 
   Future<void> submitApplication(Map<String, Triple<bool, File, String>> uploadedFiles) async {
     if (!agreedToPrivacy) {
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
+      ScaffoldMessenger.of(state!.context).showSnackBar(
         SnackBar(content: Text("You must agree to the privacy policy.")),
       );
       return;
     }
 
-    FocusScope.of(state!.context).unfocus();
-    loader = Helper.overlayLoader(state!.context);
-    Overlay.of(state!.context).insert(loader);
-
-    if (loginFormKey.currentState!.validate()) {
-      loginFormKey.currentState!.save();
-
-
-      user.document1 = uploadedFiles["document1"]!.third;
-      user.document2 = uploadedFiles["document2"]!.third;
-      user.document3 = uploadedFiles["document3"]!.third;
-      user.document4 = uploadedFiles["document4"]!.third;
-      user.document5 = uploadedFiles["document5"]!.third;
-
-      repository.register(user).then((value) async {
-        if (value != null && value.apiToken != null) {
-          Navigator.of(scaffoldKey.currentContext!).pushReplacementNamed('/Pages', arguments: 1);
-        } else {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
-            SnackBar(content: Text(S.of(state!.context).wrong_email_or_password)),
-          );
-        }
-      }).catchError((e) {
-        ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
-          SnackBar(content: Text(S.of(state!.context).thisAccountNotExist)),
-        );
-      }).whenComplete(() {
-        files.clear();
-        Helper.hideLoader(loader);
-      });
-    } else {
-      Helper.hideLoader(loader);
-    }
+    // Use the new register method
+    await register();
   }
 
   void showLoader() {
@@ -83,6 +57,47 @@ class UserController extends ControllerMVC {
     Helper.hideLoader(loader);
   }
 
+  Future<void> register() async {
+    try {
+      // Print user data for debugging
+      print('🔍 User data before registration:');
+      print('  name: ${user.name}');
+      print('  email: ${user.email}');
+      print('  password: ${user.password}');
+      print('  firstName: ${user.firstName}');
+      print('  lastName: ${user.lastName}');
+      print('  phone: ${user.phone}');
+      print('  deliveryCity: ${user.deliveryCity}');
+      print('  vehicleType: ${user.vehicleType}');
+      print('  languagesSpoken: ${user.languagesSpoken}');
+      print('  dateOfBirth: ${user.dateOfBirth}');
+      print('  referralCode: ${user.referralCode}');
+      print('  bankName: ${user.bankName}');
+      print('  accountNumber: ${user.accountNumber}');
+      print('  branchNumber: ${user.branchNumber}');
+      print('  drivingLicense: ${user.drivingLicense}');
+      print('  businessLicense: ${user.businessLicense}');
+      print('  accountingCertificate: ${user.accountingCertificate}');
+      print('  taxCertificate: ${user.taxCertificate}');
+      print('  accountManagementCertificate: ${user.accountManagementCertificate}');
+      print('  bankAccountDetails: ${user.bankAccountDetails}');
+      
+      loader = Helper.overlayLoader(state!.context);
+      Overlay.of(state!.context).insert(loader);
+      
+      await repository.register(user);
+      
+      Navigator.of(state!.context).pushReplacementNamed('/Pages', arguments: 1);
+      
+    } catch (e) {
+      ScaffoldMessenger.of(state!.context).showSnackBar(
+        SnackBar(content: Text('Registration failed: ${e.toString()}')),
+      );
+    } finally {
+      Helper.hideLoader(loader);
+    }
+  }
+
   void login() async {
     loader = Helper.overlayLoader(state!.context);
     FocusScope.of(state!.context).unfocus();
@@ -91,17 +106,17 @@ class UserController extends ControllerMVC {
       Overlay.of(state!.context).insert(loader);
       repository.login(user).then((value) {
         if (value.apiToken != null) {
-          Navigator.of(scaffoldKey.currentContext!)
+          Navigator.of(state!.context)
               .pushReplacementNamed('/Pages', arguments: 1);
         } else {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!)
+          ScaffoldMessenger.of(state!.context)
               .showSnackBar(SnackBar(
             content: Text(S.of(state!.context).wrong_email_or_password),
           ));
         }
       }).catchError((e) {
         loader.remove();
-        ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(state!.context).showSnackBar(SnackBar(
           content: Text(S.of(state!.context).thisAccountNotExist),
         ));
       }).whenComplete(() {
@@ -136,7 +151,7 @@ class UserController extends ControllerMVC {
         print("Success");
       }
     }).catchError((err) {
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(state!.context).showSnackBar(SnackBar(
         content: Text(err.toString()),
       ));
       print("error");
@@ -152,7 +167,7 @@ class UserController extends ControllerMVC {
   }
 
   void uploadDocument() async {
-    Navigator.of(scaffoldKey.currentContext!)
+    Navigator.of(state!.context)
         .pushNamed('/Complete-profile', arguments: user);
     // loader = Helper.overlayLoader(state!.context);
     // Overlay.of(state!.context).insert(loader);
@@ -186,7 +201,7 @@ class UserController extends ControllerMVC {
     // });
   }
 
-  Future<void> register(Map<String, Triple<bool, File, String>> uploadedFiles) async {
+  Future<void> registerWithFiles(Map<String, Triple<bool, File, String>> uploadedFiles) async {
 
     FocusScope.of(state!.context).unfocus();
     loader = Helper.overlayLoader(state!.context);
@@ -202,16 +217,16 @@ class UserController extends ControllerMVC {
 
       repository.register(user).then((value) async {
         if (value.apiToken != null) {
-          Navigator.of(scaffoldKey.currentContext!)
+          Navigator.of(state!.context)
               .pushReplacementNamed('/Pages', arguments: 1);
         } else {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!)
+          ScaffoldMessenger.of(state!.context)
               .showSnackBar(SnackBar(
             content: Text(S.of(state!.context).wrong_email_or_password),
           ));
         }
       }).catchError((e) {
-        ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(state!.context).showSnackBar(SnackBar(
           content: Text(S.of(state!.context).thisAccountNotExist),
         ));
       }).whenComplete(() {
@@ -229,7 +244,7 @@ class UserController extends ControllerMVC {
       Overlay.of(state!.context).insert(loader);
       repository.resetPassword(user).then((value) {
         if (value == true) {
-          ScaffoldMessenger.of(scaffoldKey.currentContext!)
+          ScaffoldMessenger.of(state!.context)
               .showSnackBar(SnackBar(
             content: Text(S
                 .of(state!.context)
@@ -237,7 +252,7 @@ class UserController extends ControllerMVC {
             action: SnackBarAction(
               label: S.of(state!.context).login,
               onPressed: () {
-                Navigator.of(scaffoldKey.currentContext!)
+                Navigator.of(state!.context)
                     .pushReplacementNamed('/Login');
               },
             ),
@@ -245,7 +260,7 @@ class UserController extends ControllerMVC {
           ));
         } else {
           loader.remove();
-          ScaffoldMessenger.of(scaffoldKey.currentContext!)
+          ScaffoldMessenger.of(state!.context)
               .showSnackBar(SnackBar(
             content: Text(S.of(state!.context).error_verify_email_settings),
           ));
@@ -258,6 +273,12 @@ class UserController extends ControllerMVC {
 
   void setRegistrationDocument(File file) {
     registrationDocument = file;
+    setState(() {});
+  }
+  
+  void resetUserData() {
+    user = User();
+    agreedToPrivacy = false;
     setState(() {});
   }
 }

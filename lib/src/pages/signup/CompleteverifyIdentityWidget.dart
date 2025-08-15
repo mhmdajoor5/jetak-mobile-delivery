@@ -13,7 +13,11 @@ class CompleteVerifyIdentityWidget extends StatefulWidget {
 }
 
 class _CompleteVerifyIdentityWidgetState extends StateMVC<CompleteVerifyIdentityWidget> {
-  _CompleteVerifyIdentityWidgetState() : super(UserController());
+  late UserController _con;
+  
+  _CompleteVerifyIdentityWidgetState() : super(UserController.instance) {
+    _con = UserController.instance;
+  }
 
   @override
   Widget build(BuildContext context) {
