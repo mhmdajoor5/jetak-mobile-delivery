@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../generated/l10n.dart';
+import '../../../generated/l10n.dart';
 import 'package:country_picker/country_picker.dart';
-import '../controllers/user_controller.dart';
+import '../../controllers/user_controller.dart';
+import 'CompleteverifyIdentityWidget.dart';
 
 class VerifyIdentityWidget extends StatefulWidget {
   const VerifyIdentityWidget({super.key});

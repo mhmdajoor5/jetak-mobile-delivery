@@ -4,15 +4,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:path/path.dart';
+import 'package:country_picker/country_picker.dart';
 
 import 'package:intl/intl.dart';
-import '../../generated/l10n.dart';
-import '../controllers/user_controller.dart';
-import '../elements/BlockButtonWidget.dart';
-import '../helpers/app_config.dart' as config;
-import '../models/triple.dart';
-import '../repository/user_repository.dart';
-import 'LanguageDropdown.dart';
+import '../../../generated/l10n.dart';
+import '../../controllers/user_controller.dart';
+import '../../elements/BlockButtonWidget.dart';
+import '../../helpers/app_config.dart' as config;
+import '../../models/triple.dart';
+import '../../repository/user_repository.dart';
+import '../LanguageDropdown.dart';
 
 class SignUpWidget extends StatefulWidget {
   @override

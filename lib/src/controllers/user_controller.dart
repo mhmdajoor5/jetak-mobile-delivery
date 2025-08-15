@@ -16,6 +16,7 @@ class UserController extends ControllerMVC {
   User user = User();
   bool hidePassword = true;
   bool loading = false;
+  bool agreedToPrivacy = false;
  late GlobalKey<FormState> loginFormKey;
   late GlobalKey<ScaffoldState> scaffoldKey;
  late FirebaseMessaging _firebaseMessaging;

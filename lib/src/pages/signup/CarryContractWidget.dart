@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../generated/l10n.dart';
+import '../../../generated/l10n.dart';
+import '../../controllers/user_controller.dart';
+import 'SelectNationalityWidget.dart';
 
 class CarryContractWidget extends StatefulWidget {
   const CarryContractWidget({super.key});
@@ -12,8 +14,12 @@ class CarryContractWidget extends StatefulWidget {
 
 class _CarryContractWidgetState
     extends StateMVC<CarryContractWidget> {
+  late UserController _con;
+  String userName = "User"; // Default value, should be replaced with actual user name
+  String approvedDate = "2024-01-01"; // Default value, should be replaced with actual date
 
   _CarryContractWidgetState() : super(UserController()) {
+    _con = (controller as UserController?)!;
   }
 
   @override
@@ -62,7 +68,7 @@ class _CarryContractWidgetState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           S.of(context).send_application,
                           style: TextStyle(
                             fontSize: 16,

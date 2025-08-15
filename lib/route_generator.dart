@@ -13,7 +13,7 @@ import 'src/pages/order.dart';
 import 'src/pages/order_notification_screen.dart';
 import 'src/pages/pages.dart';
 import 'src/pages/settings.dart';
-import 'src/pages/signup.dart';
+import 'src/pages/signup/signup.dart';
 import 'src/pages/splash_screen.dart';
 
 class RouteGenerator {

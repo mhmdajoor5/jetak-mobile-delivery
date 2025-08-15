@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../generated/l10n.dart';
+import '../../../generated/l10n.dart';
+import 'CarryContractWidget.dart';
 
 class CarryPartnerWidget extends StatefulWidget {
   const CarryPartnerWidget({super.key});
@@ -108,11 +109,10 @@ class _CarryPartnerWidgetState
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CarryContractPage(userName: ""),
+                            builder: (context) => CarryContractWidget(),
                           ),
                         );
-                      }
-
+                      },
                       child: Text(
                       S.of(context).personal_data_policy,
                       style: TextStyle(fontSize: 16, color: Colors.blue),

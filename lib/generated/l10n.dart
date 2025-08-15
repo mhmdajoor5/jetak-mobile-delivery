@@ -1509,6 +1509,206 @@ class S {
       args: [],
     );
   }
+
+  /// `Personal data policy`
+  String get personal_data_policy {
+    return Intl.message(
+      'Personal data policy',
+      name: 'personal_data_policy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get Continue {
+    return Intl.message(
+      'Continue',
+      name: 'Continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We'll be in touch with you shortly.`
+  String get we_ll_be_in_touch {
+    return Intl.message(
+      'We\'ll be in touch with you shortly.',
+      name: 'we_ll_be_in_touch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Thank you, we're excited to review your application as soon as possible.`
+  String get thank_you_application {
+    return Intl.message(
+      'Thank you, we\'re excited to review your application as soon as possible.',
+      name: 'thank_you_application',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That's it!`
+  String get thats_it {
+    return Intl.message(
+      'That\'s it!',
+      name: 'thats_it',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `PARTNER`
+  String get partner {
+    return Intl.message(
+      'PARTNER',
+      name: 'partner',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Carry`
+  String get carry {
+    return Intl.message(
+      'Carry',
+      name: 'carry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `APPROVED`
+  String get approved {
+    return Intl.message(
+      'APPROVED',
+      name: 'approved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract`
+  String get contract {
+    return Intl.message(
+      'Contract',
+      name: 'contract',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please fill the information needed for making a Courier partner contract with Carry.`
+  String get please_fill_info {
+    return Intl.message(
+      'Please fill the information needed for making a Courier partner contract with Carry.',
+      name: 'please_fill_info',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact support`
+  String get contact_support {
+    return Intl.message(
+      'Contact support',
+      name: 'contact_support',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We will get back to you as soon as possible`
+  String get we_will_get_back {
+    return Intl.message(
+      'We will get back to you as soon as possible',
+      name: 'we_will_get_back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send application`
+  String get send_application {
+    return Intl.message(
+      'Send application',
+      name: 'send_application',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Would you like to become a Carry courier partner?`
+  String get would_you_like {
+    return Intl.message(
+      'Would you like to become a Carry courier partner?',
+      name: 'would_you_like',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please follow the steps below to make that magic happen.`
+  String get please_follow_steps {
+    return Intl.message(
+      'Please follow the steps below to make that magic happen.',
+      name: 'please_follow_steps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select your Nationality`
+  String get select_nationality_title {
+    return Intl.message(
+      'Select your Nationality',
+      name: 'select_nationality_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please confirm your nationality to help us verify your identity documents. For instance, if you hold a German passport, select 'Germany' as your country of nationality.`
+  String get select_nationality_description {
+    return Intl.message(
+      'Please confirm your nationality to help us verify your identity documents. For instance, if you hold a German passport, select \'Germany\' as your country of nationality.',
+      name: 'select_nationality_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload`
+  String get upload {
+    return Intl.message(
+      'Upload',
+      name: 'upload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we'll get the ball rolling!`
+  String get sentence2 {
+    return Intl.message(
+      'Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we\'ll get the ball rolling!',
+      name: 'sentence2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ready to become a Carry courier partner?`
+  String get sentence1 {
+    return Intl.message(
+      'Ready to become a Carry courier partner?',
+      name: 'sentence1',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
