@@ -31,6 +31,17 @@ class User {
   String? document3;
   String? document4;
   String? document5;
+  // New document fields
+  String? drivingLicense;
+  String? businessLicense;
+  String? accountingCertificate;
+  String? taxCertificate;
+  String? accountManagementCertificate;
+  String? bankAccountDetails;
+  // Bank account details
+  String? bankName;
+  String? accountNumber;
+  String? branchNumber;
 
   // used for indicate if client logged in or not
   bool? auth;
@@ -46,6 +57,17 @@ class User {
       document3 = jsonMap['document3']?.toString() ?? '';
       document4 = jsonMap['document4']?.toString() ?? '';
       document5 = jsonMap['document5']?.toString() ?? '';
+      // New document fields
+      drivingLicense = jsonMap['drivingLicense']?.toString() ?? '';
+      businessLicense = jsonMap['businessLicense']?.toString() ?? '';
+      accountingCertificate = jsonMap['accountingCertificate']?.toString() ?? '';
+      taxCertificate = jsonMap['taxCertificate']?.toString() ?? '';
+      accountManagementCertificate = jsonMap['accountManagementCertificate']?.toString() ?? '';
+      bankAccountDetails = jsonMap['bankAccountDetails']?.toString() ?? '';
+      // Bank account details
+      bankName = jsonMap['bankName']?.toString() ?? '';
+      accountNumber = jsonMap['accountNumber']?.toString() ?? '';
+      branchNumber = jsonMap['branchNumber']?.toString() ?? '';
       available = jsonMap['available'];
       name = jsonMap['name'] != null ? jsonMap['name'] : '';
       email = jsonMap['email'] != null ? jsonMap['email'] : '';

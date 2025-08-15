@@ -1,24 +1,27 @@
 enum ProfileDocumentTitles {
-  documentTitle1,
-  documentTitle2,
-  documentTitle3,
-  documentTitle4,
-  documentTitle5,
+  drivingLicense,
+  businessLicense,
+  accountingCertificate,
+  taxCertificate,
+  accountManagementCertificate,
+  bankAccountDetails,
 }
 
 extension IndextedDocument on ProfileDocumentTitles {
   int get index {
     switch (this) {
-      case ProfileDocumentTitles.documentTitle1:
+      case ProfileDocumentTitles.drivingLicense:
         return 0;
-      case ProfileDocumentTitles.documentTitle2:
+      case ProfileDocumentTitles.businessLicense:
         return 1;
-      case ProfileDocumentTitles.documentTitle3:
+      case ProfileDocumentTitles.accountingCertificate:
         return 2;
-      case ProfileDocumentTitles.documentTitle4:
+      case ProfileDocumentTitles.taxCertificate:
         return 3;
-      case ProfileDocumentTitles.documentTitle5:
+      case ProfileDocumentTitles.accountManagementCertificate:
         return 4;
+      case ProfileDocumentTitles.bankAccountDetails:
+        return 5;
       default:
         return -1;
     }
@@ -26,16 +29,18 @@ extension IndextedDocument on ProfileDocumentTitles {
 
   String? get title {
     switch (this) {
-      case ProfileDocumentTitles.documentTitle1:
-        return "Document 1";
-      case ProfileDocumentTitles.documentTitle2:
-        return "Document 2";
-      case ProfileDocumentTitles.documentTitle3:
-        return "Document 3";
-      case ProfileDocumentTitles.documentTitle4:
-        return "Document 4";
-      case ProfileDocumentTitles.documentTitle5:
-        return "Document 5";
+      case ProfileDocumentTitles.drivingLicense:
+        return "رخصة قيادة";
+      case ProfileDocumentTitles.businessLicense:
+        return "شهادة مصلحة / شهادة صاحب مصلحة مرخصة";
+      case ProfileDocumentTitles.accountingCertificate:
+        return "شهادة إدارة دفاتر الحسابات";
+      case ProfileDocumentTitles.taxCertificate:
+        return "شهادة خصم ضريبة عند المصدر";
+      case ProfileDocumentTitles.accountManagementCertificate:
+        return "شهادة إدارة حساب";
+      case ProfileDocumentTitles.bankAccountDetails:
+        return "تفاصيل الحساب البنكي";
       default:
         return null;
     }
@@ -43,16 +48,18 @@ extension IndextedDocument on ProfileDocumentTitles {
 
   String? get key {
     switch (this) {
-      case ProfileDocumentTitles.documentTitle1:
-        return "document1";
-      case ProfileDocumentTitles.documentTitle2:
-        return "document2";
-      case ProfileDocumentTitles.documentTitle3:
-        return "document3";
-      case ProfileDocumentTitles.documentTitle4:
-        return "document4";
-      case ProfileDocumentTitles.documentTitle5:
-        return "document5";
+      case ProfileDocumentTitles.drivingLicense:
+        return "drivingLicense";
+      case ProfileDocumentTitles.businessLicense:
+        return "businessLicense";
+      case ProfileDocumentTitles.accountingCertificate:
+        return "accountingCertificate";
+      case ProfileDocumentTitles.taxCertificate:
+        return "taxCertificate";
+      case ProfileDocumentTitles.accountManagementCertificate:
+        return "accountManagementCertificate";
+      case ProfileDocumentTitles.bankAccountDetails:
+        return "bankAccountDetails";
       default:
         return null;
     }

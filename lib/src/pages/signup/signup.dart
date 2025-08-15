@@ -14,6 +14,7 @@ import '../../helpers/app_config.dart' as config;
 import '../../models/triple.dart';
 import '../../repository/user_repository.dart';
 import '../LanguageDropdown.dart';
+import 'DrivingLicenseWidget.dart';
 
 class SignUpWidget extends StatefulWidget {
   @override
@@ -456,10 +457,13 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                 return;
                               }
                               
-                              var result = await Navigator.of(_con.scaffoldKey.currentContext!).pushNamed('/Complete-profile');
-
-                              Map<String, Triple<bool, File, String>> filesMap = result as Map<String, Triple<bool, File, String>>;
-                              await _con.register(filesMap);
+                              // Navigate to the first document upload page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DrivingLicenseWidget(),
+                                ),
+                              );
                             },
                             child: Text(
                               'Send Application',
