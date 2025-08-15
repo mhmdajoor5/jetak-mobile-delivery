@@ -47,14 +47,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
         body: Stack(
           alignment: AlignmentDirectional.topCenter,
           children: <Widget>[
-            Positioned(
-              top: 0,
-              child: Container(
-                width: config.App(context).appWidth(100),
-                height: config.App(context).appHeight(29.5),
-                decoration: BoxDecoration(color: Colors.black54),
-              ),
-            ),
+
             Positioned(
               top: config.App(context).appHeight(29.5) - 140,
               child: Container(
@@ -81,12 +74,12 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
               top: config.App(context).appHeight(29.5) - 50,
               child: Container(
                   decoration: BoxDecoration(
-                      color: Colors.black54,
+                      color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       boxShadow: [
                         BoxShadow(
-                          blurRadius: 50,
-                          color: Theme.of(context).hintColor.withOpacity(0.2),
+                          blurRadius: 10,
+                          color: Colors.black.withOpacity(0.1),
                         )
                       ]),
                   margin: EdgeInsets.symmetric(
