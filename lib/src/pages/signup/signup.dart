@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import 'package:path/path.dart';
-import 'package:country_picker/country_picker.dart';
+
+
 
 import 'package:intl/intl.dart';
 import '../../../generated/l10n.dart';
@@ -43,56 +43,58 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
       onWillPop: () async => false,
       child: Scaffold(
         key: _con.scaffoldKey,
-        resizeToAvoidBottomInset: false,
-        body: Stack(
-          alignment: AlignmentDirectional.topCenter,
-          children: <Widget>[
-
-            Positioned(
-              top: config.App(context).appHeight(29.5) - 140,
-              child: Container(
-                width: config.App(context).appWidth(84),
-                height: config.App(context).appHeight(29.5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      S.of(context).sentence1,
-                      style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      S.of(context).sentence2,
-                      style: TextStyle(color: Colors.black54,fontSize: 20),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: config.App(context).appHeight(29.5) - 50,
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 10,
-                          color: Colors.black.withOpacity(0.1),
-                        )
-                      ]),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 20,
+        resizeToAvoidBottomInset: true,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Text
+                Container(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        S.of(context).sentence1,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 24
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        S.of(context).sentence2,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16
+                        ),
+                      ),
+                    ],
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 50, horizontal: 27),
-                  width: config.App(context).appWidth(88),
-//              height: config.App(context).appHeight(55),
+                ),
+                
+                SizedBox(height: 30),
+                
+                // Form Container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 10,
+                        color: Colors.black.withOpacity(0.1),
+                      )
+                    ]
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
                   child: Form(
                     key: _con.loginFormKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         // First Name
                         TextFormField(
@@ -159,6 +161,64 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             contentPadding: EdgeInsets.all(12),
                             hintText: 'johndoe@gmail.com',
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.5)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+
+                        // Password
+                        TextFormField(
+                          obscureText: true,
+                          onSaved: (input) => _con.user.password = input,
+                          validator: (input) => input == null || input.length < 6
+                              ? 'Password must be at least 6 characters'
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            labelStyle: TextStyle(color: Colors.black54),
+                            contentPadding: EdgeInsets.all(12),
+                            hintText: 'Enter your password',
+                            hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
+                            prefixIcon: Icon(Icons.lock, color: Colors.black54),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.5)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+
+                        // Confirm Password
+                        TextFormField(
+                          obscureText: true,
+                          onSaved: (input) => _con.user.passwordConfirmation = input,
+                          validator: (input) {
+                            if (input == null || input.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            // We'll validate password match in a separate validator
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            labelStyle: TextStyle(color: Colors.black54),
+                            contentPadding: EdgeInsets.all(12),
+                            hintText: 'Confirm your password',
+                            hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
+                            prefixIcon: Icon(Icons.lock_outline, color: Colors.black54),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
                             ),
@@ -253,73 +313,31 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                           'Depending on your city, you must be over 16 or 18 years old to deliver Carry.',
                           style: TextStyle(color: Colors.black54, fontSize: 14),
                         ),
-                        SizedBox(height: 20),
 
-                        // Country
-                        TextFormField(
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            labelText: 'Country',
-                            labelStyle: TextStyle(color: Colors.black54),
-                            contentPadding: EdgeInsets.all(12),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
-                            ),
-                            suffixIcon: Icon(Icons.arrow_forward_ios),
-                          ),
-                          controller: TextEditingController(text: _con.user.country),
-                          onTap: () {
-                            showCountryPicker(
-                              context: context,
-                              showPhoneCode: false,
-                              onSelect: (Country country) {
-                                setState(() {
-                                  _con.user.country = country.name;
-                                });
-                              },
-                            );
-                          },
-                          validator: (value) => value == null || value.isEmpty ? 'Country is required' : null,
-                        ),
-
-                        SizedBox(height: 20),
 
                         // Delivery City
                         TextFormField(
-                          readOnly: true,
+                          keyboardType: TextInputType.text,
+                          onSaved: (input) => _con.user.deliveryCity = input,
                           decoration: InputDecoration(
                             labelText: 'Delivery city',
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
+                            prefixIcon: Icon(Icons.location_city, color: Colors.black54),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
                             ),
-                            suffixIcon: Icon(Icons.arrow_forward_ios),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.5)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
                           ),
-                          controller: TextEditingController(text: _con.user.deliveryCity),
-                          onTap: () async {
-                            String? selectedCity = await showDialog<String>(
-                              context: context,
-                              builder: (context) => SimpleDialog(
-                                title: Text('Select City'),
-                                children: [
-                                  SimpleDialogOption(
-                                    onPressed: () => Navigator.pop(context, null),
-                                    child: Text('No city selected yet'),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (selectedCity != null) {
-                              setState(() {
-                                _con.user.deliveryCity = selectedCity;
-                              });
-                            }
-                          },
                           validator: (value) => value == null || value.isEmpty ? 'Delivery city is required' : null,
                         ),
 
+                        SizedBox(height: 20),
 
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
@@ -429,6 +447,15 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                 );
                                 return;
                               }
+                              
+                              // Validate password match
+                              if (_con.user.password != _con.user.passwordConfirmation) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Passwords do not match')),
+                                );
+                                return;
+                              }
+                              
                               var result = await Navigator.of(_con.scaffoldKey.currentContext!).pushNamed('/Complete-profile');
 
                               Map<String, Triple<bool, File, String>> filesMap = result as Map<String, Triple<bool, File, String>>;
@@ -463,25 +490,27 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // ),
                       ],
                     ),
-                  )
-
-              ),
+                  ),
+                ),
+                
+                SizedBox(height: 20),
+                
+                // Back to login button
+                Center(
+                  child: MaterialButton(
+                    elevation: 0,
+                    focusElevation: 0,
+                    highlightElevation: 0,
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/Login');
+                    },
+                    textColor: Colors.blue,
+                    child: Text(S.of(context).i_have_account_back_to_login),
+                  ),
+                ),
+              ],
             ),
-            Positioned(
-              bottom: 10,
-              child: MaterialButton(
-                elevation: 0,
-                focusElevation: 0,
-                highlightElevation: 0,
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/Login');
-                },
-                textColor: Theme.of(context).hintColor,
-                child: Text(S.of(context).i_have_account_back_to_login),
-              ),
-            )
-          ],
-
+          ),
         ),
       ),
     );

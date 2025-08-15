@@ -33,65 +33,55 @@ class _CompleteYourProfileWidgetState
     return Scaffold(
       key: _con.scaffoldKey,
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: SizedBox(
-          height: config.App(context).appHeight(110),
-          child: Stack(
-            alignment: AlignmentDirectional.topCenter,
-            children: <Widget>[
-              Positioned(
-                top: 0,
-                child: Container(
-                  width: config.App(context).appWidth(100),
-                  height: config.App(context).appHeight(29.5),
-                  decoration:
-                      BoxDecoration(color: Colors.amberAccent),
-                ),
-              ),
-              Positioned(
-                top: config.App(context).appHeight(29.5) - 140,
-                child: SizedBox(
-                  width: config.App(context).appWidth(84),
-                  height: config.App(context).appHeight(29.5),
-                  child: Text(
-                    S.of(context).another_step,
-                    style: TextStyle(color: Colors.black54)),
-                ),
-              ),
-              Positioned(
-                top: config.App(context).appHeight(29.5) - 50,
-                child: Container(
-                  height: size.height * 0.80,
-                  decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 50,
-                          color: Theme.of(context).hintColor.withOpacity(0.2),
-                        )
-                      ]),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 20,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  S.of(context).another_step,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 40, horizontal: 27),
-                  width: config.App(context).appWidth(88),
+                ),
+              ),
+              
+              SizedBox(height: 20),
+              
+              // Form Container
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10,
+                      color: Colors.black.withOpacity(0.1),
+                    )
+                  ]
+                ),
+                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
                   child: Form(
                     key: _con.loginFormKey,
                     child: Column(
                       children: [
-                        Expanded(
-                          child: _buildDocumentFilesColumn(context),
-                        ),
+                        _buildDocumentFilesColumn(context),
                         SizedBox(height: 30),
                         BlockButtonWidget(
                           text: Text(
                             S.of(context).complete,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.black54),
+                                color: Colors.white),
                           ),
-                          color: Colors.black54,
+                          color: Colors.blue,
                           onPressed: () async {
                             bool notAllUploaded = _con.files.values
                                 .map((e) => e.first)
@@ -113,11 +103,10 @@ class _CompleteYourProfileWidgetState
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
     );
   }
 
@@ -132,7 +121,7 @@ class _CompleteYourProfileWidgetState
                   e.index,
                   e.key?? "",
                   e.title??"",
-                    basename(_con.getFile(e.key)!.path)
+                    _con.getFile(e.key) != null ? basename(_con.getFile(e.key)!.path) : ""
                          ),
             )
             .toList());
@@ -144,7 +133,14 @@ class _CompleteYourProfileWidgetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title),
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         Material(
           child: InkWell(
             onTap: () async {
@@ -174,13 +170,13 @@ class _CompleteYourProfileWidgetState
                         .accentColor(value != null ? 1 : 0.6)),
                 contentPadding: EdgeInsets.zero,
                 prefixIcon:
-                    Icon(Icons.file_copy, color: Colors.black54),
+                    Icon(Icons.file_copy, color: Colors.blue),
                 suffixIcon: _con.files[key] == null
                     ? SizedBox.shrink()
-                    : (_con.files[key]!.first
+                    : (_con.files[key]?.first == true
                         ? Icon(Icons.check, color: Colors.green)
                         : Icon(Icons.refresh,
-                            color: Colors.black54)),
+                            color: Colors.orange)),
                 border: OutlineInputBorder(
                     borderSide: BorderSide(
                         color: Theme.of(context).focusColor.withOpacity(0.2))),
@@ -194,7 +190,7 @@ class _CompleteYourProfileWidgetState
             ),
           ),
         ),
-        if (index < 4) SizedBox(height: 30)
+        if (index < 4) SizedBox(height: 20)
       ],
     );
   }

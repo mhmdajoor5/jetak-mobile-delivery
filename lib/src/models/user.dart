@@ -8,6 +8,7 @@ class User {
   String? name;
   String? email;
   String? password;
+  String? passwordConfirmation;
   String? firstName;
   String? lastName;
   String? languagesSpoken;
@@ -101,6 +102,7 @@ class User {
     map["email"] = email;
     map["name"] = name;
     map["password"] = password;
+    map["password_confirmation"] = passwordConfirmation;
     map["firstName"] = firstName;
     map["lastName"] = lastName;
     map["languagesSpoken"] = languagesSpoken;
