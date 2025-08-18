@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:global_configuration/global_configuration.dart';
@@ -30,7 +31,13 @@ Future<Setting> initSettings() async {
         if (prefs.containsKey('language')) {
           _setting.mobileLanguage.value = Locale(prefs.getString('language')!, '');
         } else {
-          _setting.mobileLanguage.value = Locale('en', '');
+          // Use device locale if supported; otherwise default to English
+          final ui.Locale device = ui.PlatformDispatcher.instance.locale;
+          const supported = ['en', 'ar', 'es', 'fr', 'he', 'pt'];
+          final selectedCode = supported.contains(device.languageCode)
+              ? device.languageCode
+              : 'en';
+          _setting.mobileLanguage.value = Locale(selectedCode, '');
         }
         _setting.brightness.value = prefs.getBool('isDark') ?? false ? Brightness.dark : Brightness.light;
         setting.value = _setting;

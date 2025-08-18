@@ -56,12 +56,12 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                         SizedBox(height: 10),
                         
                         // Main Navigation Section
-                        _buildSectionHeader('📋 Navigation', context),
+                        _buildSectionHeader('📋 ' + S.of(context).debug_info.replaceAll('Debug Info', 'Navigation'), context),
                         _buildMenuItem(
                           context,
                           icon: Icons.receipt_long,
                           title: S.of(context).orders,
-                          subtitle: 'View active orders',
+                          subtitle: S.of(context).view_active_orders,
                           color: Colors.blue,
                           onTap: () => Navigator.of(context).pushNamed('/Pages', arguments: 1),
                         ),
@@ -69,7 +69,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                           context,
                           icon: Icons.notifications_outlined,
                           title: S.of(context).notifications,
-                          subtitle: 'Check alerts',
+                          subtitle: S.of(context).check_alerts,
                           color: Colors.orange,
                           onTap: () => Navigator.of(context).pushNamed('/Notifications'),
                         ),
@@ -77,7 +77,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                           context,
                           icon: Icons.history,
                           title: S.of(context).history,
-                          subtitle: 'Past deliveries',
+                          subtitle: S.of(context).past_deliveries,
                           color: Colors.purple,
                           onTap: () => Navigator.of(context).pushNamed('/Pages', arguments: 2),
                         ),
@@ -86,12 +86,12 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                         Divider(color: Colors.grey[300], thickness: 1),
                         
                         // Settings Section
-                        _buildSectionHeader('⚙️ Settings', context),
+                        _buildSectionHeader('⚙️ ' + S.of(context).settings, context),
                         _buildMenuItem(
                           context,
                           icon: Icons.help_outline,
                           title: S.of(context).help__support,
-                          subtitle: 'Get assistance',
+                          subtitle: S.of(context).get_assistance,
                           color: Colors.green,
                           onTap: () => Navigator.of(context).pushNamed('/Help'),
                         ),
@@ -99,7 +99,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                           context,
                           icon: Icons.settings_outlined,
                           title: S.of(context).settings,
-                          subtitle: 'App preferences',
+                          subtitle: S.of(context).app_preferences,
                           color: Colors.grey[600]!,
                           onTap: () => Navigator.of(context).pushNamed('/Settings'),
                         ),
@@ -107,7 +107,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                           context,
                           icon: Icons.language,
                           title: S.of(context).languages,
-                          subtitle: 'Change language',
+                          subtitle: S.of(context).change_language,
                           color: Colors.indigo,
                           onTap: () => Navigator.of(context).pushNamed('/Languages'),
                         ),
@@ -414,7 +414,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
           ),
                   ),
                   title: Text(
-          isDark ? 'Light Mode' : 'Dark Mode',
+          isDark ? S.of(context).light_mode : S.of(context).dark_mode,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -422,7 +422,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
           ),
         ),
         subtitle: Text(
-          isDark ? 'Switch to light theme' : 'Switch to dark theme',
+          isDark ? S.of(context).switch_to_light_theme : S.of(context).switch_to_dark_theme,
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey[600],
@@ -464,13 +464,13 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                   borderRadius: BorderRadius.circular(16),
                   ),
                   title: Text(
-                  'Logout',
+                  S.of(context).log_out,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                content: Text('Are you sure you want to logout?'),
+                content: Text(S.of(context).logout_confirmation),
                 actions: [
                   TextButton(
-                    child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                    child: Text(S.of(context).cancel, style: TextStyle(color: Colors.grey[600])),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   ElevatedButton(
@@ -480,7 +480,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text('Logout', style: TextStyle(color: Colors.white)),
+                    child: Text(S.of(context).log_out, style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       Navigator.of(context).pop();
                     logout().then((value) {
@@ -517,7 +517,7 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
           ),
         ),
         subtitle: Text(
-          'Sign out of your account',
+          S.of(context).sign_out_account,
           style: TextStyle(
             fontSize: 12,
             color: Colors.red[400],

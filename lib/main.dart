@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
         print(
           CustomTrace(StackTrace.current, message: setting.toMap().toString()),
         );
-        return MaterialApp(
+        Widget app = MaterialApp(
           navigatorKey: settingRepo.navigatorKey,
           title: setting.appName,
           initialRoute: '/Splash',
@@ -224,6 +224,15 @@ class _MyAppState extends State<MyApp> {
                       //     height: 1.35),
                     ),
                   ),
+        );
+
+        // Global tap-to-dismiss keyboard wrapper
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: app,
         );
       },
     );

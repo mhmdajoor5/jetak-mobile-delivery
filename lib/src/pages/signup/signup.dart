@@ -43,6 +43,20 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
       onWillPop: () async => false,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black54),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/Login');
+            },
+          ),
+          title: Text(
+            S.of(context).register,
+            style: TextStyle(color: Colors.black54, fontSize: 20),
+          ),
+        ),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),

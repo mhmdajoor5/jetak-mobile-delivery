@@ -27,7 +27,7 @@ extension IndextedDocument on ProfileDocumentTitles {
     }
   }
 
-  String? get title {
+  String get title {
     switch (this) {
       case ProfileDocumentTitles.drivingLicense:
         return "رخصة قيادة";
@@ -42,11 +42,11 @@ extension IndextedDocument on ProfileDocumentTitles {
       case ProfileDocumentTitles.bankAccountDetails:
         return "تفاصيل الحساب البنكي";
       default:
-        return null;
+        return "";
     }
   }
 
-  String? get key {
+  String get key {
     switch (this) {
       case ProfileDocumentTitles.drivingLicense:
         return "drivingLicense";
@@ -61,7 +61,7 @@ extension IndextedDocument on ProfileDocumentTitles {
       case ProfileDocumentTitles.bankAccountDetails:
         return "bankAccountDetails";
       default:
-        return null;
+        return "";
     }
   }
 }

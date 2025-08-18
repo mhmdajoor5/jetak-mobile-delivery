@@ -1510,51 +1510,841 @@ class S {
     );
   }
 
-  /// `Personal data policy`
-  String get personal_data_policy {
+  /// `🔍 API Debug Info`
+  String get api_debug_info {
     return Intl.message(
-      'Personal data policy',
-      name: 'personal_data_policy',
+      '🔍 API Debug Info',
+      name: 'api_debug_info',
       desc: '',
       args: [],
     );
   }
 
-  /// `Continue`
-  String get Continue {
+  /// `Configuration`
+  String get configuration {
     return Intl.message(
-      'Continue',
-      name: 'Continue',
+      'Configuration',
+      name: 'configuration',
       desc: '',
       args: [],
     );
   }
 
-  /// `We'll be in touch with you shortly.`
-  String get we_ll_be_in_touch {
+  /// `Testing`
+  String get testing {
     return Intl.message(
-      'We\'ll be in touch with you shortly.',
-      name: 'we_ll_be_in_touch',
+      'Testing',
+      name: 'testing',
       desc: '',
       args: [],
     );
   }
 
-  /// `Thank you, we're excited to review your application as soon as possible.`
-  String get thank_you_application {
+  /// `Test API Connection`
+  String get test_api_connection {
     return Intl.message(
-      'Thank you, we\'re excited to review your application as soon as possible.',
-      name: 'thank_you_application',
+      'Test API Connection',
+      name: 'test_api_connection',
       desc: '',
       args: [],
     );
   }
 
-  /// `That's it!`
-  String get thats_it {
+  /// `Testing Login`
+  String get testing_login {
     return Intl.message(
-      'That\'s it!',
-      name: 'thats_it',
+      'Testing Login',
+      name: 'testing_login',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test Login Endpoints`
+  String get test_login_endpoints {
+    return Intl.message(
+      'Test Login Endpoints',
+      name: 'test_login_endpoints',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test Results`
+  String get test_results {
+    return Intl.message(
+      'Test Results',
+      name: 'test_results',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No message`
+  String get no_message {
+    return Intl.message(
+      'No message',
+      name: 'no_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Response Preview`
+  String get response_preview {
+    return Intl.message(
+      'Response Preview',
+      name: 'response_preview',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Endpoint Test Results`
+  String get endpoint_test_results {
+    return Intl.message(
+      'Endpoint Test Results',
+      name: 'endpoint_test_results',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown URL`
+  String get unknown_url {
+    return Intl.message(
+      'Unknown URL',
+      name: 'unknown_url',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown Status`
+  String get unknown_status {
+    return Intl.message(
+      'Unknown Status',
+      name: 'unknown_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status Code`
+  String get status_code {
+    return Intl.message(
+      'Status Code',
+      name: 'status_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Content Type`
+  String get content_type {
+    return Intl.message(
+      'Content Type',
+      name: 'content_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error`
+  String get error {
+    return Intl.message(
+      'Error',
+      name: 'error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copied to clipboard`
+  String get copied_to_clipboard {
+    return Intl.message(
+      'Copied to clipboard',
+      name: 'copied_to_clipboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Suggestions`
+  String get suggestions {
+    return Intl.message(
+      'Suggestions',
+      name: 'suggestions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Issue Type:`
+  String get issue_type {
+    return Intl.message(
+      'Issue Type:',
+      name: 'issue_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User Information`
+  String get user_information {
+    return Intl.message(
+      'User Information',
+      name: 'user_information',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have a new order!`
+  String get you_have_a_new_order {
+    return Intl.message(
+      'You have a new order!',
+      name: 'you_have_a_new_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title`
+  String get title {
+    return Intl.message(
+      'Title',
+      name: 'title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Text`
+  String get text {
+    return Intl.message(
+      'Text',
+      name: 'text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reject`
+  String get reject {
+    return Intl.message(
+      'Reject',
+      name: 'reject',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The order`
+  String get the_order {
+    return Intl.message(
+      'The order',
+      name: 'the_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accept`
+  String get accept {
+    return Intl.message(
+      'Accept',
+      name: 'accept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `was accepted`
+  String get was_accepted {
+    return Intl.message(
+      'was accepted',
+      name: 'was_accepted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `was rejected`
+  String get was_rejected {
+    return Intl.message(
+      'was rejected',
+      name: 'was_rejected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `MMM dd, yyyy • HH:mm`
+  String get date_format {
+    return Intl.message(
+      'MMM dd, yyyy • HH:mm',
+      name: 'date_format',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `N/A`
+  String get na {
+    return Intl.message(
+      'N/A',
+      name: 'na',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ordered Items`
+  String get ordered_items {
+    return Intl.message(
+      'Ordered Items',
+      name: 'ordered_items',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown Item`
+  String get unknown_item {
+    return Intl.message(
+      'Unknown Item',
+      name: 'unknown_item',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer Information`
+  String get customer_information {
+    return Intl.message(
+      'Customer Information',
+      name: 'customer_information',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer Name`
+  String get customer_name {
+    return Intl.message(
+      'Customer Name',
+      name: 'customer_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone Number`
+  String get phone_number {
+    return Intl.message(
+      'Phone Number',
+      name: 'phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery Address`
+  String get delivery_address {
+    return Intl.message(
+      'Delivery Address',
+      name: 'delivery_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order Summary`
+  String get order_summary {
+    return Intl.message(
+      'Order Summary',
+      name: 'order_summary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cash`
+  String get cash {
+    return Intl.message(
+      'Cash',
+      name: 'cash',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `✅ Order Delivered Successfully`
+  String get order_delivered_successfully {
+    return Intl.message(
+      '✅ Order Delivered Successfully',
+      name: 'order_delivered_successfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `🚗 Start Delivery`
+  String get start_delivery {
+    return Intl.message(
+      '🚗 Start Delivery',
+      name: 'start_delivery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `✅ Mark as Delivered`
+  String get mark_as_delivered {
+    return Intl.message(
+      '✅ Mark as Delivered',
+      name: 'mark_as_delivered',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start Delivery?`
+  String get start_delivery_question {
+    return Intl.message(
+      'Start Delivery?',
+      name: 'start_delivery_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Delivery?`
+  String get confirm_delivery_question {
+    return Intl.message(
+      'Confirm Delivery?',
+      name: 'confirm_delivery_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark this order as 'On The Way' to customer?`
+  String get mark_on_the_way_question {
+    return Intl.message(
+      'Mark this order as \'On The Way\' to customer?',
+      name: 'mark_on_the_way_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm that you have delivered all items to the customer?`
+  String get confirm_all_items_delivered_question {
+    return Intl.message(
+      'Confirm that you have delivered all items to the customer?',
+      name: 'confirm_all_items_delivered_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start`
+  String get start {
+    return Intl.message(
+      'Start',
+      name: 'start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LIVE`
+  String get live {
+    return Intl.message(
+      'LIVE',
+      name: 'live',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last updated`
+  String get last_updated {
+    return Intl.message(
+      'Last updated',
+      name: 'last_updated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto-refresh: ON`
+  String get auto_refresh_on {
+    return Intl.message(
+      'Auto-refresh: ON',
+      name: 'auto_refresh_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Driver Status`
+  String get driver_status {
+    return Intl.message(
+      'Driver Status',
+      name: 'driver_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `🚚 Delivery Orders`
+  String get delivery_orders {
+    return Intl.message(
+      '🚚 Delivery Orders',
+      name: 'delivery_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AVAILABLE`
+  String get available {
+    return Intl.message(
+      'AVAILABLE',
+      name: 'available',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OFFLINE`
+  String get offline {
+    return Intl.message(
+      'OFFLINE',
+      name: 'offline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You're online and ready to receive orders`
+  String get online_ready {
+    return Intl.message(
+      'You\'re online and ready to receive orders',
+      name: 'online_ready',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You're offline and won't receive new orders`
+  String get offline_not_receiving {
+    return Intl.message(
+      'You\'re offline and won\'t receive new orders',
+      name: 'offline_not_receiving',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload`
+  String get upload {
+    return Intl.message(
+      'Upload',
+      name: 'upload',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View active orders`
+  String get view_active_orders {
+    return Intl.message(
+      'View active orders',
+      name: 'view_active_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check alerts`
+  String get check_alerts {
+    return Intl.message(
+      'Check alerts',
+      name: 'check_alerts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Past deliveries`
+  String get past_deliveries {
+    return Intl.message(
+      'Past deliveries',
+      name: 'past_deliveries',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Get assistance`
+  String get get_assistance {
+    return Intl.message(
+      'Get assistance',
+      name: 'get_assistance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `App preferences`
+  String get app_preferences {
+    return Intl.message(
+      'App preferences',
+      name: 'app_preferences',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change language`
+  String get change_language {
+    return Intl.message(
+      'Change language',
+      name: 'change_language',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Debug Info`
+  String get debug_info {
+    return Intl.message(
+      'Debug Info',
+      name: 'debug_info',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `API & Token diagnostics`
+  String get api_token_diagnostics {
+    return Intl.message(
+      'API & Token diagnostics',
+      name: 'api_token_diagnostics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ACTIVE DRIVER`
+  String get active_driver {
+    return Intl.message(
+      'ACTIVE DRIVER',
+      name: 'active_driver',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Profile`
+  String get edit_profile {
+    return Intl.message(
+      'Edit Profile',
+      name: 'edit_profile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch to light theme`
+  String get switch_to_light_theme {
+    return Intl.message(
+      'Switch to light theme',
+      name: 'switch_to_light_theme',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch to dark theme`
+  String get switch_to_dark_theme {
+    return Intl.message(
+      'Switch to dark theme',
+      name: 'switch_to_dark_theme',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to logout?`
+  String get logout_confirmation {
+    return Intl.message(
+      'Are you sure you want to logout?',
+      name: 'logout_confirmation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign out of your account`
+  String get sign_out_account {
+    return Intl.message(
+      'Sign out of your account',
+      name: 'sign_out_account',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `App Version`
+  String get app_version {
+    return Intl.message(
+      'App Version',
+      name: 'app_version',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Go To Home`
+  String get go_to_home {
+    return Intl.message(
+      'Go To Home',
+      name: 'go_to_home',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Looking for new orders...`
+  String get looking_for_new_orders {
+    return Intl.message(
+      'Looking for new orders...',
+      name: 'looking_for_new_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Searching for New Orders...`
+  String get searching_for_new_orders {
+    return Intl.message(
+      'Searching for New Orders...',
+      name: 'searching_for_new_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No New Orders Available`
+  String get no_new_orders_available {
+    return Intl.message(
+      'No New Orders Available',
+      name: 'no_new_orders_available',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please wait while we check for delivery requests...`
+  String get please_wait_checking_requests {
+    return Intl.message(
+      'Please wait while we check for delivery requests...',
+      name: 'please_wait_checking_requests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting for new delivery requests...\nPull down to refresh or check your availability status.`
+  String get waiting_for_new_requests {
+    return Intl.message(
+      'Waiting for new delivery requests...\nPull down to refresh or check your availability status.',
+      name: 'waiting_for_new_requests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh Orders`
+  String get refresh_orders {
+    return Intl.message(
+      'Refresh Orders',
+      name: 'refresh_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `NEW ORDER`
+  String get new_order {
+    return Intl.message(
+      'NEW ORDER',
+      name: 'new_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `🔥 HOT`
+  String get hot {
+    return Intl.message(
+      '🔥 HOT',
+      name: 'hot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `❌ Error rejecting order`
+  String get error_rejecting_order {
+    return Intl.message(
+      '❌ Error rejecting order',
+      name: 'error_rejecting_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ACCEPTING...`
+  String get accepting {
+    return Intl.message(
+      'ACCEPTING...',
+      name: 'accepting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ready to become a Carry courier partner?`
+  String get sentence1 {
+    return Intl.message(
+      'Ready to become a Carry courier partner?',
+      name: 'sentence1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we'll get the ball rolling!`
+  String get sentence2 {
+    return Intl.message(
+      'Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we\'ll get the ball rolling!',
+      name: 'sentence2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Carry`
+  String get carry {
+    return Intl.message(
+      'Carry',
+      name: 'carry',
       desc: '',
       args: [],
     );
@@ -1570,11 +2360,91 @@ class S {
     );
   }
 
-  /// `Carry`
-  String get carry {
+  /// `That's it!`
+  String get thats_it {
     return Intl.message(
-      'Carry',
-      name: 'carry',
+      'That\'s it!',
+      name: 'thats_it',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Thank you, we're excited to review your application as soon as possible.`
+  String get thank_you_application {
+    return Intl.message(
+      'Thank you, we\'re excited to review your application as soon as possible.',
+      name: 'thank_you_application',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We'll be in touch with you shortly.`
+  String get we_ll_be_in_touch {
+    return Intl.message(
+      'We\'ll be in touch with you shortly.',
+      name: 'we_ll_be_in_touch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get Continue {
+    return Intl.message(
+      'Continue',
+      name: 'Continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personal data policy`
+  String get personal_data_policy {
+    return Intl.message(
+      'Personal data policy',
+      name: 'personal_data_policy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Would you like to become a Carry courier partner?`
+  String get would_you_like {
+    return Intl.message(
+      'Would you like to become a Carry courier partner?',
+      name: 'would_you_like',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hello`
+  String get hello {
+    return Intl.message(
+      'Hello',
+      name: 'hello',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please follow the steps below to make that magic happen.`
+  String get please_follow_steps {
+    return Intl.message(
+      'Please follow the steps below to make that magic happen.',
+      name: 'please_follow_steps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send application`
+  String get send_application {
+    return Intl.message(
+      'Send application',
+      name: 'send_application',
       desc: '',
       args: [],
     );
@@ -1630,36 +2500,6 @@ class S {
     );
   }
 
-  /// `Send application`
-  String get send_application {
-    return Intl.message(
-      'Send application',
-      name: 'send_application',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Would you like to become a Carry courier partner?`
-  String get would_you_like {
-    return Intl.message(
-      'Would you like to become a Carry courier partner?',
-      name: 'would_you_like',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please follow the steps below to make that magic happen.`
-  String get please_follow_steps {
-    return Intl.message(
-      'Please follow the steps below to make that magic happen.',
-      name: 'please_follow_steps',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Select your Nationality`
   String get select_nationality_title {
     return Intl.message(
@@ -1679,36 +2519,6 @@ class S {
       args: [],
     );
   }
-
-  /// `Upload`
-  String get upload {
-    return Intl.message(
-      'Upload',
-      name: 'upload',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we'll get the ball rolling!`
-  String get sentence2 {
-    return Intl.message(
-      'Before we get you started as a Carry courier partner, we just need a few details from you.Fill out the quick application below, and we\'ll get the ball rolling!',
-      name: 'sentence2',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Ready to become a Carry courier partner?`
-  String get sentence1 {
-    return Intl.message(
-      'Ready to become a Carry courier partner?',
-      name: 'sentence1',
-      desc: '',
-      args: [],
-    );
-  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
@@ -1720,6 +2530,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
       Locale.fromSubtags(languageCode: 'ar'),
       Locale.fromSubtags(languageCode: 'es'),
       Locale.fromSubtags(languageCode: 'fr'),
+      Locale.fromSubtags(languageCode: 'he'),
       Locale.fromSubtags(languageCode: 'pt'),
     ];
   }

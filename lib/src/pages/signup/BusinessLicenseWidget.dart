@@ -31,11 +31,8 @@ class _BusinessLicenseWidgetState extends StateMVC<BusinessLicenseWidget> {
         child: FocusScope(
           autofocus: true,
           child: GestureDetector(
-            onTap: () {
-              // Hide keyboard when tapping outside
-              FocusScope.of(context).unfocus();
-            },
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               physics: ClampingScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(

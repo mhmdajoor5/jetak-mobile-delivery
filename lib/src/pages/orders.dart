@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:deliveryboy/generated/l10n.dart';
 import 'package:deliveryboy/src/helpers/driver_status_helper.dart';
 import 'package:deliveryboy/src/models/food_order.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart';
@@ -82,7 +83,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          '🚚 Delivery Orders',
+          S.of(context).delivery_orders,
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -135,7 +136,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                         Icon(Icons.person, color: Colors.blue[600], size: 20),
                         SizedBox(width: 8),
                         Text(
-                          "Driver Status",
+                          S.of(context).driver_status,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -156,7 +157,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            _con.driverAvailability ? "AVAILABLE" : "OFFLINE",
+                            _con.driverAvailability ? S.of(context).available : S.of(context).offline,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -183,8 +184,8 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                         Expanded(
                           child: Text(
                             _con.driverAvailability
-                                ? "You're online and ready to receive pendingOrdersModel"
-                                : "You're offline and won't receive new pendingOrdersModel",
+                                ? S.of(context).online_ready
+                                : S.of(context).offline_not_receiving,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -225,7 +226,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            "${_con.pendingOrdersModel.length} New Order${_con.pendingOrdersModel.length > 1 ? 's' : ''} Available",
+                            "${_con.pendingOrdersModel.length} ${S.of(context).new_order}",
                             style: TextStyle(
                               color: Colors.green[700],
                               fontWeight: FontWeight.bold,
@@ -243,7 +244,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              "LIVE",
+                              S.of(context).live,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -259,7 +260,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           Icon(Icons.update, color: Colors.grey[600], size: 12),
                           SizedBox(width: 4),
                           Text(
-                            "Last updated: ${_getTimeAgo(_lastRefresh)}",
+                            "${S.of(context).last_updated}: ${_getTimeAgo(_lastRefresh)}",
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 10,
@@ -267,7 +268,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                           ),
                           Spacer(),
                           Text(
-                            "Auto-refresh: ON",
+                            S.of(context).auto_refresh_on,
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 10,

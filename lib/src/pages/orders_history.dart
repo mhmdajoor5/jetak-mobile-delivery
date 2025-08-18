@@ -37,6 +37,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     _loadData();
   }
 
+  String _tr(BuildContext context, {required String ar, required String he, required String en}) {
+    final code = Localizations.localeOf(context).languageCode;
+    if (code == 'ar') return ar;
+    if (code == 'he') return he;
+    return en;
+  }
   @override
   void dispose() {
     _locationUpdateTimer?.cancel();
@@ -245,7 +251,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('سجل الطلبات'),
+          title: Text(_tr(context, ar: 'سجل الطلبات', he: 'היסטוריית הזמנות', en: 'Orders History')),
           backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           actions: [
@@ -288,35 +294,35 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         scrollDirection: Axis.horizontal,
         children: [
           _buildStatCard(
-            'مكتملة',
+            _tr(context, ar: 'مكتملة', he: 'נמסר', en: 'Delivered'),
             '${statistics['total_delivered'] ?? 0}',
             Icons.check_circle,
             Colors.green,
           ),
           SizedBox(width: 12),
           _buildStatCard(
-            'معلقة',
+            _tr(context, ar: 'معلقة', he: 'ממתין', en: 'Pending'),
             '${statistics['total_pending'] ?? 0}',
             Icons.schedule,
             Colors.orange,
           ),
             SizedBox(width: 12),
           _buildStatCard(
-            'ملغية',
+            _tr(context, ar: 'ملغية', he: 'בוטל', en: 'Cancelled'),
             '${statistics['total_cancelled'] ?? 0}',
             Icons.cancel,
             Colors.red,
           ),
           SizedBox(width: 12),
           _buildStatCard(
-            'متوسط سعر الطلب',
+            _tr(context, ar: 'متوسط سعر الطلب', he: 'מחיר הזמנה ממוצע', en: 'Average order value'),
             '${statistics['average_order_value'].toStringAsFixed(2) ?? 0}',
             Icons.monetization_on_rounded,
             Colors.blue,
           ),
           SizedBox(width: 12),
           _buildStatCard(
-            'الأرباح',
+            _tr(context, ar: 'الأرباح', he: 'רווחים', en: 'Earnings'),
             '${(statistics['total_earnings'] ?? 0.0).toStringAsFixed(0)} ₪',
             Icons.arrow_circle_up_rounded,
             Colors.blue,
@@ -371,7 +377,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           height: 50,
           child: ListView.builder(
             itemCount: orderStatuses.length,
-            itemBuilder: (context, index) =>_buildFilterChip(orderStatuses[index].status??"", orderStatuses[index].status??""),
+            itemBuilder: (context, index) => _buildFilterChip(
+              orderStatuses[index].status ?? "",
+              _localizedStatusLabel(context, orderStatuses[index].status ?? ""),
+            ),
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16),
             
@@ -412,6 +421,32 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
+  /// Localize common order status labels without changing backend values
+  String _localizedStatusLabel(BuildContext context, String status) {
+    final code = Localizations.localeOf(context).languageCode;
+    final s = status.toLowerCase();
+    switch (code) {
+      case 'ar':
+        if (s == 'delivered' || s == 'completed') return 'مكتملة';
+        if (s == 'ready' || s == 'ready for pickup') return 'جاهزة';
+        if (s == 'on the way' || s == 'in delivery') return 'قيد التوصيل';
+        if (s == 'pending') return 'معلقة';
+        if (s == 'cancelled' || s == 'rejected') return 'ملغية';
+        return status;
+      case 'he':
+        if (s == 'delivered' || s == 'completed') return 'נמסר';
+        if (s == 'ready' || s == 'ready for pickup') return 'מוכן';
+        if (s == 'on the way' || s == 'in delivery') return 'בדרך';
+        if (s == 'pending') return 'ממתין';
+        if (s == 'cancelled' || s == 'rejected') return 'בוטל';
+        return status;
+      default:
+        // English fallback
+        if (s == 'ready for pickup') return 'Ready';
+        return status;
+    }
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -419,17 +454,17 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         children: [
           Icon(Icons.history, size: 64, color: Colors.grey),
           SizedBox(height: 16),
-          Text('لا يوجد طلبات'),
+          Text(_tr(context, ar: 'لا يوجد طلبات', he: 'אין הזמנות', en: 'No orders')),
           SizedBox(height: 8),
           Text(
-            'لم يتم العثور على طلبات بهذه الحالة',
+            _tr(context, ar: 'لم يتم العثور على طلبات بهذه الحالة', he: 'לא נמצאו הזמנות במצב זה', en: 'No orders found for this status'),
             style: TextStyle(color: Colors.grey[600]),
           ),
           SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _refreshData,
             icon: Icon(Icons.refresh),
-            label: Text('إعادة التحميل'),
+            label: Text(_tr(context, ar: 'إعادة التحميل', he: 'רענן', en: 'Reload')),
           ),
         ],
       ),
@@ -459,7 +494,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'طلب رقم: ${order.id}',
+                    _tr(context, ar: 'طلب رقم: ${order.id}', he: 'הזמנה #: ${order.id}', en: 'Order #: ${order.id}'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -502,12 +537,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               SizedBox(height: 12),
               
               // Client Info
-              _buildInfoRow(Icons.person, 'العميل', order.user?.name??'الاسم غير معروف'),
+              _buildInfoRow(Icons.person, _tr(context, ar: 'العميل', he: 'לקוח', en: 'Customer'), order.user?.name??_tr(context, ar: 'الاسم غير معروف', he: 'שם לא ידוע', en: 'Unknown name')),
               SizedBox(height: 8),
-              _buildInfoRow(Icons.phone, 'الهاتف', order.user?.phone??'الهاتف غير معروف'),
+              _buildInfoRow(Icons.phone, _tr(context, ar: 'الهاتف', he: 'טלפון', en: 'Phone'), order.user?.phone??_tr(context, ar: 'الهاتف غير معروف', he: 'טלפון לא ידוע', en: 'Unknown phone')),
               
               SizedBox(height: 8),
-              _buildInfoRow(Icons.location_on, 'العنوان', order.deliveryAddress?.address??'العنوان غير معروف', maxLines: 2),
+              _buildInfoRow(Icons.location_on, _tr(context, ar: 'العنوان', he: 'כתובת', en: 'Address'), order.deliveryAddress?.address??_tr(context, ar: 'العنوان غير معروف', he: 'כתובת לא ידועה', en: 'Unknown address'), maxLines: 2),
               
               SizedBox(height: 12),
               Wrap(
