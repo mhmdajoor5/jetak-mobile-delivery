@@ -46,6 +46,7 @@ class User {
   // used for indicate if client logged in or not
   bool? auth;
   bool? available;
+  int? isActive; // 0 = inactive, 1 = active
 
   User();
 
@@ -69,6 +70,8 @@ class User {
       accountNumber = jsonMap['accountNumber']?.toString() ?? '';
       branchNumber = jsonMap['branchNumber']?.toString() ?? '';
       available = jsonMap['available'];
+      isActive = jsonMap['is_active'] != null ? int.tryParse(jsonMap['is_active'].toString()) : 1;
+      print('🔍 User model - is_active parsed: $isActive from ${jsonMap['is_active']}');
       name = jsonMap['name'] != null ? jsonMap['name'] : '';
       email = jsonMap['email'] != null ? jsonMap['email'] : '';
       firstName = jsonMap['firstName'] != null ? jsonMap['firstName'] : '';
@@ -132,6 +135,7 @@ class User {
     map["accountNumber"] = accountNumber;
     map["branchNumber"] = branchNumber;
     map["available"] = available;
+    map["is_active"] = isActive;
     map["email"] = email;
     map["name"] = name;
     map["password"] = password;

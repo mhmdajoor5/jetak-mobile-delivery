@@ -71,7 +71,7 @@ Future<UserModel.User> login(UserModel.User user) async {
           Map<dynamic, dynamic> responseData = response.data;
 
           if (responseData['data'] != null) {
-            setCurrentUser(responseData);
+            setCurrentUser(json.encode(responseData));
             currentUser.value = UserModel.User.fromJSON(responseData['data']);
             return currentUser.value;
           } else {
@@ -572,5 +572,43 @@ Future<Address> removeDeliveryAddress(Address address) async {
   } catch (e) {
     print(CustomTrace(StackTrace.current, message: url));
     return Address.fromJSON({});
+  }
+}
+
+Future<bool> updateUserActiveStatus(int isActive) async {
+  if (currentUser.value.id == null) {
+    print('❌ updateUserActiveStatus: User not authenticated');
+    return false;
+  }
+  
+  try {
+    final response = await http.post(
+      Uri.parse('${GlobalConfiguration().getValue('api_base_url')}users/${currentUser.value.id}/update-active-status'),
+      headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'api_token': currentUser.value.apiToken,
+        'is_active': isActive,
+      }),
+    );
+
+    print('🔍 Update Active Status Response Status: ${response.statusCode}');
+    print('🔍 Update Active Status Response: ${response.body}');
+
+    if (response.statusCode == 200) {
+      // Update local user data
+      currentUser.value.isActive = isActive;
+      print('✅ User active status updated successfully');
+      return true;
+    } else {
+      print('❌ Failed to update user active status: ${response.statusCode}');
+      print('❌ Response: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('❌ Error updating user active status: $e');
+    return false;
   }
 }

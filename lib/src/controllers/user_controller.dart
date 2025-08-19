@@ -105,9 +105,20 @@ class UserController extends ControllerMVC {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
       repository.login(user).then((value) {
+        print('🔍 Login successful - User ID: ${value.id}, isActive: ${value.isActive}');
         if (value.apiToken != null) {
-          Navigator.of(state!.context)
-              .pushReplacementNamed('/Pages', arguments: 1);
+          // Check if user is active (is_active = 1 means active, 0 means inactive)
+          if (value.isActive == 0) {
+            print('🔍 User is inactive (isActive: ${value.isActive}), navigating to contract widget');
+            // User is inactive, show contract widget
+            Navigator.of(state!.context)
+                .pushReplacementNamed('/CarryContract');
+          } else {
+            print('🔍 User is active (isActive: ${value.isActive}), navigating to main app');
+            // User is active, go to main app
+            Navigator.of(state!.context)
+                .pushReplacementNamed('/Pages', arguments: 1);
+          }
         } else {
           ScaffoldMessenger.of(state!.context)
               .showSnackBar(SnackBar(

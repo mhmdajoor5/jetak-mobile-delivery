@@ -14,6 +14,7 @@ import 'src/pages/order_notification_screen.dart';
 import 'src/pages/pages.dart';
 import 'src/pages/settings.dart';
 import 'src/pages/signup/signup.dart';
+import 'src/pages/signup/CarryContractWidget.dart';
 import 'src/pages/splash_screen.dart';
 
 class RouteGenerator {
@@ -49,6 +50,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => SettingsWidget());
       case '/Complete-profile':
         return MaterialPageRoute(builder: (_) => CompleteYourProfileWidget());
+      case '/CarryContract':
+        return MaterialPageRoute(builder: (_) => CarryContractWidget());
       case '/OrderTracking':
         return MaterialPageRoute(builder: (_) => OrderTracking(
           routeArgument: args as RouteArgument,

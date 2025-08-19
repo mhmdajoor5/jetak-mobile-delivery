@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
+import '../../repository/user_repository.dart' as userRepo;
 import 'SelectNationalityWidget.dart';
 
 class CarryContractWidget extends StatefulWidget {
@@ -17,14 +18,57 @@ class _CarryContractWidgetState
   late UserController _con;
   String userName = "User"; // Default value, should be replaced with actual user name
   String approvedDate = "2024-01-01"; // Default value, should be replaced with actual date
+  bool _isLoading = false;
 
   _CarryContractWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Get actual user data
+    final user = userRepo.currentUser.value;
+    if (user.name != null && user.name!.isNotEmpty) {
+      userName = user.name!;
+    } else if (user.firstName != null && user.firstName!.isNotEmpty) {
+      userName = user.firstName!;
+    }
+    // You can set approvedDate based on actual data if available
+  }
+
+  Future<void> _completeContract() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      // Update user active status to 1 (active)
+      final success = await userRepo.updateUserActiveStatus(1);
+      if (success) {
+        // Navigate to main app
+        Navigator.of(context).pushReplacementNamed('/Pages', arguments: 1);
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to complete contract. Please try again.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue[900], // Add background color
       body: SafeArea(
         child: Padding(
           padding:  EdgeInsets.all(16),
@@ -144,18 +188,23 @@ class _CarryContractWidgetState
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SelectNationalityWidget(),
-                      ),
-                    );
+                  onPressed: _isLoading ? null : () async {
+                    // Complete contract and activate user
+                    await _completeContract();
                   },
-                  child:  Text(
-                    S.of(context).Continue,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: _isLoading 
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        S.of(context).Continue,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                 ),
               ),
 
