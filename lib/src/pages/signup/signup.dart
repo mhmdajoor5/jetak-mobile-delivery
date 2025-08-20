@@ -23,10 +23,11 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
   bool agree = false;
   Map<String, Triple<bool, File, String>> files = {};
   final TextEditingController _dateController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Add form key
+  late final GlobalKey<FormState> _formKey; // Add form key
 
   _SignUpWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+    _formKey = GlobalKey<FormState>();
   }
 
   @override

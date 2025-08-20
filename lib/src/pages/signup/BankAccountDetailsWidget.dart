@@ -15,13 +15,14 @@ class BankAccountDetailsWidget extends StatefulWidget {
 class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> {
   late UserController _con;
   File? selectedFile;
-  final _formKey = GlobalKey<FormState>();
+  late final GlobalKey<FormState> _formKey;
   final _bankNameController = TextEditingController();
   final _accountNumberController = TextEditingController();
   final _branchNumberController = TextEditingController();
 
   _BankAccountDetailsWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+    _formKey = GlobalKey<FormState>();
   }
 
   @override

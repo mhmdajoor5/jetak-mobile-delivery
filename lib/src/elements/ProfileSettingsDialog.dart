@@ -14,7 +14,11 @@ class ProfileSettingsDialog extends StatefulWidget {
 }
 
 class _ProfileSettingsDialogState extends State<ProfileSettingsDialog> {
-  final GlobalKey<FormState> _profileSettingsFormKey = GlobalKey<FormState>();
+  late final GlobalKey<FormState> _profileSettingsFormKey;
+
+  _ProfileSettingsDialogState() {
+    _profileSettingsFormKey = GlobalKey<FormState>();
+  }
 
   @override
   Widget build(BuildContext context) {

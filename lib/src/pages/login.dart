@@ -18,9 +18,11 @@ class LoginWidget extends StatefulWidget {
 
 class _LoginWidgetState extends StateMVC<LoginWidget> {
   late UserController _con;
+  late final GlobalKey<FormState> _loginFormKey;
 
   _LoginWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+    _loginFormKey = GlobalKey<FormState>();
   }
 
   @override
@@ -77,7 +79,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                 width: config.App(context).appWidth(88),
                 //              height: config.App(context).appHeight(55),
                 child: Form(
-                  key: _con.loginFormKey,
+                  key: _loginFormKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -15,9 +15,11 @@ class ForgetPasswordWidget extends StatefulWidget {
 
 class _ForgetPasswordWidgetState extends StateMVC<ForgetPasswordWidget> {
   late UserController _con;
+  late final GlobalKey<FormState> _forgetPasswordFormKey;
 
   _ForgetPasswordWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+    _forgetPasswordFormKey = GlobalKey<FormState>();
   }
   @override
   void initState() {
@@ -68,7 +70,7 @@ class _ForgetPasswordWidgetState extends StateMVC<ForgetPasswordWidget> {
                 width: config.App(context).appWidth(88),
 //              height: config.App(context).appHeight(55),
                 child: Form(
-                  key: _con.loginFormKey,
+                  key: _forgetPasswordFormKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,

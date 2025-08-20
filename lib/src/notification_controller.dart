@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -333,9 +334,13 @@ class NotificationController {
       
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        print('🔑 FCM Token: $token');
+        if (kDebugMode) {
+          print('🔑 FCM Token: $token');
+        }
       } else {
-        print('❌ Failed to get FCM token');
+        if (kDebugMode) {
+          print('❌ Failed to get FCM token');
+        }
       }
     } catch (e) {
       print('❌ Error getting FCM token: $e');

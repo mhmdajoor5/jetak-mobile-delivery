@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as Math;
+import 'package:flutter/foundation.dart';
 
 import 'package:deliveryboy/src/constants/const/api_endpoints.dart';
 import 'package:dio/dio.dart';
@@ -770,16 +771,18 @@ Future<Map<String, dynamic>> testConnection() async {
 
   // فحص الـ User والـ Token
   User user = userRepo.currentUser.value;
-  print('🔍 Current User Info:');
-  print('   - User ID: ${user.id}');
-  print('   - User Name: ${user.name}');
-  print('   - User Email: ${user.email}');
-  print('   - API Token Length: ${user.apiToken?.length ?? 0}');
-  print(
-    '   - API Token (first 20 chars): ${user.apiToken?.toString()}',
-  );
-  print('   - Token is null: ${user.apiToken == null}');
-  print('   - Token is empty: ${user.apiToken?.isEmpty ?? true}');
+  if (kDebugMode) {
+    print('🔍 Current User Info:');
+    print('   - User ID: ${user.id}');
+    print('   - User Name: ${user.name}');
+    print('   - User Email: ${user.email}');
+    print('   - API Token Length: ${user.apiToken?.length ?? 0}');
+    print(
+      '   - API Token (first 20 chars): ${user.apiToken?.substring(0, Math.min(20, user.apiToken?.length ?? 0))}',
+    );
+    print('   - Token is null: ${user.apiToken == null}');
+    print('   - Token is empty: ${user.apiToken?.isEmpty ?? true}');
+  }
 
   if (user.apiToken == null || user.apiToken!.isEmpty) {
     return {
@@ -808,21 +811,27 @@ Future<Map<String, dynamic>> testConnection() async {
   try {
     final client = http.Client();
 
-    // اختبار 1: بدون Token
-    Uri uriWithoutToken = Helper.getUri('api/orders');
-    print('🧪 Testing WITHOUT token...');
-    final responseWithoutToken = await client.get(uriWithoutToken);
-    print('🔍 Response WITHOUT token: ${responseWithoutToken.statusCode}');
+    if (kDebugMode) {
+      // اختبار 1: بدون Token (للتشخيص فقط)
+      Uri uriWithoutToken = Helper.getUri('api/orders');
+      print('🧪 Testing WITHOUT token...');
+      final responseWithoutToken = await client.get(uriWithoutToken);
+      print('🔍 Response WITHOUT token: ${responseWithoutToken.statusCode}');
+    }
 
     // اختبار 2: مع Token
-    print('🧪 Testing WITH token...');
+    if (kDebugMode) {
+      print('🧪 Testing WITH token...');
+    }
     final response = await client.get(uri);
 
-    print('🔍 Response Status: ${response.statusCode}');
-    print('🔍 Response Headers: ${response.headers}');
-    print(
-      '🔍 Response Body (first 500 chars): ${response.body.substring(0, Math.min<int>(500, response.body.length))}',
-    );
+    if (kDebugMode) {
+      print('🔍 Response Status: ${response.statusCode}');
+      print('🔍 Response Headers: ${response.headers}');
+      print(
+        '🔍 Response Body (first 500 chars): ${response.body.substring(0, Math.min<int>(500, response.body.length))}',
+      );
+    }
 
     // فحص نوع المحتوى
     String? contentType = response.headers['content-type'];

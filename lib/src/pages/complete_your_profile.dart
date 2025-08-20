@@ -22,9 +22,11 @@ class CompleteYourProfileWidget extends StatefulWidget {
 class _CompleteYourProfileWidgetState
     extends StateMVC<CompleteYourProfileWidget> {
  late UserController  _con;
+    late final GlobalKey<FormState> _formKey;
 
   _CompleteYourProfileWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+    _formKey = GlobalKey<FormState>();
   }
 
   @override
@@ -68,7 +70,7 @@ class _CompleteYourProfileWidgetState
                 ),
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
                   child: Form(
-                    key: GlobalKey<FormState>(),
+                    key: _formKey,
                     child: Column(
                       children: [
                         _buildDocumentFilesColumn(context),
