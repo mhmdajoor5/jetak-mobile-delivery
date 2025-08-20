@@ -205,7 +205,6 @@ Future<UserModel.User> register(UserModel.User user) async {
       '${GlobalConfiguration().getValue('base_url')}/api/driver/register',
       '${GlobalConfiguration().getValue('api_base_url')}driver/register',
       'http://carrytechnologies.co/api/driver/register',
-      '${GlobalConfiguration().getValue('base_url')}/api/register',
     ];
 
     Exception? lastException;
@@ -233,24 +232,12 @@ Future<UserModel.User> register(UserModel.User user) async {
         String cleanPhone = (user.phone ?? '').trim();
         String cleanDeliveryCity = (user.deliveryCity ?? '').trim();
         
-        // Add text fields
+        // Add text fields - Only send basic fields like Postman
         Map<String, String> fields = {
           'name': fullName,
           'email': cleanEmail,
           'password': user.password ?? '',
           'password_confirmation': user.passwordConfirmation ?? '',
-          'firstName': cleanFirstName,
-          'lastName': cleanLastName,
-          'phone': cleanPhone,
-          'languagesSpoken': user.languagesSpoken ?? '',
-          'languagesSpokenCode': user.languagesSpokenCode ?? '',
-          'dateOfBirth': user.dateOfBirth ?? '',
-          'deliveryCity': cleanDeliveryCity,
-          'vehicleType': user.vehicleType ?? '',
-          'referralCode': user.referralCode ?? '',
-          'bankName': user.bankName ?? '',
-          'accountNumber': user.accountNumber ?? '',
-          'branchNumber': user.branchNumber ?? '',
         };
         
         // Print user data for debugging
@@ -278,58 +265,8 @@ Future<UserModel.User> register(UserModel.User user) async {
         
         request.fields.addAll(fields);
 
-        // Add files if they exist
-        List<String> documentFields = [
-          'drivingLicense',
-          'businessLicense', 
-          'accountingCertificate',
-          'taxCertificate',
-          'accountManagementCertificate',
-          'bankAccountDetails'
-        ];
-        
-        // Print file information
-        print('🔍 File information:');
-        for (String field in documentFields) {
-          String? filePath = _getDocumentPath(user, field);
-          if (filePath != null && filePath.isNotEmpty) {
-            File file = File(filePath);
-            if (file.existsSync()) {
-              print('  $field: ${file.path} (${file.lengthSync()} bytes)');
-            } else {
-              print('  $field: File not found - $filePath');
-            }
-          } else {
-            print('  $field: No file path');
-          }
-        }
-
-        for (String field in documentFields) {
-          String? filePath = _getDocumentPath(user, field);
-          if (filePath != null && filePath.isNotEmpty) {
-            try {
-              File file = File(filePath);
-              if (await file.exists()) {
-                var stream = http.ByteStream(file.openRead());
-                var length = await file.length();
-                var multipartFile = http.MultipartFile(
-                  field,
-                  stream,
-                  length,
-                  filename: filePath.split('/').last,
-                );
-                request.files.add(multipartFile);
-                print('✅ Added file for $field: ${filePath.split('/').last}');
-              } else {
-                print('⚠️ File not found for $field: $filePath');
-              }
-            } catch (e) {
-              print('❌ Error adding file for $field: $e');
-            }
-          } else {
-            print('⚠️ No file path for $field');
-          }
-        }
+        // Temporarily skip file uploads to match Postman request
+        print('🔍 Skipping file uploads for now to match Postman format');
 
         print('📤 Sending registration request to: $url');
         final streamedResponse = await request.send();
@@ -368,70 +305,7 @@ Future<UserModel.User> register(UserModel.User user) async {
             String errorMessage = errorData['message'] ?? 'Unauthorized - Please check API configuration';
             print('❌ Server error message: $errorMessage');
             
-            // If the error message indicates invalid data, try with different field names
-            if (errorMessage.contains('invalid') || errorMessage.contains('validation')) {
-              print('🔄 Trying with alternative field names...');
-              
-              // Try with different field name variations
-              Map<String, String> alternativeFields = Map.from(fields);
-              alternativeFields['first_name'] = alternativeFields.remove('firstName') ?? '';
-              alternativeFields['last_name'] = alternativeFields.remove('lastName') ?? '';
-              alternativeFields['phone_number'] = alternativeFields.remove('phone') ?? '';
-              alternativeFields['city'] = alternativeFields.remove('deliveryCity') ?? '';
-              alternativeFields['vehicle_type'] = alternativeFields.remove('vehicleType') ?? '';
-              alternativeFields['referral_code'] = alternativeFields.remove('referralCode') ?? '';
-              alternativeFields['bank_name'] = alternativeFields.remove('bankName') ?? '';
-              alternativeFields['account_number'] = alternativeFields.remove('accountNumber') ?? '';
-              alternativeFields['branch_number'] = alternativeFields.remove('branchNumber') ?? '';
-              
-              // Create new request with alternative field names
-              final altRequest = http.MultipartRequest('POST', Uri.parse(url));
-              altRequest.fields.addAll(alternativeFields);
-              
-              // Add files again
-              for (String field in documentFields) {
-                String? filePath = _getDocumentPath(user, field);
-                if (filePath != null && filePath.isNotEmpty) {
-                  try {
-                    File file = File(filePath);
-                    if (await file.exists()) {
-                      var stream = http.ByteStream(file.openRead());
-                      var length = await file.length();
-                      var multipartFile = http.MultipartFile(
-                        field,
-                        stream,
-                        length,
-                        filename: filePath.split('/').last,
-                      );
-                      altRequest.files.add(multipartFile);
-                    }
-                  } catch (e) {
-                    print('❌ Error adding file for $field: $e');
-                  }
-                }
-              }
-              
-              print('🔄 Retrying with alternative field names...');
-              final altStreamedResponse = await altRequest.send();
-              final altResponse = await http.Response.fromStream(altStreamedResponse);
-              
-              print('📥 Alternative response status: ${altResponse.statusCode}');
-              print('📥 Alternative response body: ${altResponse.body}');
-              
-              if (altResponse.statusCode == 200 || altResponse.statusCode == 201) {
-                try {
-                  Map<String, dynamic> responseData = json.decode(altResponse.body);
-                  if (responseData['data'] != null) {
-                    setCurrentUser(altResponse.body);
-                    currentUser.value = UserModel.User.fromJSON(responseData['data']);
-                    print('✅ Registration successful with alternative field names');
-                    return currentUser.value;
-                  }
-                } catch (e) {
-                  print('❌ JSON parsing error with alternative fields: $e');
-                }
-              }
-            }
+            // No need for retry logic since we're sending minimal fields like Postman
             
             lastException = Exception(errorMessage);
           } catch (e) {

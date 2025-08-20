@@ -68,7 +68,7 @@ class _CompleteYourProfileWidgetState
                 ),
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
                   child: Form(
-                    key: _con.loginFormKey,
+                    key: GlobalKey<FormState>(),
                     child: Column(
                       children: [
                         _buildDocumentFilesColumn(context),
