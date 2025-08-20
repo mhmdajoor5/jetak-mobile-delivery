@@ -410,6 +410,366 @@ class S {
     );
   }
 
+  /// `Ready to become a Carry courier partner?`
+  String get ready_to_become_carry_partner {
+    return Intl.message(
+      'Ready to become a Carry courier partner?',
+      name: 'ready_to_become_carry_partner',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Before we get you started as a Carry courier partner, we just need a few details from you. Fill out the quick application below, and we'll get the ball rolling!`
+  String get before_we_get_started {
+    return Intl.message(
+      'Before we get you started as a Carry courier partner, we just need a few details from you. Fill out the quick application below, and we\'ll get the ball rolling!',
+      name: 'before_we_get_started',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First name (as in passport)`
+  String get first_name_passport {
+    return Intl.message(
+      'First name (as in passport)',
+      name: 'first_name_passport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name (as in passport)`
+  String get last_name_passport {
+    return Intl.message(
+      'Last name (as in passport)',
+      name: 'last_name_passport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Password`
+  String get confirm_password {
+    return Intl.message(
+      'Confirm Password',
+      name: 'confirm_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone number (international format)`
+  String get phone_international {
+    return Intl.message(
+      'Phone number (international format)',
+      name: 'phone_international',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Languages spoken`
+  String get languages_spoken {
+    return Intl.message(
+      'Languages spoken',
+      name: 'languages_spoken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date of birth`
+  String get date_of_birth {
+    return Intl.message(
+      'Date of birth',
+      name: 'date_of_birth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First name is required`
+  String get first_name_required {
+    return Intl.message(
+      'First name is required',
+      name: 'first_name_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name is required`
+  String get last_name_required {
+    return Intl.message(
+      'Last name is required',
+      name: 'last_name_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid email`
+  String get valid_email_required {
+    return Intl.message(
+      'Please enter a valid email',
+      name: 'valid_email_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be at least 6 characters`
+  String get password_min_6 {
+    return Intl.message(
+      'Password must be at least 6 characters',
+      name: 'password_min_6',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please confirm your password`
+  String get confirm_password_required {
+    return Intl.message(
+      'Please confirm your password',
+      name: 'confirm_password_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone number is required`
+  String get phone_required {
+    return Intl.message(
+      'Phone number is required',
+      name: 'phone_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `John`
+  String get john {
+    return Intl.message(
+      'John',
+      name: 'john',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Doe`
+  String get doe {
+    return Intl.message(
+      'Doe',
+      name: 'doe',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `johndoe@gmail.com`
+  String get johndoe_gmail {
+    return Intl.message(
+      'johndoe@gmail.com',
+      name: 'johndoe_gmail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter your password`
+  String get enter_password {
+    return Intl.message(
+      'Enter your password',
+      name: 'enter_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm your password`
+  String get confirm_your_password {
+    return Intl.message(
+      'Confirm your password',
+      name: 'confirm_your_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `+972 5XXXXXXXX`
+  String get phone_format {
+    return Intl.message(
+      '+972 5XXXXXXXX',
+      name: 'phone_format',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I agree for my personal data to be collected and processed in accordance with the`
+  String get privacy_agreement_text {
+    return Intl.message(
+      'I agree for my personal data to be collected and processed in accordance with the',
+      name: 'privacy_agreement_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Carry Courier Partner Privacy Statement.`
+  String get privacy_statement_link {
+    return Intl.message(
+      'Carry Courier Partner Privacy Statement.',
+      name: 'privacy_statement_link',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please agree to the privacy statement`
+  String get please_agree_privacy {
+    return Intl.message(
+      'Please agree to the privacy statement',
+      name: 'please_agree_privacy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get passwords_not_match {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'passwords_not_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send Application`
+  String get send_application {
+    return Intl.message(
+      'Send Application',
+      name: 'send_application',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Languages spoken`
+  String get languages_spoken_label {
+    return Intl.message(
+      'Languages spoken',
+      name: 'languages_spoken_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please specify languages spoken`
+  String get please_specify_languages {
+    return Intl.message(
+      'Please specify languages spoken',
+      name: 'please_specify_languages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date of birth is required`
+  String get date_of_birth_required {
+    return Intl.message(
+      'Date of birth is required',
+      name: 'date_of_birth_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Depending on your city, you must be over 16 or 18 years old to deliver Carry.`
+  String get age_requirement_message {
+    return Intl.message(
+      'Depending on your city, you must be over 16 or 18 years old to deliver Carry.',
+      name: 'age_requirement_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery city`
+  String get delivery_city {
+    return Intl.message(
+      'Delivery city',
+      name: 'delivery_city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery city is required`
+  String get delivery_city_required {
+    return Intl.message(
+      'Delivery city is required',
+      name: 'delivery_city_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vehicle type`
+  String get vehicle_type {
+    return Intl.message(
+      'Vehicle type',
+      name: 'vehicle_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter vehicle type`
+  String get vehicle_type_required {
+    return Intl.message(
+      'Please enter vehicle type',
+      name: 'vehicle_type_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Courier partner referral code (optional)`
+  String get referral_code_optional {
+    return Intl.message(
+      'Courier partner referral code (optional)',
+      name: 'referral_code_optional',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Motorcycle`
+  String get motorcycle {
+    return Intl.message(
+      'Motorcycle',
+      name: 'motorcycle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Electric Motorcycle`
+  String get electric_motorcycle {
+    return Intl.message(
+      'Electric Motorcycle',
+      name: 'electric_motorcycle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Let's Start with register!`
   String get lets_start_with_register {
     return Intl.message(
@@ -2440,15 +2800,7 @@ class S {
     );
   }
 
-  /// `Send application`
-  String get send_application {
-    return Intl.message(
-      'Send application',
-      name: 'send_application',
-      desc: '',
-      args: [],
-    );
-  }
+
 
   /// `APPROVED`
   String get approved {
@@ -2515,6 +2867,66 @@ class S {
     return Intl.message(
       'Please confirm your nationality to help us verify your identity documents. For instance, if you hold a German passport, select \'Germany\' as your country of nationality.',
       name: 'select_nationality_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please wait while we fetch the latest orders`
+  String get please_wait_fetching_orders {
+    return Intl.message(
+      'Please wait while we fetch the latest orders',
+      name: 'please_wait_fetching_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Live Chat Support`
+  String get live_chat_support {
+    return Intl.message(
+      'Live Chat Support',
+      name: 'live_chat_support',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact Support`
+  String get contact_support_intercom {
+    return Intl.message(
+      'Contact Support',
+      name: 'contact_support_intercom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout from Intercom`
+  String get logout_from_intercom {
+    return Intl.message(
+      'Logout from Intercom',
+      name: 'logout_from_intercom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Help`
+  String get intercom_help {
+    return Intl.message(
+      'Help',
+      name: 'intercom_help',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct chat with support team`
+  String get live_chat_support_subtitle {
+    return Intl.message(
+      'Direct chat with support team',
+      name: 'live_chat_support_subtitle',
       desc: '',
       args: [],
     );

@@ -15,6 +15,7 @@ class LanguagesList {
     _languages = [
       Language("en", "English", "English", "assets/img/united-states-of-america.png"),
       Language("ar", "Arabic", "العربية", "assets/img/united-arab-emirates.png"),
+      Language("he", "Hebrew", "עברית", "assets/img/united-states-of-america.png"),
       Language("es", "Spanish", "Spana", "assets/img/spain.png"),
       Language("fr", "French (France)", "Français - France", "assets/img/france.png"),
       Language("fr", "French (Canada)", "Français - Canadien", "assets/img/canada.png"),

@@ -9,6 +9,8 @@ import '../helpers/helper.dart';
 import '../repository/user_repository.dart' as userRepo;
 import '../repository/order_repository.dart' as orderRepo;
 import '../notification_controller.dart';
+import '../elements/IntercomButtonWidget.dart';
+import '../helpers/intercom_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -831,6 +833,59 @@ class _SettingsWidgetState extends StateMVC<SettingsWidget> {
                                 Text(
                                   S.of(context).help_support,
                                   style: Theme.of(context).textTheme.headlineSmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                          ListTile(
+                            onTap: () async {
+                              await IntercomHelper.displayMessenger();
+                            },
+                            dense: true,
+                            title: Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.support_agent,
+                                  size: 22,
+                                  color: Theme.of(context).focusColor,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  S.of(context).live_chat_support,
+                                  style: Theme.of(context).textTheme.headlineSmall,
+                                ),
+                              ],
+                            ),
+                            trailing: IntercomButtonWidget(
+                              size: 32,
+                              backgroundColor: Colors.transparent,
+                              iconColor: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          ListTile(
+                            onTap: () async {
+                              await _con.logoutFromIntercom();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('تم تسجيل الخروج من الدعم المباشر'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
+                            dense: true,
+                            title: Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.logout,
+                                  size: 22,
+                                  color: Colors.red,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  S.of(context).logout_from_intercom,
+                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    color: Colors.red,
+                                  ),
                                 ),
                               ],
                             ),

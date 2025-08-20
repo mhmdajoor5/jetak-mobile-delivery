@@ -11,6 +11,7 @@ import '../models/document.dart';
 import '../models/user.dart';
 import '../models/triple.dart';
 import '../repository/user_repository.dart' as repository;
+import '../helpers/intercom_helper.dart';
 
 class UserController extends ControllerMVC {
   static UserController? _instance;
@@ -104,9 +105,21 @@ class UserController extends ControllerMVC {
     if (loginFormKey.currentState!.validate()) {
       loginFormKey.currentState!.save();
       Overlay.of(state!.context).insert(loader);
-      repository.login(user).then((value) {
+      repository.login(user).then((value) async {
         print('🔍 Login successful - User ID: ${value.id}, isActive: ${value.isActive}');
         if (value.apiToken != null) {
+          // تسجيل المستخدم في Intercom
+          await IntercomHelper.loginUser(
+            userId: value.id.toString(),
+            email: value.email ?? '',
+            name: value.name ?? value.firstName ?? '',
+            attributes: {
+              'phone': value.phone ?? '',
+              'is_active': value.isActive == 1,
+              'user_type': 'driver',
+            },
+          );
+          
           // Check if user is active (is_active = 1 means active, 0 means inactive)
           if (value.isActive == 0) {
             print('🔍 User is inactive (isActive: ${value.isActive}), navigating to contract widget');

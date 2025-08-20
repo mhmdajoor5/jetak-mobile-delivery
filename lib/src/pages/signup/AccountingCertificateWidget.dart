@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
-import '../../helpers/app_config.dart' as config;
 import 'BusinessLicenseWidget.dart';
 import 'TaxCertificateWidget.dart';
 
@@ -21,6 +19,19 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
 
   _AccountingCertificateWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
+  }
+
+  // Helper function to get text based on current locale
+  String getText(String hebrew, String arabic, String english) {
+    final locale = Localizations.localeOf(context).languageCode;
+    switch (locale) {
+      case 'he':
+        return hebrew;
+      case 'ar':
+        return arabic;
+      default:
+        return english;
+    }
   }
 
   @override
@@ -43,7 +54,7 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Text(
-                      'شهادة إدارة دفاتر الحسابات',
+                      getText('תעודת ניהול ספרי חשבונות', 'شهادة إدارة دفاتر الحسابات', 'Accounting Certificate Management'),
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 24,
@@ -75,7 +86,7 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'شهادة إدارة دفاتر الحسابات',
+                              getText('תעודת ניהול ספרי חשבונות', 'شهادة إدارة دفاتر الحسابات', 'Accounting Certificate Management'),
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -101,7 +112,11 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('خطأ في اختيار الملف: $e'),
+                                        content: Text(getText(
+                                          'שגיאה בבחירת קובץ: $e',
+                                          'خطأ في اختيار الملف: $e',
+                                          'Error selecting file: $e'
+                                        )),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -121,7 +136,7 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                                         child: Text(
                                           selectedFile != null 
                                               ? selectedFile!.path.split('/').last
-                                              : 'اختر ملف شهادة إدارة دفاتر الحسابات',
+                                              : getText('בחר קובץ תעודת ניהול ספרי חשבונות', 'اختر ملف شهادة إدارة دفاتر الحسابات', 'Choose Accounting Certificate file'),
                                           style: TextStyle(color: Colors.black87),
                                         ),
                                       ),
@@ -154,7 +169,7 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                                 Navigator.pop(context);
                               },
                               child: Text(
-                                'السابق',
+                                getText('קודם', 'السابق', 'Previous'),
                                 style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),
@@ -177,7 +192,7 @@ class _AccountingCertificateWidgetState extends StateMVC<AccountingCertificateWi
                                 );
                               } : null,
                               child: Text(
-                                'التالي',
+                                getText('הבא', 'التالي', 'Next'),
                                 style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),

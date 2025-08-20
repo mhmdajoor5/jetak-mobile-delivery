@@ -35,6 +35,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Intercom configuration -->
+        <meta-data
+            android:name="io.intercom.android.sdk.APP_ID"
+            android:value="${intercom_app_id}" />
+        <meta-data
+            android:name="io.intercom.android.sdk.API_KEY"
+            android:value="${intercom_api_key}" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

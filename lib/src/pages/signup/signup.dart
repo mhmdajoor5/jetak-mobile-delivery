@@ -3,9 +3,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-
-
-
 import 'package:intl/intl.dart';
 import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
@@ -26,6 +23,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
   bool agree = false;
   Map<String, Triple<bool, File, String>> files = {};
   final TextEditingController _dateController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Add form key
 
   _SignUpWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
@@ -35,6 +33,19 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
   void dispose() {
     _dateController.dispose();
     super.dispose();
+  }
+
+  // Helper function to get text based on current locale
+  String getText(String hebrew, String arabic, String english) {
+    final locale = Localizations.localeOf(context).languageCode;
+    switch (locale) {
+      case 'he':
+        return hebrew;
+      case 'ar':
+        return arabic;
+      default:
+        return english;
+    }
   }
 
   @override
@@ -53,7 +64,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
             },
           ),
           title: Text(
-            S.of(context).register,
+            getText('הרשמה', 'التسجيل', 'Register'),
             style: TextStyle(color: Colors.black54, fontSize: 20),
           ),
         ),
@@ -70,16 +81,24 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        S.of(context).sentence1,
+                        getText(
+                          'האם אתה מוכן להיות שותף משלוחים ב-Carry?',
+                          'هل أنت مستعد لتصبح شريك توصيل مع Carry؟',
+                          'Ready to become a Carry courier partner?'
+                        ),
                         style: TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.bold, 
+                          fontWeight: FontWeight.bold,
                           fontSize: 24
                         ),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        S.of(context).sentence2,
+                        getText(
+                          'לפני שנתחיל איתך כשותף משלוחים ב-Carry, אנחנו רק צריכים כמה פרטים ממך. מלא את הבקשה המהירה למטה, ואנחנו נתחיל לעבוד!',
+                          'قبل أن نبدأ معك كشريك توصيل لدى Carry، نحتاج فقط بعض التفاصيل منك. املأ الطلب السريع أدناه، وسنبدأ الإجراءات فورًا!',
+                          'Before we get you started as a Carry courier partner, we just need a few details from you. Fill out the quick application below, and we\'ll get the ball rolling!'
+                        ),
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 16
@@ -88,9 +107,9 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                     ],
                   ),
                 ),
-                
+
                 SizedBox(height: 30),
-                
+
                 // Form Container
                 Container(
                   decoration: BoxDecoration(
@@ -105,22 +124,25 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
                   child: Form(
-                    key: _con.loginFormKey,
+                    key: _formKey, // Use unique key for this form
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         // First Name
                         TextFormField(
                           keyboardType: TextInputType.name,
-                          onSaved: (input) => _con.user.firstName = input,
+                          onSaved: (input) {
+                            print('🔍 Saving firstName: $input');
+                            _con.user.firstName = input;
+                          },
                           validator: (input) => input == null || input.isEmpty
-                              ? 'First name is required'
+                              ? getText('שם פרטי נדרש', 'الاسم الأول مطلوب', 'First name is required')
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'First name (as in passport)',
+                            labelText: getText('שם פרטי (כמו בדרכון)', 'الاسم الأول (كما في جواز السفر)', 'First name (as in passport)'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: 'John',
+                            hintText: getText('יוסי', 'أحمد', 'John'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
@@ -138,15 +160,18 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // Last Name
                         TextFormField(
                           keyboardType: TextInputType.name,
-                          onSaved: (input) => _con.user.lastName = input,
+                          onSaved: (input) {
+                            print('🔍 Saving lastName: $input');
+                            _con.user.lastName = input;
+                          },
                           validator: (input) => input == null || input.isEmpty
-                              ? 'Last name is required'
+                              ? getText('שם משפחה נדרש', 'اسم العائلة مطلوب', 'Last name is required')
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'Last name (as in passport)',
+                            labelText: getText('שם משפחה (כמו בדרכון)', 'اسم العائلة (כמו בדרכון)', 'Last name (as in passport)'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: 'Doe',
+                            hintText: getText('כהן', 'محمد', 'Doe'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
@@ -164,15 +189,18 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // Email
                         TextFormField(
                           keyboardType: TextInputType.emailAddress,
-                          onSaved: (input) => _con.user.email = input,
+                          onSaved: (input) {
+                            print('🔍 Saving email: $input');
+                            _con.user.email = input;
+                          },
                           validator: (input) => input == null || !input.contains('@')
-                              ? 'Please enter a valid email'
+                              ? getText('אנא הכנס כתובת אימייל תקינה', 'يرجى إدخال عنوان بريد إلكتروني صحيح', 'Please enter a valid email address')
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'Email',
+                            labelText: getText('אימייל', 'البريد الإلكتروني', 'Email'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: 'johndoe@gmail.com',
+                            hintText: getText('yossi@gmail.com', 'ahmed@gmail.com', 'johndoe@gmail.com'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
@@ -190,15 +218,18 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // Password
                         TextFormField(
                           obscureText: true,
-                          onSaved: (input) => _con.user.password = input,
+                          onSaved: (input) {
+                            print('🔍 Saving password: $input');
+                            _con.user.password = input;
+                          },
                           validator: (input) => input == null || input.length < 6
-                              ? 'Password must be at least 6 characters'
+                              ? getText('סיסמה חייבת להיות לפחות 6 תווים', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'Password must be at least 6 characters')
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: getText('סיסמה', 'كلمة المرور', 'Password'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: 'Enter your password',
+                            hintText: getText('הכנס את הסיסמה שלך', 'أدخل كلمة المرور', 'Enter your password'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             prefixIcon: Icon(Icons.lock, color: Colors.black54),
                             border: OutlineInputBorder(
@@ -217,19 +248,21 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // Confirm Password
                         TextFormField(
                           obscureText: true,
-                          onSaved: (input) => _con.user.passwordConfirmation = input,
+                          onSaved: (input) {
+                            print('🔍 Saving passwordConfirmation: $input');
+                            _con.user.passwordConfirmation = input;
+                          },
                           validator: (input) {
                             if (input == null || input.isEmpty) {
-                              return 'Please confirm your password';
+                              return getText('אנא אשר את הסיסמה שלך', 'يرجى تأكيد كلمة المرور', 'Please confirm your password');
                             }
-                            // We'll validate password match in a separate validator
                             return null;
                           },
                           decoration: InputDecoration(
-                            labelText: 'Confirm Password',
+                            labelText: getText('אישור סיסמה', 'تأكيد كلمة المرور', 'Confirm Password'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: 'Confirm your password',
+                            hintText: getText('אשר את הסיסמה שלך', 'أكد كلمة المرور', 'Confirm your password'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             prefixIcon: Icon(Icons.lock_outline, color: Colors.black54),
                             border: OutlineInputBorder(
@@ -248,15 +281,18 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // Phone Number
                         TextFormField(
                           keyboardType: TextInputType.phone,
-                          onSaved: (input) => _con.user.phone = input,
+                          onSaved: (input) {
+                            print('🔍 Saving phone: $input');
+                            _con.user.phone = input;
+                          },
                           validator: (input) => input == null || input.isEmpty
-                              ? 'Phone number is required'
+                              ? getText('מספר טלפון נדרש', 'رقم الهاتف مطلوب', 'Phone number is required')
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'Phone number (international format)',
+                            labelText: getText('מספר טלפון (פורמט בינלאומי)', 'رقم الهاتف (صيغة دولية)', 'Phone number (international format)'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
-                            hintText: '+972 5XXXXXXXX',
+                            hintText: getText('+972 5XXXXXXXX', '+966 5XXXXXXXX', '+1 555-123-4567'),
                             hintStyle: TextStyle(color: Theme.of(context).focusColor.withOpacity(0.7)),
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
@@ -270,6 +306,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                           ),
                         ),
                         SizedBox(height: 20),
+
                         // Languages Spoken
                         LanguageDropdown(
                           selectedCode: _con.user.languagesSpokenCode,
@@ -280,7 +317,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             });
                           },
                           decoration: InputDecoration(
-                            labelText: 'Languages spoken',
+                            labelText: getText('שפות מדוברות', 'اللغات المتحدثة', 'Languages spoken'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
                             border: OutlineInputBorder(
@@ -293,10 +330,10 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
 
                         // Date of Birth
                         TextFormField(
-                          controller: _dateController, // TextEditingController
+                          controller: _dateController,
                           readOnly: true,
                           decoration: InputDecoration(
-                            labelText: 'Date of birth',
+                            labelText: getText('תאריך לידה', 'تاريخ الميلاد', 'Date of birth'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
                             suffixIcon: Icon(Icons.calendar_today),
@@ -313,27 +350,36 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             );
                             if (picked != null) {
                               _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                              print('🔍 Setting dateOfBirth: ${_dateController.text}');
                               _con.user.dateOfBirth = _dateController.text;
                             }
                           },
-                          validator: (input) => input == null || input.isEmpty ? 'Date of birth is required' : null,
+                          validator: (input) => input == null || input.isEmpty 
+                              ? getText('תאריך לידה נדרש', 'تاريخ الميلاد مطلوب', 'Date of birth is required') 
+                              : null,
                         ),
 
                         SizedBox(height: 10),
 
                         // Informational Text under Date of Birth
                         Text(
-                          'Depending on your city, you must be over 16 or 18 years old to deliver Carry.',
+                          getText(
+                            'בהתאם לעיר שלך, עליך להיות מעל גיל 16 או 18 כדי לספק Carry.',
+                            'حسب مدينتك، يجب أن تكون فوق 16 أو 18 عاماً لتوصيل Carry.',
+                            'Depending on your city, you must be over 16 or 18 years old to deliver Carry.'
+                          ),
                           style: TextStyle(color: Colors.black54, fontSize: 14),
                         ),
-
 
                         // Delivery City
                         TextFormField(
                           keyboardType: TextInputType.text,
-                          onSaved: (input) => _con.user.deliveryCity = input,
+                          onSaved: (input) {
+                            print('🔍 Saving deliveryCity: $input');
+                            _con.user.deliveryCity = input;
+                          },
                           decoration: InputDecoration(
-                            labelText: 'Delivery city',
+                            labelText: getText('עיר משלוח', 'مدينة التوصيل', 'Delivery city'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
                             prefixIcon: Icon(Icons.location_city, color: Colors.black54),
@@ -347,14 +393,16 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
                             ),
                           ),
-                          validator: (value) => value == null || value.isEmpty ? 'Delivery city is required' : null,
+                          validator: (value) => value == null || value.isEmpty 
+                              ? getText('עיר משלוח נדרשת', 'مدينة التوصيل مطلوبة', 'Delivery city is required') 
+                              : null,
                         ),
 
                         SizedBox(height: 20),
 
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
-                            labelText: 'Vehicle type',
+                            labelText: getText('סוג רכב', 'نوع المركبة', 'Vehicle type'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
                             prefixIcon: Icon(Icons.directions_car, color: Colors.black54),
@@ -363,26 +411,38 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                           icon: Icon(Icons.arrow_drop_down),
-                          items: ['Motorcycle', 'Electric Motorcycle',]
-                              .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-                              .toList(),
+                          items: [
+                            DropdownMenuItem(
+                              value: getText('אופנוע', 'دراجة نارية', 'Motorcycle'), 
+                              child: Text(getText('אופנוע', 'دراجة نارية', 'Motorcycle'))
+                            ),
+                            DropdownMenuItem(
+                              value: getText('אופנוע חשמלי', 'دراجة نارية كهربائية', 'Electric Motorcycle'), 
+                              child: Text(getText('אופנוע חשמלי', 'دراجة نارية كهربائية', 'Electric Motorcycle'))
+                            ),
+                          ],
                           onChanged: (value) {
+                            print('🔍 Setting vehicleType: $value');
                             setState(() {
                               _con.user.vehicleType = value!;
                             });
                           },
-                          validator: (input) => input == null ? 'Please enter vehicle type' : null,
+                          validator: (input) => input == null 
+                              ? getText('אנא הזן סוג רכב', 'يرجى إدخال نوع المركبة', 'Please enter vehicle type') 
+                              : null,
                         ),
-
 
                         SizedBox(height: 30),
 
                         // Courier partner referral code (optional)
                         TextFormField(
                           keyboardType: TextInputType.text,
-                          onSaved: (input) => _con.user.referralCode = input,
+                          onSaved: (input) {
+                            print('🔍 Saving referralCode: $input');
+                            _con.user.referralCode = input;
+                          },
                           decoration: InputDecoration(
-                            labelText: 'Courier partner referral code (optional)',
+                            labelText: getText('קוד הפניה לשותף שליחים (אופציונלי)', 'رمز الإحالة لشريك التوصيل (اختياري)', 'Courier partner referral code (optional)'),
                             labelStyle: TextStyle(color: Colors.black54),
                             contentPadding: EdgeInsets.all(12),
                             prefixIcon: Icon(Icons.card_giftcard, color: Colors.black54),
@@ -417,11 +477,19 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                   child: CheckboxListTile(
                                     title: RichText(
                                       text: TextSpan(
-                                        text: 'I agree for my personal data to be collected and processed in accordance with the ',
+                                        text: getText(
+                                          'אני מסכים לכך שנתוני האישיים שלי ייאספו ויטופלו בהתאם ל',
+                                          'أوافق على جمع ومعالجة بياناتي الشخصية وفقاً ل',
+                                          'I agree for my personal data to be collected and processed in accordance with the '
+                                        ) + ' ',
                                         style: TextStyle(color: Colors.white),
                                         children: <TextSpan>[
                                           TextSpan(
-                                            text: 'Carry Courier Partner Privacy Statement.',
+                                            text: getText(
+                                              'הצהרת הפרטיות של שותף המשלוחים Carry.',
+                                              'بيان خصوصية شريك التوصيل Carry.',
+                                              'Carry Courier Partner Privacy Statement.'
+                                            ),
                                             style: TextStyle(color: Colors.blue[900]),
                                           ),
                                         ],
@@ -456,28 +524,29 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             onPressed: () async {
                               if (!_con.agreedToPrivacy) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Please agree to the privacy statement')),
+                                  SnackBar(content: Text(getText('אנא הסכם להצהרת הפרטיות', 'يرجى الموافقة على بيان الخصوصية', 'Please agree to the privacy statement'))),
                                 );
                                 return;
                               }
-                              
+
                               // Validate form
-                              if (_con.loginFormKey.currentState!.validate()) {
-                                _con.loginFormKey.currentState!.save();
+                              if (_formKey.currentState!.validate()) {
+                                _formKey.currentState!.save();
+
+                                // Clear any existing name to rebuild it properly
+                                _con.user.name = null;
                                 
-                                // Set name from firstName and lastName if not set
-                                if (_con.user.name == null || _con.user.name!.isEmpty) {
-                                  String fullName = '';
-                                  if (_con.user.firstName != null && _con.user.firstName!.isNotEmpty) {
-                                    fullName += _con.user.firstName!;
-                                  }
-                                  if (_con.user.lastName != null && _con.user.lastName!.isNotEmpty) {
-                                    if (fullName.isNotEmpty) fullName += ' ';
-                                    fullName += _con.user.lastName!;
-                                  }
-                                  _con.user.name = fullName.trim();
+                                // Build name from firstName and lastName
+                                String fullName = '';
+                                if (_con.user.firstName != null && _con.user.firstName!.isNotEmpty) {
+                                  fullName += _con.user.firstName!.trim();
                                 }
-                                
+                                if (_con.user.lastName != null && _con.user.lastName!.isNotEmpty) {
+                                  if (fullName.isNotEmpty) fullName += ' ';
+                                  fullName += _con.user.lastName!.trim();
+                                }
+                                _con.user.name = fullName.trim();
+
                                 // Print user data for debugging
                                 print('🔍 User data after form save:');
                                 print('  name: ${_con.user.name}');
@@ -491,15 +560,15 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                 print('  languagesSpoken: ${_con.user.languagesSpoken}');
                                 print('  dateOfBirth: ${_con.user.dateOfBirth}');
                                 print('  referralCode: ${_con.user.referralCode}');
-                                
+
                                 // Validate password match
                                 if (_con.user.password != _con.user.passwordConfirmation) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Passwords do not match')),
+                                    SnackBar(content: Text(getText('הסיסמאות אינן תואמות', 'كلمات المرور לא תואמות', 'Passwords do not match'))),
                                   );
                                   return;
                                 }
-                                
+
                                 // Navigate to the first document upload page
                                 Navigator.push(
                                   context,
@@ -510,39 +579,20 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                               }
                             },
                             child: Text(
-                              'Send Application',
+                              getText('שלח בקשה', 'إرسال الطلب', 'Send Application'),
                               style: TextStyle(color: Colors.white, fontSize: 18),
                             ),
                           ),
-                            ),
+                        ),
 
-                          SizedBox(height: 30),
-
-                        // BlockButtonWidget(
-                        //   text: Text(
-                        //     S.of(context).register,
-                        //     overflow: TextOverflow.ellipsis,
-                        //     style: TextStyle(color: Colors.black54),
-                        //   ),
-                        //   color: Colors.black54,
-                        //   onPressed: () async {
-                        //     var result = await Navigator.of(_con.scaffoldKey.currentContext!).pushNamed('/Complete-profile');
-                        //
-                        //     print(result as Map<String, Triple<bool, File, String>>);
-                        //     Map<String, Triple<bool, File, String>> filesMap = result as Map<String, Triple<bool, File, String>>;
-                        //     await _con.register(filesMap);
-                        //   },
-                        //   // onPressed: () async {
-                        //   //   await _con.submitApplication(files);
-                        //   // },
-                        // ),
+                        SizedBox(height: 30),
                       ],
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 // Back to login button
                 Center(
                   child: MaterialButton(
@@ -553,7 +603,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                       Navigator.of(context).pushNamed('/Login');
                     },
                     textColor: Colors.blue,
-                    child: Text(S.of(context).i_have_account_back_to_login),
+                    child: Text(getText('יש לי חשבון? חזרה להתחברות', 'لدي حساب؟ العودة لتسجيل الدخول', 'I have an account? Back to login')),
                   ),
                 ),
               ],
@@ -597,12 +647,10 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                 // ignore: User canceled the picker
               }
             },
-            // padding: EdgeInsets.symmetric(
-            //     horizontal: 66, vertical: 14),
             color: Colors.blueGrey,
             shape: StadiumBorder(),
             child: Text(
-              S.of(context as BuildContext).upload,
+              getText('העלה', 'تحميل', 'Upload'),
               style: TextStyle(color: Colors.white),
             ),
           ),

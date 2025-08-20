@@ -188,10 +188,12 @@ class _CarryContractWidgetState
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  // onPressed: null,
                   onPressed: _isLoading ? null : () async {
                     // Complete contract and activate user
                     await _completeContract();
                   },
+
                   child: _isLoading 
                     ? SizedBox(
                         height: 20,

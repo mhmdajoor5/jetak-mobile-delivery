@@ -200,151 +200,279 @@ Future<UserModel.User> register(UserModel.User user) async {
   try {
     print('🚀 Starting registration process...');
     
-    // Create multipart request
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://carrytechnologies.co/api/driver/register'),
-    );
-
-    // Set name from firstName and lastName if not set
-    String fullName = user.name ?? '';
-    if (fullName.isEmpty && (user.firstName?.isNotEmpty == true || user.lastName?.isNotEmpty == true)) {
-      fullName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
-    }
-    
-    // Add text fields
-    Map<String, String> fields = {
-      'name': fullName,
-      'email': user.email ?? '',
-      'password': user.password ?? '',
-      'password_confirmation': user.passwordConfirmation ?? '',
-      'firstName': user.firstName ?? '',
-      'lastName': user.lastName ?? '',
-      'phone': user.phone ?? '',
-      'languagesSpoken': user.languagesSpoken ?? '',
-      'languagesSpokenCode': user.languagesSpokenCode ?? '',
-      'dateOfBirth': user.dateOfBirth ?? '',
-      'deliveryCity': user.deliveryCity ?? '',
-      'vehicleType': user.vehicleType ?? '',
-      'referralCode': user.referralCode ?? '',
-      'bankName': user.bankName ?? '',
-      'accountNumber': user.accountNumber ?? '',
-      'branchNumber': user.branchNumber ?? '',
-    };
-    
-    // Print user data for debugging
-    print('🔍 User data to be sent:');
-    fields.forEach((key, value) {
-      print('  $key: $value');
-    });
-    
-    // Print raw user object for debugging
-    print('🔍 Raw user object:');
-    print('  user.name: ${user.name}');
-    print('  user.email: ${user.email}');
-    print('  user.password: ${user.password}');
-    print('  user.firstName: ${user.firstName}');
-    print('  user.lastName: ${user.lastName}');
-    print('  user.phone: ${user.phone}');
-    print('  user.deliveryCity: ${user.deliveryCity}');
-    print('  user.vehicleType: ${user.vehicleType}');
-    print('  user.languagesSpoken: ${user.languagesSpoken}');
-    print('  user.dateOfBirth: ${user.dateOfBirth}');
-    print('  user.referralCode: ${user.referralCode}');
-    print('  user.bankName: ${user.bankName}');
-    print('  user.accountNumber: ${user.accountNumber}');
-    print('  user.branchNumber: ${user.branchNumber}');
-    
-    request.fields.addAll(fields);
-
-    // Add files if they exist
-    List<String> documentFields = [
-      'drivingLicense',
-      'businessLicense', 
-      'accountingCertificate',
-      'taxCertificate',
-      'accountManagementCertificate',
-      'bankAccountDetails'
+    // Try multiple possible registration endpoints
+    List<String> possibleUrls = [
+      '${GlobalConfiguration().getValue('base_url')}/api/driver/register',
+      '${GlobalConfiguration().getValue('api_base_url')}driver/register',
+      'http://carrytechnologies.co/api/driver/register',
+      '${GlobalConfiguration().getValue('base_url')}/api/register',
     ];
+
+    Exception? lastException;
     
-    // Print file information
-    print('🔍 File information:');
-    for (String field in documentFields) {
-      String? filePath = _getDocumentPath(user, field);
-      if (filePath != null && filePath.isNotEmpty) {
-        File file = File(filePath);
-        if (file.existsSync()) {
-          print('  $field: ${file.path} (${file.lengthSync()} bytes)');
-        } else {
-          print('  $field: File not found - $filePath');
-        }
-      } else {
-        print('  $field: No file path');
-      }
-    }
-
-    for (String field in documentFields) {
-      String? filePath = _getDocumentPath(user, field);
-      if (filePath != null && filePath.isNotEmpty) {
-        try {
-          File file = File(filePath);
-          if (await file.exists()) {
-            var stream = http.ByteStream(file.openRead());
-            var length = await file.length();
-            var multipartFile = http.MultipartFile(
-              field,
-              stream,
-              length,
-              filename: filePath.split('/').last,
-            );
-            request.files.add(multipartFile);
-            print('✅ Added file for $field: ${filePath.split('/').last}');
-          } else {
-            print('⚠️ File not found for $field: $filePath');
-          }
-        } catch (e) {
-          print('❌ Error adding file for $field: $e');
-        }
-      } else {
-        print('⚠️ No file path for $field');
-      }
-    }
-
-    print('📤 Sending registration request...');
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    print('📥 Response status: ${response.statusCode}');
-    print('📥 Response body: ${response.body}');
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      try {
-        Map<String, dynamic> responseData = json.decode(response.body);
-        
-        if (responseData['data'] != null) {
-          setCurrentUser(response.body);
-          currentUser.value = UserModel.User.fromJSON(responseData['data']);
-          print('✅ Registration successful');
-          return currentUser.value;
-        } else {
-          print('❌ Response missing data field');
-          throw Exception('Invalid response format');
-        }
-      } catch (e) {
-        print('❌ JSON parsing error: $e');
-        throw Exception('Invalid response format');
-      }
-    } else {
-      print('❌ Registration failed with status: ${response.statusCode}');
-      print('❌ Error response: ${response.body}');
+    for (String url in possibleUrls) {
+      print('🔍 Trying registration URL: $url');
       
       try {
-        Map<String, dynamic> errorData = json.decode(response.body);
-        String errorMessage = errorData['message'] ?? 'Registration failed';
-        throw Exception(errorMessage);
+        // Create multipart request
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(url),
+        );
+
+        // Set name from firstName and lastName if not set
+        String fullName = user.name ?? '';
+        if (fullName.isEmpty && (user.firstName?.isNotEmpty == true || user.lastName?.isNotEmpty == true)) {
+          fullName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+        }
+        
+        // Clean and validate data before sending
+        String cleanEmail = (user.email ?? '').trim();
+        String cleanFirstName = (user.firstName ?? '').trim();
+        String cleanLastName = (user.lastName ?? '').trim();
+        String cleanPhone = (user.phone ?? '').trim();
+        String cleanDeliveryCity = (user.deliveryCity ?? '').trim();
+        
+        // Add text fields
+        Map<String, String> fields = {
+          'name': fullName,
+          'email': cleanEmail,
+          'password': user.password ?? '',
+          'password_confirmation': user.passwordConfirmation ?? '',
+          'firstName': cleanFirstName,
+          'lastName': cleanLastName,
+          'phone': cleanPhone,
+          'languagesSpoken': user.languagesSpoken ?? '',
+          'languagesSpokenCode': user.languagesSpokenCode ?? '',
+          'dateOfBirth': user.dateOfBirth ?? '',
+          'deliveryCity': cleanDeliveryCity,
+          'vehicleType': user.vehicleType ?? '',
+          'referralCode': user.referralCode ?? '',
+          'bankName': user.bankName ?? '',
+          'accountNumber': user.accountNumber ?? '',
+          'branchNumber': user.branchNumber ?? '',
+        };
+        
+        // Print user data for debugging
+        print('🔍 User data to be sent:');
+        fields.forEach((key, value) {
+          print('  $key: $value');
+        });
+        
+        // Print raw user object for debugging
+        print('🔍 Raw user object:');
+        print('  user.name: ${user.name}');
+        print('  user.email: ${user.email}');
+        print('  user.password: ${user.password}');
+        print('  user.firstName: ${user.firstName}');
+        print('  user.lastName: ${user.lastName}');
+        print('  user.phone: ${user.phone}');
+        print('  user.deliveryCity: ${user.deliveryCity}');
+        print('  user.vehicleType: ${user.vehicleType}');
+        print('  user.languagesSpoken: ${user.languagesSpoken}');
+        print('  user.dateOfBirth: ${user.dateOfBirth}');
+        print('  user.referralCode: ${user.referralCode}');
+        print('  user.bankName: ${user.bankName}');
+        print('  user.accountNumber: ${user.accountNumber}');
+        print('  user.branchNumber: ${user.branchNumber}');
+        
+        request.fields.addAll(fields);
+
+        // Add files if they exist
+        List<String> documentFields = [
+          'drivingLicense',
+          'businessLicense', 
+          'accountingCertificate',
+          'taxCertificate',
+          'accountManagementCertificate',
+          'bankAccountDetails'
+        ];
+        
+        // Print file information
+        print('🔍 File information:');
+        for (String field in documentFields) {
+          String? filePath = _getDocumentPath(user, field);
+          if (filePath != null && filePath.isNotEmpty) {
+            File file = File(filePath);
+            if (file.existsSync()) {
+              print('  $field: ${file.path} (${file.lengthSync()} bytes)');
+            } else {
+              print('  $field: File not found - $filePath');
+            }
+          } else {
+            print('  $field: No file path');
+          }
+        }
+
+        for (String field in documentFields) {
+          String? filePath = _getDocumentPath(user, field);
+          if (filePath != null && filePath.isNotEmpty) {
+            try {
+              File file = File(filePath);
+              if (await file.exists()) {
+                var stream = http.ByteStream(file.openRead());
+                var length = await file.length();
+                var multipartFile = http.MultipartFile(
+                  field,
+                  stream,
+                  length,
+                  filename: filePath.split('/').last,
+                );
+                request.files.add(multipartFile);
+                print('✅ Added file for $field: ${filePath.split('/').last}');
+              } else {
+                print('⚠️ File not found for $field: $filePath');
+              }
+            } catch (e) {
+              print('❌ Error adding file for $field: $e');
+            }
+          } else {
+            print('⚠️ No file path for $field');
+          }
+        }
+
+        print('📤 Sending registration request to: $url');
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+
+        print('📥 Response status: ${response.statusCode}');
+        print('📥 Response body: ${response.body}');
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          try {
+            Map<String, dynamic> responseData = json.decode(response.body);
+            
+            if (responseData['data'] != null) {
+              setCurrentUser(response.body);
+              currentUser.value = UserModel.User.fromJSON(responseData['data']);
+              print('✅ Registration successful with URL: $url');
+              return currentUser.value;
+            } else {
+              print('❌ Response missing data field');
+              throw Exception('Invalid response format');
+            }
+          } catch (e) {
+            print('❌ JSON parsing error: $e');
+            throw Exception('Invalid response format');
+          }
+        } else if (response.statusCode == 401) {
+          print('❌ Registration failed with 401 Unauthorized');
+          print('❌ This might be due to:');
+          print('   - Invalid API endpoint');
+          print('   - Missing authentication headers');
+          print('   - Server configuration issue');
+          print('   - Invalid data format');
+          
+          try {
+            Map<String, dynamic> errorData = json.decode(response.body);
+            String errorMessage = errorData['message'] ?? 'Unauthorized - Please check API configuration';
+            print('❌ Server error message: $errorMessage');
+            
+            // If the error message indicates invalid data, try with different field names
+            if (errorMessage.contains('invalid') || errorMessage.contains('validation')) {
+              print('🔄 Trying with alternative field names...');
+              
+              // Try with different field name variations
+              Map<String, String> alternativeFields = Map.from(fields);
+              alternativeFields['first_name'] = alternativeFields.remove('firstName') ?? '';
+              alternativeFields['last_name'] = alternativeFields.remove('lastName') ?? '';
+              alternativeFields['phone_number'] = alternativeFields.remove('phone') ?? '';
+              alternativeFields['city'] = alternativeFields.remove('deliveryCity') ?? '';
+              alternativeFields['vehicle_type'] = alternativeFields.remove('vehicleType') ?? '';
+              alternativeFields['referral_code'] = alternativeFields.remove('referralCode') ?? '';
+              alternativeFields['bank_name'] = alternativeFields.remove('bankName') ?? '';
+              alternativeFields['account_number'] = alternativeFields.remove('accountNumber') ?? '';
+              alternativeFields['branch_number'] = alternativeFields.remove('branchNumber') ?? '';
+              
+              // Create new request with alternative field names
+              final altRequest = http.MultipartRequest('POST', Uri.parse(url));
+              altRequest.fields.addAll(alternativeFields);
+              
+              // Add files again
+              for (String field in documentFields) {
+                String? filePath = _getDocumentPath(user, field);
+                if (filePath != null && filePath.isNotEmpty) {
+                  try {
+                    File file = File(filePath);
+                    if (await file.exists()) {
+                      var stream = http.ByteStream(file.openRead());
+                      var length = await file.length();
+                      var multipartFile = http.MultipartFile(
+                        field,
+                        stream,
+                        length,
+                        filename: filePath.split('/').last,
+                      );
+                      altRequest.files.add(multipartFile);
+                    }
+                  } catch (e) {
+                    print('❌ Error adding file for $field: $e');
+                  }
+                }
+              }
+              
+              print('🔄 Retrying with alternative field names...');
+              final altStreamedResponse = await altRequest.send();
+              final altResponse = await http.Response.fromStream(altStreamedResponse);
+              
+              print('📥 Alternative response status: ${altResponse.statusCode}');
+              print('📥 Alternative response body: ${altResponse.body}');
+              
+              if (altResponse.statusCode == 200 || altResponse.statusCode == 201) {
+                try {
+                  Map<String, dynamic> responseData = json.decode(altResponse.body);
+                  if (responseData['data'] != null) {
+                    setCurrentUser(altResponse.body);
+                    currentUser.value = UserModel.User.fromJSON(responseData['data']);
+                    print('✅ Registration successful with alternative field names');
+                    return currentUser.value;
+                  }
+                } catch (e) {
+                  print('❌ JSON parsing error with alternative fields: $e');
+                }
+              }
+            }
+            
+            lastException = Exception(errorMessage);
+          } catch (e) {
+            lastException = Exception('Registration failed with 401 Unauthorized');
+          }
+          
+          // Continue to next URL
+          continue;
+        } else {
+          print('❌ Registration failed with status: ${response.statusCode}');
+          print('❌ Error response: ${response.body}');
+          
+          try {
+            Map<String, dynamic> errorData = json.decode(response.body);
+            String errorMessage = errorData['message'] ?? 'Registration failed';
+            lastException = Exception(errorMessage);
+          } catch (e) {
+            lastException = Exception('Registration failed with status ${response.statusCode}');
+          }
+          
+          // Continue to next URL
+          continue;
+        }
       } catch (e) {
-        throw Exception('Registration failed with status ${response.statusCode}');
+        print('❌ Error with registration URL $url: $e');
+        lastException = Exception('Error with URL $url: $e');
+        
+        if (url == possibleUrls.last) {
+          // If this is the last URL, throw the exception
+          break;
+        }
+        // Otherwise, continue to next URL
+        continue;
       }
+    }
+
+    // If we reach here, all URLs failed
+    if (lastException != null) {
+      throw lastException;
+    } else {
+      throw Exception('Registration failed: All endpoints failed. Please contact backend developer.');
     }
   } catch (e) {
     print('❌ Registration error: $e');

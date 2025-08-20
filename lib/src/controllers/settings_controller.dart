@@ -5,6 +5,7 @@ import '../../generated/l10n.dart';
 import '../models/credit_card.dart';
 import '../models/user.dart';
 import '../repository/user_repository.dart' as repository;
+import '../helpers/intercom_helper.dart';
 
 class SettingsController extends ControllerMVC {
   CreditCard creditCard = CreditCard();
@@ -44,5 +45,15 @@ class SettingsController extends ControllerMVC {
 
   Future<void> refreshSettings() async {
     creditCard = CreditCard();
+  }
+
+  /// تسجيل الخروج من Intercom
+  Future<void> logoutFromIntercom() async {
+    try {
+      await IntercomHelper.logout();
+      debugPrint('✅ Logged out from Intercom');
+    } catch (e) {
+      debugPrint('❌ Error logging out from Intercom: $e');
+    }
   }
 }

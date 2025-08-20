@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
-import '../../helpers/app_config.dart' as config;
 import 'BusinessLicenseWidget.dart';
 
 class DrivingLicenseWidget extends StatefulWidget {
@@ -32,6 +30,19 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
     print('  vehicleType: ${_con.user.vehicleType}');
   }
 
+  // Helper function to get text based on current locale
+  String getText(String hebrew, String arabic, String english) {
+    final locale = Localizations.localeOf(context).languageCode;
+    switch (locale) {
+      case 'he':
+        return hebrew;
+      case 'ar':
+        return arabic;
+      default:
+        return english;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +63,7 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Text(
-                      'رخصة قيادة',
+                      getText('רישיון נהיגה', 'رخصة قيادة', 'Driving License'),
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 24,
@@ -84,7 +95,7 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'رخصة قيادة',
+                              getText('רישיון נהיגה', 'رخصة قيادة', 'Driving License'),
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -110,7 +121,11 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('خطأ في اختيار الملف: $e'),
+                                        content: Text(getText(
+                                          'שגיאה בבחירת קובץ: $e',
+                                          'خطأ في اختيار الملف: $e',
+                                          'Error selecting file: $e'
+                                        )),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -130,7 +145,7 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
                                         child: Text(
                                           selectedFile != null 
                                               ? selectedFile!.path.split('/').last
-                                              : 'اختر ملف رخصة القيادة',
+                                              : getText('בחר קובץ רישיון נהיגה', 'اختر ملف رخصة القيادة', 'Choose driving license file'),
                                           style: TextStyle(color: Colors.black87),
                                         ),
                                       ),
@@ -165,7 +180,7 @@ class _DrivingLicenseWidgetState extends StateMVC<DrivingLicenseWidget> {
                               );
                             } : null,
                             child: Text(
-                              'التالي',
+                              getText('הבא', 'التالي', 'Next'),
                               style: TextStyle(color: Colors.white, fontSize: 18),
                             ),
                           ),

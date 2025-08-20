@@ -97,7 +97,9 @@
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>PhotoLibrary access is required to select user's profile image that will be added in the app</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Camera access is required to select user's profile image that will be added in the app</string>
+		<string>Camera access is required to select user's profile image that will be added in the app and for Intercom messenger camera upload functionality</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Microphone access is required for Intercom messenger recording and uploading videos</string>
 		<key>NSSpeechRecognitionUsageDescription</key>
 		<string>SpeechRecognition access not used but required by permissions API.</string>
 		<key>UIBackgroundModes</key>
@@ -112,5 +114,9 @@
 		<false/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>IntercomAppId</key>
+		<string>j3he2pue</string>
+		<key>IntercomApiKey</key>
+		<string>ios_sdk-9dd934131d451492917c16a61a9ec34824400eee</string>
 	</dict>
 </plist>

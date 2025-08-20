@@ -2,10 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
-import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
-import '../../helpers/app_config.dart' as config;
-
 import 'AccountManagementCertificateWidget.dart';
 
 class BankAccountDetailsWidget extends StatefulWidget {
@@ -35,6 +32,19 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
     super.dispose();
   }
 
+  // Helper function to get text based on current locale
+  String getText(String hebrew, String arabic, String english) {
+    final locale = Localizations.localeOf(context).languageCode;
+    switch (locale) {
+      case 'he':
+        return hebrew;
+      case 'ar':
+        return arabic;
+      default:
+        return english;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +65,7 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Text(
-                      'تفاصيل الحساب البنكي',
+                      getText('פרטי חשבון בנק', 'تفاصيل الحساب البنكي', 'Bank Account Details'),
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 24,
@@ -89,10 +99,10 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                             controller: _bankNameController,
                             onSaved: (input) => _con.user.bankName = input,
                             validator: (input) => input == null || input.isEmpty
-                                ? 'اسم البنك مطلوب'
+                                ? getText('שם הבנק נדרש', 'اسم البنك مطلوب', 'Bank name is required')
                                 : null,
                             decoration: InputDecoration(
-                              labelText: 'البنك',
+                              labelText: getText('בנק', 'البنك', 'Bank'),
                               labelStyle: TextStyle(color: Colors.black54),
                               contentPadding: EdgeInsets.all(12),
                               prefixIcon: Icon(Icons.account_balance, color: Colors.black54),
@@ -115,10 +125,10 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                             controller: _accountNumberController,
                             onSaved: (input) => _con.user.accountNumber = input,
                             validator: (input) => input == null || input.isEmpty
-                                ? 'رقم الحساب مطلوب'
+                                ? getText('מספר חשבון נדרש', 'رقم الحساب مطلوب', 'Account number is required')
                                 : null,
                             decoration: InputDecoration(
-                              labelText: 'رقم الحساب',
+                              labelText: getText('מספר חשבון', 'رقم الحساب', 'Account Number'),
                               labelStyle: TextStyle(color: Colors.black54),
                               contentPadding: EdgeInsets.all(12),
                               prefixIcon: Icon(Icons.account_circle, color: Colors.black54),
@@ -141,10 +151,10 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                             controller: _branchNumberController,
                             onSaved: (input) => _con.user.branchNumber = input,
                             validator: (input) => input == null || input.isEmpty
-                                ? 'رقم الفرع مطلوب'
+                                ? getText('מספר סניף נדרש', 'رقم الفرع مطلوب', 'Branch number is required')
                                 : null,
                             decoration: InputDecoration(
-                              labelText: 'رقم الفرع',
+                              labelText: getText('מספר סניף', 'رقم الفرع', 'Branch Number'),
                               labelStyle: TextStyle(color: Colors.black54),
                               contentPadding: EdgeInsets.all(12),
                               prefixIcon: Icon(Icons.location_on, color: Colors.black54),
@@ -167,7 +177,7 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'تفاصيل الحساب البنكي',
+                                getText('פרטי חשבון בנק', 'تفاصيل الحساب البنكي', 'Bank Account Details'),
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
@@ -193,7 +203,11 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                                     } catch (e) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('خطأ في اختيار الملف: $e'),
+                                          content: Text(getText(
+                                            'שגיאה בבחירת קובץ: $e',
+                                            'خطأ في اختيار الملف: $e',
+                                            'Error selecting file: $e'
+                                          )),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -213,7 +227,7 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                                           child: Text(
                                             selectedFile != null 
                                                 ? selectedFile!.path.split('/').last
-                                                : 'اختر ملف تفاصيل الحساب البنكي',
+                                                : getText('בחר קובץ פרטי חשבון בנק', 'اختر ملف تفاصيل الحساب البنكي', 'Choose bank account details file'),
                                             style: TextStyle(color: Colors.black87),
                                           ),
                                         ),
@@ -246,7 +260,7 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                                   Navigator.pop(context);
                                 },
                                 child: Text(
-                                  'السابق',
+                                  getText('קודם', 'السابق', 'Previous'),
                                   style: TextStyle(color: Colors.white, fontSize: 16),
                                 ),
                               ),
@@ -265,7 +279,7 @@ class _BankAccountDetailsWidgetState extends StateMVC<BankAccountDetailsWidget> 
                                   await _con.register();
                                 } : null,
                                 child: Text(
-                                  'إرسال الطلب',
+                                  getText('שלח בקשה', 'إرسال الطلب', 'Send Application'),
                                   style: TextStyle(color: Colors.white, fontSize: 16),
                                 ),
                               ),

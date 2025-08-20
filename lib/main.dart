@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:global_configuration/global_configuration.dart';
+import 'src/helpers/intercom_helper.dart';
 
 import 'generated/l10n.dart';
 import 'route_generator.dart';
@@ -28,6 +29,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
+  
+  // Initialize Intercom
+  await IntercomHelper.initialize();
+  
+  // Login unidentified user for Intercom (for visitors/guests)
+  await IntercomHelper.loginUnidentifiedUser();
   
   await NotificationController.getDeviceToken(); // ← Add this
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -62,6 +69,14 @@ class _MyAppState extends State<MyApp> {
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
     userRepo.getCurrentUser();
+    
+    // Set Hebrew as default language if not already set
+    if (settingRepo.setting.value.mobileLanguage.value.languageCode != 'he') {
+      settingRepo.setting.value.mobileLanguage.value = Locale('he', '');
+      settingRepo.setDefaultLanguage('he');
+      // Force rebuild to apply language change
+      settingRepo.setting.notifyListeners();
+    }
     // NotificationController.startListeningNotificationEvents();
 
     // Listen to messages when app is in foreground
@@ -100,6 +115,7 @@ class _MyAppState extends State<MyApp> {
             S.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
           theme:

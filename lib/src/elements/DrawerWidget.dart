@@ -7,6 +7,7 @@ import '../controllers/profile_controller.dart';
 import '../elements/CircularLoadingWidget.dart';
 import '../repository/settings_repository.dart';
 import '../repository/user_repository.dart';
+import '../helpers/intercom_helper.dart';
 
 class DrawerWidget extends StatefulWidget {
   const DrawerWidget({super.key});
@@ -94,6 +95,65 @@ class _DrawerWidgetState extends StateMVC<DrawerWidget> {
                           subtitle: S.of(context).get_assistance,
                           color: Colors.green,
                           onTap: () => Navigator.of(context).pushNamed('/Help'),
+                        ),
+                        _buildMenuItem(
+                          context,
+                          icon: Icons.support_agent,
+                          title: S.of(context).live_chat_support,
+                          subtitle: S.of(context).live_chat_support_subtitle,
+                          color: Colors.teal,
+                          onTap: () async {
+                            try {
+                              // إظهار loading indicator
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                                    ),
+                                  );
+                                },
+                              );
+                              
+                              await IntercomHelper.displayMessenger();
+                              
+                              // إخفاء loading indicator
+                              Navigator.of(context).pop();
+                            } catch (e) {
+                              // إخفاء loading indicator
+                              Navigator.of(context).pop();
+                              
+                              // إظهار رسالة خطأ
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to load chat support. Please check your internet connection and try again.',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 4),
+                                  action: SnackBarAction(
+                                    label: 'Retry',
+                                    textColor: Colors.white,
+                                    onPressed: () async {
+                                      try {
+                                        await IntercomHelper.displayMessenger();
+                                      } catch (retryError) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Still unable to load chat support.'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                         ),
                         _buildMenuItem(
                           context,

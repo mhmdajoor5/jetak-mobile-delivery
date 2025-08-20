@@ -7,6 +7,7 @@ import '../elements/CircularLoadingWidget.dart';
 import '../elements/OrderItemWidget.dart';
 import '../elements/ProfileAvatarWidget.dart';
 import '../elements/ShoppingCartButtonWidget.dart';
+import '../elements/IntercomButtonWidget.dart';
 
 class ProfileWidget extends StatefulWidget {
   final GlobalKey<ScaffoldState> parentScaffoldKey;
@@ -32,7 +33,6 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
     for (var e in _con.recentOrders) {
       print(e.toString());
     }
@@ -59,79 +59,81 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
       ),
 
       key: _con.scaffoldKey,
-      body:
-           SingleChildScrollView(
-                //              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                child: Column(
-                  children: <Widget>[
-                    ProfileAvatarWidget(user: _con.user),
-                    ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      leading: Icon(
-                        Icons.person,
-                        color: Theme.of(context).hintColor,
-                      ),
-                      title: Text(
-                        S.of(context).about,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        _con.user.bio ?? "",
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      leading: Icon(
-                        Icons.shopping_basket,
-                        color: Theme.of(context).hintColor,
-                      ),
-                      title: Text(
-                        S.of(context).recent_orders,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                    _con.recentOrders
-                            .where((e) => e.orderStatus?.status == 'Delivered')
-                            .isEmpty
-                        ? CircularLoadingWidget(height: 200)
-                        : ListView.separated(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          primary: false,
-                          itemCount:
-                              _con.recentOrders
-                                  .where(
-                                    (e) => e.orderStatus?.status == 'Delivered',
-                                  )
-                                  .length,
-                          itemBuilder: (context, index) {
-                            var order = _con.recentOrders
-                                .where(
-                                  (e) => e.orderStatus?.status == 'Delivered',
-                                )
-                                .elementAt(index);
-                            return OrderItemWidget(
-                              expanded: index == 0 ? true : false,
-                              order: order,
-                            );
-                          },
-                          separatorBuilder: (context, index) {
-                            return SizedBox(height: 20);
-                          },
-                        ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            ProfileAvatarWidget(user: _con.user),
+            ListTile(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
               ),
+              leading: Icon(
+                Icons.person,
+                color: Theme.of(context).hintColor,
+              ),
+              title: Text(
+                S.of(context).about,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                _con.user.bio ?? "",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              leading: Icon(
+                Icons.shopping_basket,
+                color: Theme.of(context).hintColor,
+              ),
+              title: Text(
+                S.of(context).recent_orders,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            _con.recentOrders
+                    .where((e) => e.orderStatus?.status == 'Delivered')
+                    .isEmpty
+                ? CircularLoadingWidget(height: 200)
+                : ListView.separated(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    primary: false,
+                    itemCount: _con.recentOrders
+                        .where((e) => e.orderStatus?.status == 'Delivered')
+                        .length,
+                    itemBuilder: (context, index) {
+                      var order = _con.recentOrders
+                          .where((e) => e.orderStatus?.status == 'Delivered')
+                          .elementAt(index);
+                      return OrderItemWidget(
+                        expanded: index == 0 ? true : false,
+                        order: order,
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return SizedBox(height: 20);
+                    },
+                  ),
+            // إضافة زر Intercom للمساعدة
+            Container(
+              margin: EdgeInsets.all(20),
+              child: IntercomFloatingButton(
+                backgroundColor: Theme.of(context).primaryColor,
+                iconColor: Colors.white,
+                tooltip: S.of(context).contact_support_intercom,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -61,14 +61,17 @@ class SplashScreenController extends ControllerMVC {
       await fcmOnMessageListeners();
     } catch (e) {}
     Timer(Duration(seconds: 20), () {
-      if(userRepo.currentUser.value.auth == null) {
-        Navigator.of(scaffoldKey.currentContext!).pushReplacementNamed('/Login');
-      }      
-      ScaffoldMessenger.of(scaffoldKey.currentContext!).showSnackBar(
-        SnackBar(
-          content: Text(S.of(state!.context).verify_your_internet_connection),
-        ),
-      );
+      final context = scaffoldKey.currentContext;
+      if (context != null) {
+        if(userRepo.currentUser.value.auth == null) {
+          Navigator.of(context).pushReplacementNamed('/Login');
+        }      
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(S.of(state!.context).verify_your_internet_connection),
+          ),
+        );
+      }
     });
   }
 

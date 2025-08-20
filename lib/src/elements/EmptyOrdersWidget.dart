@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../generated/l10n.dart';
 
 
 class EmptyOrdersWidget extends StatefulWidget {
@@ -92,7 +93,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
             ),
             SizedBox(height: 24),
             Text(
-              'جاري البحث عن الطلبات...',
+              S.of(context).searching_for_new_orders,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -102,7 +103,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
             ),
             SizedBox(height: 8),
             Text(
-              'يرجى الانتظار بينما نجلب آخر الطلبات',
+              S.of(context).please_wait_fetching_orders,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -137,7 +138,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
             ),
             SizedBox(height: 24),
             Text(
-              '🎉 لا توجد طلبات جديدة الآن',
+              '🎉 ${S.of(context).no_new_orders_available}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -154,7 +155,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
                 border: Border.all(color: Colors.green[200]!),
               ),
               child: Text(
-                'أنت متاح لاستقبال طلبات جديدة',
+                S.of(context).online_ready,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.green[700],

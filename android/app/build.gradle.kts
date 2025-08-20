@@ -19,6 +19,18 @@ android {
     namespace = "com.carryeats.driver"
     compileSdk = flutter.compileSdkVersion.toInt()
     ndkVersion = "27.0.12077973"
+    
+    defaultConfig {
+        applicationId = "com.carryeats.driver"
+        minSdk = maxOf(23, flutter.minSdkVersion.toInt())
+        targetSdk = flutter.targetSdkVersion.toInt()
+        versionCode = flutter.versionCode.toInt()
+        versionName = flutter.versionName
+        
+        // Intercom configuration
+        manifestPlaceholders["intercom_app_id"] = "j3he2pue"
+        manifestPlaceholders["intercom_api_key"] = "android_sdk-d8df6307ae07677807b288a2d5138821b8bfe4f9"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

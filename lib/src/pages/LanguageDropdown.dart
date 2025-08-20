@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import '../../generated/l10n.dart';
 
 class Language {
   final String code;
@@ -46,7 +47,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
     return DropdownButtonFormField<String>(
       decoration: widget.decoration ??
           InputDecoration(
-            labelText: 'Languages spoken',
+            labelText: S.of(context).languages_spoken_label,
             labelStyle: TextStyle(color: Colors.black54),
             contentPadding: EdgeInsets.all(12),
             border: OutlineInputBorder(
@@ -69,7 +70,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
           widget.onChanged(value);
         }
       },
-      validator: (value) => value == null ? 'Please specify languages spoken' : null,
+      validator: (value) => value == null ? S.of(context).please_specify_languages : null,
     );
   }
 }
