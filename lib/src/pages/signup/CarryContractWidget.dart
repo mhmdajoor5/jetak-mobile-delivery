@@ -1,3 +1,4 @@
+import 'package:deliveryboy/src/helpers/intercom_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import '../../../generated/l10n.dart';
@@ -17,7 +18,7 @@ class _CarryContractWidgetState
     extends StateMVC<CarryContractWidget> {
   late UserController _con;
   String userName = "User"; // Default value, should be replaced with actual user name
-  String approvedDate = "2024-01-01"; // Default value, should be replaced with actual date
+  String approvedDate = DateTime.now().toString().split(' ')[0]; // Current registration date
   bool _isLoading = false;
 
   _CarryContractWidgetState() : super(UserController.instance) {
@@ -221,7 +222,8 @@ class _CarryContractWidgetState
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    await IntercomHelper.displayMessenger();
                   },
                   icon:  Icon(Icons.support_agent, color: Colors.blue),
                   label:  Text(

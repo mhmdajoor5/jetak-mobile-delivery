@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:global_configuration/global_configuration.dart';
+import 'package:http/http.dart' as http;
 
 import '../repository/user_repository.dart' as userRepo;
 
@@ -54,6 +58,9 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
   }
 
   void _initializeApp() async {
+    // Check if user is still active
+    await _checkUserActiveStatus();
+    
     await registerFCM();
     await userRepo.updateDriverAvailability(true);
     await _getCurrentPosition();
@@ -68,6 +75,29 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         print("⚠️ User not authenticated, skipping location update");
       }
     });
+  }
+
+  Future<void> _checkUserActiveStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${GlobalConfiguration().getValue('api_base_url')}users/profile?api_token=${userRepo.currentUser.value.apiToken}'),
+        headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      );
+      
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body)['data'];
+        final serverIsActive = userData['is_active'] ?? 1;
+        
+        print('🔍 Pages: Server isActive: $serverIsActive, Local isActive: ${userRepo.currentUser.value.isActive}');
+        
+        if (serverIsActive == 0) {
+          // User is inactive, redirect to contract page
+          Navigator.of(context).pushReplacementNamed('/CarryContract');
+        }
+      }
+    } catch (e) {
+      print('🔍 Pages: Error checking user status: $e');
+    }
   }
 
   Future<void> _getCurrentPosition() async {

@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 // // import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:global_configuration/global_configuration.dart';
 
 import '../../generated/l10n.dart';
 import '../helpers/FirebaseUtils.dart';
@@ -60,11 +64,54 @@ class SplashScreenController extends ControllerMVC {
       await fcmOnResumeListeners();
       await fcmOnMessageListeners();
     } catch (e) {}
-    Timer(Duration(seconds: 20), () {
+    Timer(Duration(seconds: 20), () async {
       final context = scaffoldKey.currentContext;
       if (context != null) {
+        // Load user data from SharedPreferences first
+        await userRepo.getCurrentUser();
+        
+        // Check if user is authenticated
         if(userRepo.currentUser.value.auth == null) {
+          // User is not authenticated, go to login
           Navigator.of(context).pushReplacementNamed('/Login');
+        } else {
+          // Double check user status from server
+          try {
+            final response = await http.get(
+              Uri.parse('${GlobalConfiguration().getValue('api_base_url')}users/profile?api_token=${userRepo.currentUser.value.apiToken}'),
+              headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+            );
+            
+            if (response.statusCode == 200) {
+              final userData = json.decode(response.body)['data'];
+              final serverIsActive = userData['is_active'] ?? 1;
+              
+              print('🔍 Splash: Server isActive: $serverIsActive, Local isActive: ${userRepo.currentUser.value.isActive}');
+              
+              if (serverIsActive == 0) {
+                // User is inactive on server, show contract page
+                Navigator.of(context).pushReplacementNamed('/CarryContract');
+              } else {
+                // User is active, proceed to main app
+                Navigator.of(context).pushReplacementNamed('/Pages', arguments: 1);
+              }
+            } else {
+              // If server check fails, use local data
+              if (userRepo.currentUser.value.isActive == 0) {
+                Navigator.of(context).pushReplacementNamed('/CarryContract');
+              } else {
+                Navigator.of(context).pushReplacementNamed('/Pages', arguments: 1);
+              }
+            }
+          } catch (e) {
+            print('🔍 Splash: Error checking user status: $e');
+            // If server check fails, use local data
+            if (userRepo.currentUser.value.isActive == 0) {
+              Navigator.of(context).pushReplacementNamed('/CarryContract');
+            } else {
+              Navigator.of(context).pushReplacementNamed('/Pages', arguments: 1);
+            }
+          }
         }      
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

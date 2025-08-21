@@ -88,6 +88,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                            style: TextStyle(color: Colors.white),
 
                         keyboardType: TextInputType.emailAddress,
+                        onChanged: (input) => _con.user.email = input,
                         onSaved: (input) => _con.user.email = input!,
                         validator:
                             (input) =>
@@ -136,6 +137,7 @@ class _LoginWidgetState extends StateMVC<LoginWidget> {
                       SizedBox(height: 30),
                       TextFormField(
                         keyboardType: TextInputType.text,
+                        onChanged: (input) => _con.user.password = input,
                         onSaved: (input) => _con.user.password = input!,
                         validator:
                             (input) =>

@@ -430,9 +430,18 @@ void setCurrentUser(jsonString) async {
     Map<String, dynamic> parsedJson = json.decode(jsonString);
 
     if (parsedJson['data'] != null) {
+      // Check if user is active before saving
+      final userData = parsedJson['data'];
+      final isActive = userData['is_active'] ?? 1;
+      
+      // Save user data regardless of isActive status for splash screen check
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('current_user', json.encode(parsedJson['data']));
-      print('✅ User data saved to SharedPreferences');
+      print('✅ User data saved to SharedPreferences (isActive: $isActive)');
+      
+      if (isActive == 0) {
+        print('⚠️ User is inactive (isActive: $isActive), but data saved for splash screen check');
+      }
     } else {
       print('❌ Missing "data" field in login response');
       throw Exception('Invalid response format: missing "data" field');
@@ -462,6 +471,56 @@ Future<UserModel.User> getCurrentUser() async {
       json.decode(prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
+    
+    // Check if locally saved user is inactive
+    if (currentUser.value.isActive == 0) {
+      print('🔍 Locally saved user is inactive, clearing data immediately');
+      // Clear data immediately for inactive users
+      await prefs.remove('current_user');
+      currentUser.value = UserModel.User();
+      currentUser.value.auth = false;
+      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+      currentUser.notifyListeners();
+      return currentUser.value;
+    }
+    
+    // Check if user is active from server
+    try {
+      final response = await http.get(
+        Uri.parse('${GlobalConfiguration().getValue('api_base_url')}users/profile?api_token=${currentUser.value.apiToken}'),
+        headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      );
+      
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body)['data'];
+        final serverIsActive = userData['is_active'] ?? 1;
+        
+        print('🔍 Server isActive: $serverIsActive, Local isActive: ${currentUser.value.isActive}');
+        
+        if (serverIsActive == 0) {
+          print('🔍 User is inactive on server, clearing user data');
+          // Clear user data if inactive
+          await prefs.remove('current_user');
+          currentUser.value = UserModel.User();
+          currentUser.value.auth = false;
+          // Don't save inactive user data
+          return currentUser.value;
+        } else {
+          // Update local data with server data
+          currentUser.value.isActive = serverIsActive;
+          await prefs.setString('current_user', json.encode(currentUser.value.toMap()));
+        }
+      }
+    } catch (e) {
+      print('🔍 Error checking user status from server: $e');
+      // If we can't check from server, use local data
+      if (currentUser.value.isActive == 0) {
+        print('🔍 User is inactive locally, clearing user data');
+        await prefs.remove('current_user');
+        currentUser.value = UserModel.User();
+        currentUser.value.auth = false;
+      }
+    }
   } else {
     currentUser.value.auth = false;
   }
