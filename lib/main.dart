@@ -39,9 +39,6 @@ void main() async {
   await NotificationController.getDeviceToken(); // ← Add this
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await NotificationController.initializeLocalNotifications();
-  
-  // ضمان عمل الصوت في الخلفية للأيفون
-  await NotificationController.ensureBackgroundAudio();
   runApp(MyApp());
 }
 
@@ -57,7 +54,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    // تم إزالة الإشعار التجريبي - الصوت سيظهر فقط عند استلام طلب جديد
+    NotificationController.createNewNotification(
+      RemoteMessage(
+        senderId: "123456789",
+        messageId: "619045",
+        data: {"key": "value", 'order_id': "123"},
+        notification: RemoteNotification(
+          title: "Test Notification",
+          body: "This is a test notification",
+        ),
+      ),
+    );
 
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
