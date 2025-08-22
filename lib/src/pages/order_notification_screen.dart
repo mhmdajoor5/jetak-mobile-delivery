@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 import '../controllers/order_controller.dart';
 import '../elements/BlockButtonWidget.dart';
@@ -20,18 +21,24 @@ class OrderNotificationScreen extends StatefulWidget {
 
 class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
   late OrderController _con;
+  AudioPlayer? _audioPlayer;
 
   _OrderNotificationScreenState() : super(OrderController()) {
     _con = (controller as OrderController?)!;
   }
 
-  // AudioPlayer player = AudioPlayer();
   String audioasset = "notification_sound.wav";
 
   @override
   void initState() {
     play();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    stopSound();
+    super.dispose();
   }
 
   @override
@@ -123,6 +130,9 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                                 color: Colors.red,
                                 onPressed: () async {
                                   try {
+                                    // إيقاف الصوت أولاً
+                                    stopSound();
+                                    
                                     // await _con.scc(orderID);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -160,6 +170,9 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                                 color: Colors.green,
                                 onPressed: () async {
                                   try {
+                                    // إيقاف الصوت أولاً
+                                    stopSound();
+                                    
                                     print("argsMap['id']: ${argsMap['id']}");
                                     // await _con.acceptOrder(argsMap['id']);
                                     _con.acceptOrder(argsMap['id']);
@@ -206,10 +219,43 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
   }
 
   void play() async {
-    // await player.pause();
-    // await player.play(AssetSource(audioasset));
-    // player.onPlayerComplete.listen((event) {
-    //   player.play(AssetSource(audioasset));
-    // });
+    try {
+      print('🔊 تشغيل صوت إشعار الطلب...');
+      
+      // إنشاء AudioPlayer جديد
+      _audioPlayer = AudioPlayer();
+      
+      // إيقاف أي صوت قيد التشغيل
+      await _audioPlayer!.stop();
+      
+      // ضبط مستوى الصوت
+      await _audioPlayer!.setVolume(1.0);
+      
+      // تشغيل ملف الصوت
+      await _audioPlayer!.play(AssetSource(audioasset));
+      
+      // تكرار الصوت حتى يتم الرد على الطلب
+      _audioPlayer!.onPlayerComplete.listen((event) {
+        // إعادة تشغيل الصوت مرة أخرى
+        _audioPlayer!.play(AssetSource(audioasset));
+      });
+      
+      print('🔊 تم تشغيل صوت إشعار الطلب بنجاح');
+    } catch (e) {
+      print('❌ خطأ في تشغيل صوت إشعار الطلب: $e');
+    }
+  }
+
+  void stopSound() async {
+    try {
+      if (_audioPlayer != null) {
+        await _audioPlayer!.stop();
+        await _audioPlayer!.dispose();
+        _audioPlayer = null;
+        print('🔇 تم إيقاف صوت إشعار الطلب');
+      }
+    } catch (e) {
+      print('❌ خطأ في إيقاف صوت إشعار الطلب: $e');
+    }
   }
 }

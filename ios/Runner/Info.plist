@@ -118,5 +118,37 @@
 		<string>j3he2pue</string>
 		<key>IntercomApiKey</key>
 		<string>ios_sdk-9dd934131d451492917c16a61a9ec34824400eee</string>
+		
+		<!-- إعدادات الصوت للأيفون -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+			<string>location</string>
+			<string>audio</string>
+		</array>
+		
+		<!-- إعدادات الإشعارات الصوتية -->
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Microphone access is required for Intercom messenger recording and uploading videos</string>
+		
+		<!-- إعدادات الصوت للإشعارات -->
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		
+		<!-- إعدادات إضافية للصوت -->
+		<key>AVAudioSessionCategory</key>
+		<string>AVAudioSessionCategoryPlayback</string>
+		
+		<!-- إعدادات الإشعارات الصوتية -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>audio</string>
+			<string>background-processing</string>
+		</array>
 	</dict>
 </plist>
