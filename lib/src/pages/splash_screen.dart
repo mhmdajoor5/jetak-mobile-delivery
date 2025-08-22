@@ -2,6 +2,7 @@
 import 'package:deliveryboy/generated/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:video_player/video_player.dart';
 
 import '../controllers/splash_screen_controller.dart';
 import '../repository/user_repository.dart'; // Keep this import
@@ -17,6 +18,9 @@ class SplashScreen extends StatefulWidget {
 
 class SplashScreenState extends StateMVC<SplashScreen> {
   late SplashScreenController _con;
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+  bool _videoInitializationAttempted = false;
 
   SplashScreenState() : super(SplashScreenController()) {
     _con = (controller as SplashScreenController?)!;
@@ -26,6 +30,61 @@ class SplashScreenState extends StateMVC<SplashScreen> {
   void initState() {
     super.initState();
     _con.progress.addListener(_handleProgressUpdates);
+    _initializeVideo();
+  }
+
+  void _initializeVideo() async {
+    print('🎬 Starting video initialization...');
+    print('🎬 Looking for video at: assets/img/splach.mp4');
+    
+    // Add delay to ensure video plays for minimum time
+    await Future.delayed(Duration(seconds: 1));
+    
+    // Check if video file exists
+    try {
+      _videoController = VideoPlayerController.asset('assets/img/splach.mp4');
+      print('🎬 Video controller created');
+      
+      await _videoController!.initialize();
+      print('🎬 Video initialized successfully');
+      print('🎬 Video duration: ${_videoController!.value.duration}');
+      print('🎬 Video size: ${_videoController!.value.size}');
+      print('🎬 Video aspect ratio: ${_videoController!.value.aspectRatio}');
+      
+      await _videoController!.setLooping(true);
+      print('🎬 Video set to loop');
+      
+              await _videoController!.play();
+        print('🎬 Video started playing');
+        
+        if (mounted) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+          print('🎬 Video splash screen activated');
+          
+          // Force rebuild to show video
+          Future.delayed(Duration(milliseconds: 100), () {
+            if (mounted) {
+              setState(() {});
+            }
+          });
+          
+          // Ensure video plays for full duration
+          print('🎬 Video will play for 9 seconds');
+        }
+    } catch (e) {
+      print('❌ Error initializing video: $e');
+      print('🖼️ Falling back to logo image');
+      print('📁 Please make sure splach.mp4 exists in assets/img/ folder');
+      print('📁 Video should be at: assets/img/splach.mp4');
+      // Fallback to logo image if video fails
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = false;
+        });
+      }
+    }
   }
 
   void _handleProgressUpdates() {
@@ -40,9 +99,12 @@ class SplashScreenState extends StateMVC<SplashScreen> {
     }
   }
 
-  void _navigateToNextScreen() {
+  void _navigateToNextScreen() async {
     // Ensure the context is still valid before navigating
     if (!mounted) return;
+
+    // Add minimum delay to ensure video plays for full duration
+    await Future.delayed(Duration(seconds: 9));
 
     try {
       if (currentUser.value.apiToken == null) {
@@ -66,79 +128,71 @@ class SplashScreenState extends StateMVC<SplashScreen> {
   @override
   void dispose() {
     _con.progress.removeListener(_handleProgressUpdates);
+    _videoController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false, // Prevents back button from closing the splash screen
-      onPopInvoked: (didPop) {
-        if (didPop) return;
-        // Optionally handle back button press if needed, e.g., show exit dialog
-      },
-      child: Scaffold(
+    // Only print video status once during initialization
+    try {
+      return Scaffold(
+        key: _con.scaffoldKey,
+        body: _buildVideoSplash(),
+      );
+        } catch (e) {
+      print('❌ Error in build: $e');
+      // Fallback to video screen
+      return Scaffold(
         key: _con.scaffoldKey,
         body: Container(
-          // Using a more vibrant background might be appealing, or stick to theme
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).primaryColor, // Example: Use primary color
-                Theme.of(context).scaffoldBackgroundColor,
-              ],
-            ),
-          ),
+          color: Colors.black,
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // App Logo
-                Hero( // Add Hero animation for smooth transition
-                  tag: 'appLogo', // Unique tag for the logo
-                  child: Image.asset(
-                    'assets/img/logo.png',
-                    width: 180, // Slightly larger logo
-                    height: 180, // Maintain aspect ratio
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                SizedBox(height: 40), // Adjusted spacing
-                // App Title/Slogan (Optional)
-                // Text(
-                //   S.of(context).app_name, // Assuming you have an app name in S.of(context)
-                //   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                //         color: Colors.white, // White text for contrast
-                //         fontWeight: FontWeight.bold,
-                //       ),
-                // ),
-                SizedBox(height: 20),
-                // Progress Indicator
-                SizedBox(
-                  width: 50, // Fixed width for circular progress indicator
-                  height: 50, // Fixed height for circular progress indicator
-                  child: CircularProgressIndicator(
-                    strokeWidth: 4, // Thicker stroke for better visibility
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.secondary, // Use accent color
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
-                // Loading Text (Optional)
-                Text(
-                  S.of(context).welcome, // "Loading..." or similar
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.black38, // Slightly subdued text color
-                      ),
-                ),
-              ],
-            ),
+            child: VideoPlayer(VideoPlayerController.asset('assets/img/splach.mp4')),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
+
+    Widget _buildVideoSplash() {
+    try {
+      // Always try to show video, even if not fully initialized
+      if (_videoController != null) {
+        print('🎬 Building video splash - Showing video');
+        return Container(
+          color: Colors.black,
+          child: Center(
+            child: _videoController!.value.isInitialized
+                ? AspectRatio(
+                    aspectRatio: _videoController!.value.aspectRatio,
+                    child: VideoPlayer(_videoController!),
+                  )
+                : VideoPlayer(_videoController!),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error in _buildVideoSplash: $e');
+    }
+    
+    print('🎬 Building video splash - Creating new controller');
+    // Create new video controller if none exists
+    try {
+      _videoController = VideoPlayerController.asset('assets/img/splach.mp4');
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: VideoPlayer(_videoController!),
+        ),
+      );
+    } catch (e) {
+      print('❌ Error creating video controller: $e');
+      return Container(
+        color: Colors.black,
+      );
+    }
+  }
+
+
 }

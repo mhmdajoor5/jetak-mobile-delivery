@@ -64,7 +64,7 @@ class SplashScreenController extends ControllerMVC {
       await fcmOnResumeListeners();
       await fcmOnMessageListeners();
     } catch (e) {}
-    Timer(Duration(seconds: 20), () async {
+    Timer(Duration(seconds: 12), () async {
       final context = scaffoldKey.currentContext;
       if (context != null) {
         // Load user data from SharedPreferences first
