@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:uuid/uuid.dart';
 
 import 'package:deliveryboy/src/network/api_client.dart';
 import 'package:flutter/cupertino.dart';
@@ -179,21 +180,52 @@ Future<void> updateDriverAvailability(bool value) async {
 }
 
 Future<dynamic> upload(Document body) async {
-  HttpWithMiddleware httpWithMiddleware = HttpWithMiddleware.build(
-    requestTimeout: Duration(seconds: 240),
-    middlewares: [
-      // HttpLogger(logLevel: LogLevel.BODY),
-    ],
-  );
   final String url =
-      '${GlobalConfiguration().getValue('base_url')}api/uploads';
+      '${GlobalConfiguration().getValue('base_url')}/api/uploads';
   var request = http.MultipartRequest("POST", Uri.parse(url));
+  
+  print('🔍 Upload function called with:');
+  print('  uuid: ${body.uuid}');
+  print('  field: ${body.field}');
+  print('  file path: ${body.file?.path}');
+  print('  upload URL: $url');
+  
   // request.fields['file'] = body.file.toString();
   request.fields['uuid'] = body.uuid!;
   request.fields['field'] = body.field!;
+  
+  // Add API token for authentication
+  String? apiToken = await GlobalConfiguration().getValue('api_token');
+  if (apiToken != null && apiToken.isNotEmpty) {
+    request.headers['Authorization'] = 'Bearer $apiToken';
+    print('🔍 Added API token to upload request');
+  } else {
+    print('⚠️ No API token available for upload');
+  }
+  
   request.files.add(await http.MultipartFile.fromPath('file', body.file!.path));
 
-  return await request.send();
+  print('🔍 Upload request fields:');
+  request.fields.forEach((key, value) {
+    print('  $key: $value');
+  });
+  print('🔍 Upload request files: ${request.files.length}');
+
+  var response = await request.send();
+  print('🔍 Upload response status: ${response.statusCode}');
+  
+  // Read the response body to see if there are any errors
+  var responseBody = await http.Response.fromStream(response);
+  print('🔍 Upload response body: ${responseBody.body}');
+  
+  if (response.statusCode == 200) {
+    print('✅ Upload successful');
+  } else {
+    print('❌ Upload failed with status: ${response.statusCode}');
+    print('❌ Error: ${responseBody.body}');
+  }
+  
+  return response;
 }
 
 Future<UserModel.User> register(UserModel.User user) async {
@@ -227,17 +259,46 @@ Future<UserModel.User> register(UserModel.User user) async {
         
         // Clean and validate data before sending
         String cleanEmail = (user.email ?? '').trim();
-        String cleanFirstName = (user.firstName ?? '').trim();
-        String cleanLastName = (user.lastName ?? '').trim();
-        String cleanPhone = (user.phone ?? '').trim();
-        String cleanDeliveryCity = (user.deliveryCity ?? '').trim();
         
-        // Add text fields - Only send basic fields like Postman
+        // REMOVED: Mapping uploaded files to document1-5 fields - not needed anymore
+        // Files will be sent as multipart only, not as text fields
+        
+        // Add text fields - Send all available user data (EXCLUDING file paths)
         Map<String, String> fields = {
           'name': fullName,
           'email': cleanEmail,
           'password': user.password ?? '',
           'password_confirmation': user.passwordConfirmation ?? '',
+          'is_active': '1', // إضافة is_active = 1 (نشط)
+          'firstName': user.firstName ?? '',
+          'lastName': user.lastName ?? '',
+          'phone': user.phone ?? '',
+          'languagesSpoken': user.languagesSpoken ?? '',
+          'languagesSpokenCode': user.languagesSpokenCode ?? '',
+          'dateOfBirth': user.dateOfBirth ?? '',
+          'country': user.country ?? '',
+          'deliveryCity': user.deliveryCity ?? '',
+          'vehicleType': user.vehicleType ?? '',
+          'referralCode': user.referralCode ?? '',
+          'address': user.address ?? '',
+          'bio': user.bio ?? '',
+          'verifiedPhone': user.verifiedPhone?.toString() ?? 'false',
+          'bankName': user.bankName ?? '',
+          'accountNumber': user.accountNumber ?? '',
+          'branchNumber': user.branchNumber ?? '',
+          // REMOVED: File paths from text fields - files will be sent as multipart only
+          // 'document1': user.document1 ?? '',
+          // 'document2': user.document2 ?? '',
+          // 'document3': user.document3 ?? '',
+          // 'document4': user.document4 ?? '',
+          // 'document5': user.document5 ?? '',
+          // 'drivingLicense': user.drivingLicense ?? '',
+          // 'businessLicense': user.businessLicense ?? '',
+          // 'accountingCertificate': user.accountingCertificate ?? '',
+          // 'taxCertificate': user.taxCertificate ?? '',
+          // 'accountManagementCertificate': user.accountManagementCertificate ?? '',
+          // 'bankAccountDetails': user.bankAccountDetails ?? '',
+          'device_token': user.deviceToken ?? '',
         };
         
         // Print user data for debugging
@@ -245,6 +306,8 @@ Future<UserModel.User> register(UserModel.User user) async {
         fields.forEach((key, value) {
           print('  $key: $value');
         });
+        print('🔍 Total fields to be sent: ${fields.length}');
+        print('🔍 is_active will be set to: 1 (active)');
         
         // Print raw user object for debugging
         print('🔍 Raw user object:');
@@ -265,8 +328,43 @@ Future<UserModel.User> register(UserModel.User user) async {
         
         request.fields.addAll(fields);
 
-        // Temporarily skip file uploads to match Postman request
-        print('🔍 Skipping file uploads for now to match Postman format');
+        // Upload files using the existing upload function (one by one)
+        print('🔍 Uploading files using existing upload function...');
+        
+        // Upload documents if they exist
+        List<String> documentFields = [
+          'drivingLicense',
+          'businessLicense', 
+          'accountingCertificate',
+          'taxCertificate',
+          'accountManagementCertificate',
+          'bankAccountDetails'
+        ];
+        
+                                // Store file paths for upload after registration
+            Map<String, String> filesToUpload = {};
+            
+            for (String field in documentFields) {
+              String? filePath = _getDocumentPath(user, field);
+              print('🔍 Checking $field: $filePath');
+              print('🔍 File exists: ${filePath != null && filePath.isNotEmpty ? File(filePath).existsSync() : false}');
+              
+              if (filePath != null && filePath.isNotEmpty && File(filePath).existsSync()) {
+                filesToUpload[field] = filePath;
+                print('🔍 Added $field to upload queue');
+              } else {
+                print('🔍 No file found for $field or file does not exist');
+              }
+            }
+        
+        print('🔍 Total files to upload: ${request.files.length}');
+        print('🔍 Total fields to send: ${request.fields.length}');
+        
+        // Print final request data for debugging
+        print('🔍 Final request data:');
+        request.fields.forEach((key, value) {
+          print('  $key: $value');
+        });
 
         print('📤 Sending registration request to: $url');
         final streamedResponse = await request.send();
@@ -283,6 +381,31 @@ Future<UserModel.User> register(UserModel.User user) async {
               setCurrentUser(response.body);
               currentUser.value = UserModel.User.fromJSON(responseData['data']);
               print('✅ Registration successful with URL: $url');
+              
+              // Upload files after successful registration
+              if (filesToUpload.isNotEmpty) {
+                print('🚀 Starting file uploads after registration...');
+                
+                for (String field in filesToUpload.keys) {
+                  String filePath = filesToUpload[field]!;
+                  try {
+                    print('🔍 Uploading $field file: $filePath');
+                    
+                    Document document = Document(
+                      uuid: const Uuid().v4(),
+                      field: field,
+                      file: File(filePath),
+                    );
+                    
+                    var uploadResponse = await upload(document);
+                    print('✅ Successfully uploaded $field file after registration');
+                    
+                  } catch (e) {
+                    print('❌ Error uploading $field file after registration: $e');
+                  }
+                }
+              }
+              
               return currentUser.value;
             } else {
               print('❌ Response missing data field');
@@ -295,17 +418,21 @@ Future<UserModel.User> register(UserModel.User user) async {
         } else if (response.statusCode == 401) {
           print('❌ Registration failed with 401 Unauthorized');
           print('❌ This might be due to:');
-          print('   - Invalid API endpoint');
-          print('   - Missing authentication headers');
-          print('   - Server configuration issue');
+          print('   - Email already exists in database');
+          print('   - Missing required fields');
           print('   - Invalid data format');
+          print('   - Server validation failed');
           
           try {
             Map<String, dynamic> errorData = json.decode(response.body);
             String errorMessage = errorData['message'] ?? 'Unauthorized - Please check API configuration';
             print('❌ Server error message: $errorMessage');
             
-            // No need for retry logic since we're sending minimal fields like Postman
+            // Check if it's an email already exists error
+            if (errorMessage.toLowerCase().contains('invalid') || errorMessage.toLowerCase().contains('already')) {
+              print('🔍 This might be because the email already exists in the database');
+              print('🔍 Try using a different email address');
+            }
             
             lastException = Exception(errorMessage);
           } catch (e) {

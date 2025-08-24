@@ -173,6 +173,7 @@ class User {
     map["document4"] = document4;
     map["document5"] = document5;
     map["available"] = available;
+    map["is_active"] = isActive; // إضافة is_active
     map["email"] = email;
     map["name"] = name;
     map["thumb"] = image?.thumb;
