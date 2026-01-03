@@ -26,45 +26,53 @@ class NotificationController {
   static ReceivePort? receivePort;
 
   static Future<void> initializeLocalNotifications() async {
-    // تهيئة مشغل الصوت
-    _audioPlayer = AudioPlayer();
-    
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      // تهيئة مشغل الصوت
+      _audioPlayer = AudioPlayer();
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: DarwinInitializationSettings(
-            requestAlertPermission: true,
-            requestBadgePermission: true,
-            requestSoundPermission: true,
-            requestCriticalPermission: true,
-          ),
-        );
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: onNotificationResponse,
-    );
+      final InitializationSettings initializationSettings =
+          InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: DarwinInitializationSettings(
+              requestAlertPermission: true,
+              requestBadgePermission: true,
+              requestSoundPermission: true,
+              requestCriticalPermission: true,
+            ),
+          );
 
-    channel = const AndroidNotificationChannel(
-      'alerts', // id
-      'Alerts', // title
-      description: 'Notification alerts for new orders',
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-    );
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: onNotificationResponse,
+      );
 
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(channel);
+      channel = const AndroidNotificationChannel(
+        'alerts', // id
+        'Alerts', // title
+        description: 'Notification alerts for new orders',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      );
 
-    // بدء فحص الطلبات الجديدة
-    await startOrderChecking();
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.createNotificationChannel(channel);
+
+      // بدء فحص الطلبات الجديدة
+      await startOrderChecking();
+
+      print('✅ Notification system initialized successfully');
+    } catch (e) {
+      print('⚠️ Error initializing notifications: $e');
+      print('⚠️ App will continue without notifications');
+      // Don't rethrow - allow app to continue
+    }
   }
 
   /// بدء فحص دوري للطلبات الجديدة
@@ -148,49 +156,54 @@ class NotificationController {
 
   /// إرسال إشعار للطلب الجديد
   static Future<void> _sendNewOrderNotification(PendingOrderModel order) async {
-    print('🔔 Sending notification for new order: ${order.orderId}');
-    
-    // تشغيل الصوت والاهتزاز
-    await playNotificationSound();
-    
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-          'new_orders',
-          'New Orders',
-          channelDescription: 'Notifications for new delivery orders',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-          enableVibration: true,
-          playSound: true,
-          sound: RawResourceAndroidNotificationSound('notification_sound'),
-          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-          color: Color(0xFF4CAF50), // أخضر للطلبات الجديدة
-        );
+    try {
+      print('🔔 Sending notification for new order: ${order.orderId}');
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-        DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          sound: 'notification_sound.wav',
-          interruptionLevel: InterruptionLevel.critical,
-        );
+      // تشغيل الصوت والاهتزاز
+      await playNotificationSound();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics,
-    );
+      const AndroidNotificationDetails androidPlatformChannelSpecifics =
+          AndroidNotificationDetails(
+            'new_orders',
+            'New Orders',
+            channelDescription: 'Notifications for new delivery orders',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: true,
+            enableVibration: true,
+            playSound: true,
+            // Using default system notification sound
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+            color: Color(0xFF4CAF50), // أخضر للطلبات الجديدة
+          );
 
-    await flutterLocalNotificationsPlugin.show(
-      order.orderId, // استخدام ID الطلب كـ notification ID
-      '🆕 طلب توصيل جديد!',
-      '👤 العميل: ${order.customerName}\n📍 ${order.address}',
-      platformChannelSpecifics,
-      payload: order.orderId.toString(),
-    );
-    
-    print('✅ Notification sent for order: ${order.orderId}');
+      const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+          DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            // Using default system notification sound
+            interruptionLevel: InterruptionLevel.critical,
+          );
+
+      const NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics,
+      );
+
+      await flutterLocalNotificationsPlugin.show(
+        order.orderId, // استخدام ID الطلب كـ notification ID
+        '🆕 طلب توصيل جديد!',
+        '👤 العميل: ${order.customerName}\n📍 ${order.address}',
+        platformChannelSpecifics,
+        payload: order.orderId.toString(),
+      );
+
+      print('✅ Notification sent for order: ${order.orderId}');
+    } catch (e) {
+      print('⚠️ Error sending notification for order ${order.orderId}: $e');
+      // Don't rethrow - allow app to continue
+    }
   }
 
   /// تحميل قائمة الطلبات المبلغ عنها من SharedPreferences
@@ -235,38 +248,46 @@ class NotificationController {
   }
 
   static Future<void> requestPermissions() async {
-    if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
-        TargetPlatform.iOS) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-            critical: true,
-          );
-    } else if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
-               TargetPlatform.android) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >()
-          ?.requestNotificationsPermission();
+    try {
+      if (settingRepo.navigatorKey.currentContext == null) {
+        print('⚠️ Navigator context is null, skipping permission request');
+        return;
+      }
+
+      if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
+          TargetPlatform.iOS) {
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+              critical: true,
+            );
+      } else if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
+                 TargetPlatform.android) {
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.requestNotificationsPermission();
+      }
+
+      print('✅ Notification permissions requested');
+    } catch (e) {
+      print('⚠️ Error requesting notification permissions: $e');
+      // Don't rethrow - allow app to continue
     }
   }
 
   static Future<void> playNotificationSound() async {
     try {
-      // تشغيل الصوت مع ضبط مستوى الصوت
-      await _audioPlayer.setVolume(1.0);
-      // تشغيل ملف الصوت
-      // await _audioPlayer.play(AssetSource('notification_sound.wav'));
-      
       // إضافة اهتزاز متعدد (للأندرويد)
-      if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
-          TargetPlatform.android) {
+      if (settingRepo.navigatorKey.currentContext != null &&
+          Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
+              TargetPlatform.android) {
         // اهتزاز قوي لجذب الانتباه
         await HapticFeedback.vibrate();
         await Future.delayed(Duration(milliseconds: 200));
@@ -274,58 +295,64 @@ class NotificationController {
         await Future.delayed(Duration(milliseconds: 200));
         await HapticFeedback.vibrate();
       }
-      
+
       print('🔊 تم تشغيل صوت التنبيه');
     } catch (e) {
-      print('❌ خطأ في تشغيل صوت التنبيه: $e');
+      print('⚠️ خطأ في تشغيل صوت التنبيه: $e');
+      // Don't rethrow - allow app to continue
     }
   }
 
   static Future<void> createNewNotification(RemoteMessage message) async {
-    // تشغيل الصوت أولاً
-    await playNotificationSound();
-    
-    final notification = message.notification;
-    if (notification == null) return;
+    try {
+      // تشغيل الصوت أولاً
+      await playNotificationSound();
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-          'alerts',
-          'Alerts',
-          channelDescription: 'Notification alerts for new orders',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-          enableVibration: true,
-          playSound: true,
-          sound: RawResourceAndroidNotificationSound('notification_sound'),
-          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-          color: Color(0xFF2196F3),
-        );
+      final notification = message.notification;
+      if (notification == null) return;
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-        DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          sound: 'notification_sound.wav',
-          interruptionLevel: InterruptionLevel.critical,
-        );
+      const AndroidNotificationDetails androidPlatformChannelSpecifics =
+          AndroidNotificationDetails(
+            'alerts',
+            'Alerts',
+            channelDescription: 'Notification alerts for new orders',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: true,
+            enableVibration: true,
+            playSound: true,
+            // Using default system notification sound
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+            color: Color(0xFF2196F3),
+          );
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics,
-    );
+      const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+          DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            // Using default system notification sound
+            interruptionLevel: InterruptionLevel.critical,
+          );
 
-    await flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title ?? 'طلب جديد',
-      notification.body ?? 'لديك طلب جديد يحتاج للمراجعة',
-      platformChannelSpecifics,
-      payload: message.data['order_id'],
-    );
-    
-    print('🔔 تم إرسال التنبيه: ${notification.title}');
+      const NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics,
+      );
+
+      await flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title ?? 'طلب جديد',
+        notification.body ?? 'لديك طلب جديد يحتاج للمراجعة',
+        platformChannelSpecifics,
+        payload: message.data['order_id'],
+      );
+
+      print('🔔 تم إرسال التنبيه: ${notification.title}');
+    } catch (e) {
+      print('⚠️ Error creating notification: $e');
+      // Don't rethrow - allow app to continue
+    }
   }
 
   static Future<void> getDeviceToken() async {

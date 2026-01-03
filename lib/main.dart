@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'src/helpers/intercom_helper.dart';
+import 'src/helpers/FirebaseUtils.dart';
 
 import 'generated/l10n.dart';
 import 'route_generator.dart';
@@ -29,14 +30,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
-  
+
   // Initialize Intercom
   await IntercomHelper.initialize();
-  
+
   // Login unidentified user for Intercom (for visitors/guests)
   await IntercomHelper.loginUnidentifiedUser();
-  
-  await NotificationController.getDeviceToken(); // ← Add this
+
+  // Setup FCM token refresh listener early (before getting token)
+  print('🚀 Setting up FCM token refresh listener at app startup...');
+  FirebaseUtil.setupTokenRefreshListener();
+
+  await NotificationController.getDeviceToken();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await NotificationController.initializeLocalNotifications();
   runApp(MyApp());

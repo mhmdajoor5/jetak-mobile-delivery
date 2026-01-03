@@ -7,6 +7,7 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 
 import '../../generated/l10n.dart';
 import '../helpers/helper.dart';
+import '../helpers/FirebaseUtils.dart';
 import '../models/document.dart';
 import '../models/user.dart';
 import '../models/triple.dart';
@@ -35,6 +36,7 @@ class UserController extends ControllerMVC {
     _firebaseMessaging = FirebaseMessaging.instance;
     _firebaseMessaging.getToken().then((deviceToken) {
       user.deviceToken = deviceToken;
+      print('🔔 FCM Token obtained in UserController: $deviceToken');
     });
   }
 
@@ -87,6 +89,15 @@ class UserController extends ControllerMVC {
       Overlay.of(state!.context).insert(loader);
       
       User registeredUser = await repository.register(user);
+
+      // Save FCM token immediately after successful registration
+      print('💾 Saving FCM token after registration...');
+      try {
+        await FirebaseUtil.saveFCMTokenForUser(registeredUser);
+      } catch (e) {
+        print('⚠️ Warning: Failed to save FCM token after registration: $e');
+        // Don't block registration flow if FCM token save fails
+      }
 
       // Check if user is active
       if (registeredUser.isActive == 1) {
@@ -145,6 +156,15 @@ class UserController extends ControllerMVC {
     repository.login(user).then((value) async {
       print('🔍 Login successful - User ID: ${value.id}, isActive: ${value.isActive}');
       if (value.apiToken != null) {
+        // Save FCM token immediately after successful login
+        print('💾 Saving FCM token after login...');
+        try {
+          await FirebaseUtil.saveFCMTokenForUser(value);
+        } catch (e) {
+          print('⚠️ Warning: Failed to save FCM token after login: $e');
+          // Don't block login flow if FCM token save fails
+        }
+
         // تسجيل المستخدم في Intercom
         await IntercomHelper.loginUser(
           userId: value.id.toString(),
@@ -156,7 +176,7 @@ class UserController extends ControllerMVC {
             'user_type': 'driver',
           },
         );
-        
+
         // Check if user is active (is_active = 1 means active, 0 means inactive)
         if (value.isActive == 0) {
           print('🔍 User is inactive (isActive: ${value.isActive}), showing contract page');
@@ -277,6 +297,15 @@ class UserController extends ControllerMVC {
     repository.register(user).then((value) async {
       print('🔍 Registration successful - User ID: ${value.id}, isActive: ${value.isActive}');
       if (value.apiToken != null) {
+        // Save FCM token immediately after successful registration
+        print('💾 Saving FCM token after registration with files...');
+        try {
+          await FirebaseUtil.saveFCMTokenForUser(value);
+        } catch (e) {
+          print('⚠️ Warning: Failed to save FCM token after registration: $e');
+          // Don't block registration flow if FCM token save fails
+        }
+
         // Check if user is active (is_active = 1 means active, 0 means inactive)
         if (value.isActive == 0) {
           print('🔍 User is inactive (isActive: ${value.isActive}), showing contract page');

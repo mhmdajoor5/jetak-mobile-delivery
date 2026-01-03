@@ -11,6 +11,7 @@ import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 
 import '../repository/user_repository.dart' as userRepo;
+import '../helpers/FirebaseUtils.dart';
 
 import '../../generated/l10n.dart';
 import '../elements/DrawerWidget.dart';
@@ -68,9 +69,14 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     
     // تحديث الموقع كل 30 ثانية بدلاً من 15 لتوفير البطارية
     timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+
       if (userRepo.currentUser.value.id != null) {
         print("📍 Auto-updating location at ${DateTime.now().toString()}");
-      _getCurrentPosition();
+        _getCurrentPosition();
       } else {
         print("⚠️ User not authenticated, skipping location update");
       }
@@ -83,14 +89,16 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         Uri.parse('${GlobalConfiguration().getValue('api_base_url')}users/profile?api_token=${userRepo.currentUser.value.apiToken}'),
         headers: {HttpHeaders.contentTypeHeader: 'application/json'},
       );
-      
+
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         final userData = json.decode(response.body)['data'];
         final serverIsActive = userData['is_active'] ?? 1;
-        
+
         print('🔍 Pages: Server isActive: $serverIsActive, Local isActive: ${userRepo.currentUser.value.isActive}');
-        
-        if (serverIsActive == 0) {
+
+        if (serverIsActive == 0 && mounted) {
           // User is inactive, redirect to contract page
           Navigator.of(context).pushReplacementNamed('/CarryContract');
         }
@@ -175,8 +183,9 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
   }
 
   Future<void> registerFCM() async {
-    print('Registering FCM...');
-    // FCM registration logic will be handled in FirebaseUtil
+    print('📱 Calling FirebaseUtil.registerFCM()...');
+    // Call the actual FCM registration from FirebaseUtil
+    await FirebaseUtil.registerFCM();
   }
 
   @override
@@ -186,6 +195,8 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
   }
 
   void _selectTab(int tabItem) {
+    if (!mounted) return;
+
     setState(() {
       widget.currentTab = tabItem == 3 ? 1 : tabItem;
       switch (tabItem) {
@@ -213,41 +224,41 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         key: widget.scaffoldKey,
         drawer: DrawerWidget(),
         body: widget.currentPage,
-        bottomNavigationBar: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white,
-                Colors.grey[50]!,
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white,
+                  Colors.grey[50]!,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 20,
+                  offset: Offset(0, -5),
+                  spreadRadius: 5,
+                ),
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, -2),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 20,
-                offset: Offset(0, -5),
-                spreadRadius: 5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
               ),
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: Offset(0, -2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
-            child: BottomNavigationBar(
+              child: BottomNavigationBar(
               
               type: BottomNavigationBarType.fixed,
               selectedItemColor: Colors.transparent,
@@ -296,6 +307,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -309,13 +321,13 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: EdgeInsets.all(isSelected ? 12 : 8),
+            padding: EdgeInsets.all(isSelected ? 10 : 8),
             decoration: BoxDecoration(
              color: color.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
@@ -332,14 +344,14 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             child: Icon(
               icon,
               color: isSelected ? color : Colors.grey[500],
-              size: isSelected ? 22 : 20,
+              size: isSelected ? 20 : 18,
             ),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: isSelected ? 11 : 10,
+              fontSize: isSelected ? 10 : 9,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected ? color : Colors.grey[500],
               letterSpacing: 0.3,
@@ -355,10 +367,10 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      margin: EdgeInsets.only(top: isSelected ? 0 : 5),
+      margin: EdgeInsets.only(top: isSelected ? 0 : 3),
       child: Container(
-        width: isSelected ? 55 : 50,
-        height: isSelected ? 55 : 50,
+        width: isSelected ? 50 : 46,
+        height: isSelected ? 50 : 46,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -409,7 +421,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
             Icon(
               Icons.home_rounded,
               color: Colors.white,
-              size: isSelected ? 28 : 24,
+              size: isSelected ? 26 : 22,
             ),
           ],
         ),
@@ -465,7 +477,15 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
 
   @override
   void dispose() {
+    // Cancel timer to prevent memory leaks
     timer?.cancel();
+    timer = null;
+
+    // Update driver availability when disposing
+    userRepo.updateDriverAvailability(false).catchError((error) {
+      print('❌ Error updating driver availability on dispose: $error');
+    });
+
     super.dispose();
   }
 }

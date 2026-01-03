@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import '../../controllers/user_controller.dart';
+import '../../helpers/validation_helper.dart';
 import 'DrivingLicenseWidget.dart';
 import 'AccountingCertificateWidget.dart';
 
@@ -16,6 +17,7 @@ class BusinessLicenseWidget extends StatefulWidget {
 class _BusinessLicenseWidgetState extends StateMVC<BusinessLicenseWidget> {
   late UserController _con;
   File? selectedFile;
+  String? fileError;
 
   _BusinessLicenseWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
@@ -102,11 +104,21 @@ class _BusinessLicenseWidgetState extends StateMVC<BusinessLicenseWidget> {
                                       type: FileType.custom,
                                       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
                                     );
-                                    
+
                                     if (result != null && result.files.single.path != null) {
+                                      String filePath = result.files.single.path!;
+                                      String? error = ValidationHelper.validateFile(filePath);
+
                                       setState(() {
-                                        selectedFile = File(result.files.single.path!);
-                                        _con.user.businessLicense = result.files.single.path!;
+                                        if (error == null) {
+                                          selectedFile = File(filePath);
+                                          _con.user.businessLicense = filePath;
+                                          fileError = null;
+                                        } else {
+                                          selectedFile = null;
+                                          _con.user.businessLicense = null;
+                                          fileError = error;
+                                        }
                                       });
                                     }
                                   } catch (e) {
@@ -147,9 +159,23 @@ class _BusinessLicenseWidgetState extends StateMVC<BusinessLicenseWidget> {
                                 ),
                               ),
                             ),
+                            if (selectedFile != null) ...[
+                              SizedBox(height: 8),
+                              Text(
+                                'File size: ${ValidationHelper.formatFileSize(selectedFile!.path)}',
+                                style: TextStyle(color: Colors.green, fontSize: 12),
+                              ),
+                            ],
+                            if (fileError != null) ...[
+                              SizedBox(height: 8),
+                              Text(
+                                fileError!,
+                                style: TextStyle(color: Colors.red, fontSize: 12),
+                              ),
+                            ],
                           ],
                         ),
-                        
+
                         SizedBox(height: 30),
                         
                         // Navigation Buttons
@@ -183,7 +209,7 @@ class _BusinessLicenseWidgetState extends StateMVC<BusinessLicenseWidget> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: selectedFile != null ? () {
+                              onPressed: (selectedFile != null && fileError == null) ? () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

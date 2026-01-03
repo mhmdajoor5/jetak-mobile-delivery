@@ -8,6 +8,7 @@ import '../../../generated/l10n.dart';
 import '../../controllers/user_controller.dart';
 import '../../elements/BlockButtonWidget.dart';
 import '../../helpers/app_config.dart' as config;
+import '../../helpers/validation_helper.dart';
 import '../../models/triple.dart';
 import '../../repository/user_repository.dart';
 import '../LanguageDropdown.dart';
@@ -23,16 +24,30 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
   bool agree = false;
   Map<String, Triple<bool, File, String>> files = {};
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   late final GlobalKey<FormState> _formKey; // Add form key
+
+  // Form validation state
+  bool _formTouched = false;
+  bool _isFormValid = false;
 
   _SignUpWidgetState() : super(UserController.instance) {
     _con = UserController.instance;
     _formKey = GlobalKey<FormState>();
   }
 
+  void _validateForm() {
+    setState(() {
+      _isFormValid = _formKey.currentState?.validate() ?? false;
+    });
+  }
+
   @override
   void dispose() {
     _dateController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -69,10 +84,16 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
             style: TextStyle(color: Colors.black54, fontSize: 20),
           ),
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Column(
+        body: GestureDetector(
+          onTap: () {
+            // Dismiss keyboard when tapping outside
+            FocusScope.of(context).unfocus();
+          },
+          child: SafeArea(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Text
@@ -90,10 +111,11 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
-                          fontSize: 24
+                          fontSize: 26,
+                          height: 1.3,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 12),
                       Text(
                         getText(
                           'לפני שנתחיל איתך כשותף משלוחים ב-Carry, אנחנו רק צריכים כמה פרטים ממך. מלא את הבקשה המהירה למטה, ואנחנו נתחיל לעבוד!',
@@ -102,28 +124,30 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         ),
                         style: TextStyle(
                           color: Colors.black87,
-                          fontSize: 16
+                          fontSize: 15,
+                          height: 1.5,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                SizedBox(height: 30),
+                SizedBox(height: 25),
 
                 // Form Container
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
                     boxShadow: [
                       BoxShadow(
-                        blurRadius: 10,
-                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        color: Colors.black.withOpacity(0.08),
+                        offset: Offset(0, 4),
                       )
                     ]
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 30, horizontal: 27),
+                  padding: EdgeInsets.symmetric(vertical: 32, horizontal: 24),
                   child: Form(
                     key: _formKey, // Use unique key for this form
                     child: Column(
@@ -132,13 +156,15 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                         // First Name
                         TextFormField(
                           keyboardType: TextInputType.name,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving firstName: $input');
                             _con.user.firstName = input;
                           },
-                          validator: (input) => input == null || input.isEmpty
-                              ? getText('שם פרטי נדרש', 'الاسم الأول مطلوب', 'First name is required')
-                              : null,
+                          validator: (input) => ValidationHelper.validateName(input, minLength: 2),
                           decoration: InputDecoration(
                             labelText: getText('שם פרטי (כמו בדרכון)', 'الاسم الأول (كما في جواز السفر)', 'First name (as in passport)'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -156,18 +182,20 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Last Name
                         TextFormField(
                           keyboardType: TextInputType.name,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving lastName: $input');
                             _con.user.lastName = input;
                           },
-                          validator: (input) => input == null || input.isEmpty
-                              ? getText('שם משפחה נדרש', 'اسم العائلة مطلوب', 'Last name is required')
-                              : null,
+                          validator: (input) => ValidationHelper.validateName(input, minLength: 2),
                           decoration: InputDecoration(
                             labelText: getText('שם משפחה (כמו בדרכון)', 'اسم العائلة (כמו בדרכון)', 'Last name (as in passport)'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -185,18 +213,20 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Email
                         TextFormField(
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving email: $input');
                             _con.user.email = input;
                           },
-                          validator: (input) => input == null || !input.contains('@')
-                              ? getText('אנא הכנס כתובת אימייל תקינה', 'يرجى إدخال عنوان بريد إلكتروني صحيح', 'Please enter a valid email address')
-                              : null,
+                          validator: (input) => ValidationHelper.validateEmail(input),
                           decoration: InputDecoration(
                             labelText: getText('אימייל', 'البريد الإلكتروني', 'Email'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -214,18 +244,21 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Password
                         TextFormField(
+                          controller: _passwordController,
                           obscureText: true,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving password: $input');
                             _con.user.password = input;
                           },
-                          validator: (input) => input == null || input.length < 6
-                              ? getText('סיסמה חייבת להיות לפחות 6 תווים', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'Password must be at least 6 characters')
-                              : null,
+                          validator: (input) => ValidationHelper.validatePassword(input),
                           decoration: InputDecoration(
                             labelText: getText('סיסמה', 'كلمة المرور', 'Password'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -244,21 +277,21 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Confirm Password
                         TextFormField(
+                          controller: _confirmPasswordController,
                           obscureText: true,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving passwordConfirmation: $input');
                             _con.user.passwordConfirmation = input;
                           },
-                          validator: (input) {
-                            if (input == null || input.isEmpty) {
-                              return getText('אנא אשר את הסיסמה שלך', 'يرجى تأكيد كلمة المرور', 'Please confirm your password');
-                            }
-                            return null;
-                          },
+                          validator: (input) => ValidationHelper.validatePasswordConfirmation(input, _passwordController.text),
                           decoration: InputDecoration(
                             labelText: getText('אישור סיסמה', 'تأكيد كلمة المرور', 'Confirm Password'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -277,18 +310,20 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Phone Number
                         TextFormField(
                           keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving phone: $input');
                             _con.user.phone = input;
                           },
-                          validator: (input) => input == null || input.isEmpty
-                              ? getText('מספר טלפון נדרש', 'رقم الهاتف مطلوب', 'Phone number is required')
-                              : null,
+                          validator: (input) => ValidationHelper.validatePhone(input),
                           decoration: InputDecoration(
                             labelText: getText('מספר טלפון (פורמט בינלאומי)', 'رقم الهاتف (صيغة دولية)', 'Phone number (international format)'),
                             labelStyle: TextStyle(color: Colors.black54),
@@ -306,7 +341,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Languages Spoken
                         LanguageDropdown(
@@ -316,6 +351,7 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                               _con.user.languagesSpokenCode = val;
                               _con.user.languagesSpoken = val;
                             });
+                            if (_formTouched) _validateForm();
                           },
                           decoration: InputDecoration(
                             labelText: getText('שפות מדוברות', 'اللغات المتحدثة', 'Languages spoken'),
@@ -327,54 +363,108 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                           ),
                         ),
 
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         // Date of Birth
                         TextFormField(
                           controller: _dateController,
                           readOnly: true,
                           decoration: InputDecoration(
-                            labelText: getText('תאריך לידה', 'تاريخ الميلاد', 'Date of birth'),
+                            labelText: getText('תאריך לידה (YYYY-MM-DD)', 'تاريخ الميلاد (YYYY-MM-DD)', 'Date of birth (YYYY-MM-DD)'),
                             labelStyle: TextStyle(color: Colors.black54),
+                            hintText: getText('בחר תאריך לידה', 'اختر تاريخ الميلاد', 'Select date of birth'),
+                            hintStyle: TextStyle(color: Colors.grey.shade400),
                             contentPadding: EdgeInsets.all(12),
-                            suffixIcon: Icon(Icons.calendar_today),
+                            suffixIcon: Icon(Icons.calendar_today, color: Colors.black54),
                             border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.5)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
                             ),
                           ),
                           onTap: () async {
+                            // Calculate date constraints
+                            final DateTime now = DateTime.now();
+                            final DateTime eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
+                            final DateTime hundredYearsAgo = DateTime(now.year - 100, now.month, now.day);
+                            final DateTime initialDate = DateTime(now.year - 25, now.month, now.day); // Default to 25 years old
+
+                            print('🔍 Opening DatePicker - Min: $hundredYearsAgo, Max: $eighteenYearsAgo, Initial: $initialDate');
+
                             DateTime? picked = await showDatePicker(
                               context: context,
-                              initialDate: DateTime(2000),
-                              firstDate: DateTime(1900),
-                              lastDate: DateTime.now(),
+                              initialDate: initialDate.isBefore(eighteenYearsAgo) ? initialDate : eighteenYearsAgo,
+                              firstDate: hundredYearsAgo,
+                              lastDate: eighteenYearsAgo,
+                              helpText: getText('בחר תאריך לידה', 'اختر تاريخ الميلاد', 'Select date of birth'),
+                              cancelText: getText('ביטול', 'إلغاء', 'Cancel'),
+                              confirmText: getText('אישור', 'تأكيد', 'OK'),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: Colors.blue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
                             );
+
                             if (picked != null) {
-                              _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-                              print('🔍 Setting dateOfBirth: ${_dateController.text}');
-                              _con.user.dateOfBirth = _dateController.text;
+                              setState(() {
+                                _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                                _con.user.dateOfBirth = _dateController.text;
+                              });
+                              print('🔍 Date selected: ${_dateController.text}');
+                              if (_formTouched) _validateForm();
+                            } else {
+                              print('🔍 Date picker cancelled');
                             }
                           },
-                          validator: (input) => input == null || input.isEmpty 
-                              ? getText('תאריך לידה נדרש', 'تاريخ الميلاد مطلوب', 'Date of birth is required') 
-                              : null,
+                          validator: (input) => ValidationHelper.validateDateOfBirth(input),
                         ),
 
-                        SizedBox(height: 10),
+                        SizedBox(height: 8),
 
                         // Informational Text under Date of Birth
-                        Text(
-                          getText(
-                            'בהתאם לעיר שלך, עליך להיות מעל גיל 16 או 18 כדי לספק Carry.',
-                            'حسب مدينتك، يجب أن تكون فوق 16 أو 18 عاماً لتوصيل Carry.',
-                            'Depending on your city, you must be over 16 or 18 years old to deliver Carry.'
-                          ),
-                          style: TextStyle(color: Colors.black54, fontSize: 14),
+                        Row(
+                          children: [
+                            Icon(Icons.info_outline, size: 16, color: Colors.blue.shade700),
+                            SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                getText(
+                                  'עליך להיות בן 18 לפחות כדי להירשם כשותף משלוחים.',
+                                  'يجب أن تكون 18 عاماً على الأقل للتسجيل كشريك توصيل.',
+                                  'You must be at least 18 years old to register as a delivery partner.'
+                                ),
+                                style: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+
+                        SizedBox(height: 18),
 
                         // Delivery City
                         TextFormField(
                           keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) {
+                            if (_formTouched) _validateForm();
+                          },
                           onSaved: (input) {
                             print('🔍 Saving deliveryCity: $input');
                             _con.user.deliveryCity = input;
@@ -394,12 +484,10 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                               borderSide: BorderSide(color: Theme.of(context).focusColor.withOpacity(0.2)),
                             ),
                           ),
-                          validator: (value) => value == null || value.isEmpty 
-                              ? getText('עיר משלוח נדרשת', 'مدينة التوصيل مطلوبة', 'Delivery city is required') 
-                              : null,
+                          validator: (value) => ValidationHelper.validateRequired(value, 'Delivery city'),
                         ),
 
-                        SizedBox(height: 20),
+                        SizedBox(height: 18),
 
                         DropdownButtonFormField<String>(
                           decoration: InputDecoration(
@@ -427,17 +515,17 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                             setState(() {
                               _con.user.vehicleType = value!;
                             });
+                            if (_formTouched) _validateForm();
                           },
-                          validator: (input) => input == null 
-                              ? getText('אנא הזן סוג רכב', 'يرجى إدخال نوع المركبة', 'Please enter vehicle type') 
-                              : null,
+                          validator: (input) => ValidationHelper.validateRequired(input, 'Vehicle type'),
                         ),
 
-                        SizedBox(height: 30),
+                        SizedBox(height: 18),
 
                         // Courier partner referral code (optional)
                         TextFormField(
                           keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.done,
                           onSaved: (input) {
                             print('🔍 Saving referralCode: $input');
                             _con.user.referralCode = input;
@@ -456,34 +544,59 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                           ),
                         ),
 
-                        SizedBox(height: 20),
+                        SizedBox(height: 25),
 
-                        StatefulBuilder(
-                          builder: (context, setStateCheckbox) {
-                            bool agree = false;
-                            return Row(
+                        // Privacy Agreement Checkbox
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              agree = !agree;
+                              _con.agreedToPrivacy = agree;
+                            });
+                            if (_formTouched) _validateForm();
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: agree ? Colors.blue : Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Checkbox(
                                   value: agree,
                                   onChanged: (value) {
-                                    setStateCheckbox(() {
-                                      agree = value!;
+                                    setState(() {
+                                      agree = value ?? false;
                                       _con.agreedToPrivacy = agree;
                                     });
+                                    if (_formTouched) _validateForm();
                                   },
-                                  activeColor: Colors.blue[900],
+                                  activeColor: Colors.blue,
+                                  checkColor: Colors.white,
+                                  materialTapTargetSize: MaterialTapTargetSize.padded,
                                 ),
+                                SizedBox(width: 8),
                                 Expanded(
-                                  child: CheckboxListTile(
-                                    title: RichText(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 12),
+                                    child: RichText(
                                       text: TextSpan(
                                         text: getText(
                                           'אני מסכים לכך שנתוני האישיים שלי ייאספו ויטופלו בהתאם ל',
                                           'أوافق على جمع ومعالجة بياناتي الشخصية وفقاً ل',
                                           'I agree for my personal data to be collected and processed in accordance with the '
-                                        ) + ' ',
-                                        style: TextStyle(color: Colors.white),
+                                        ),
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                          height: 1.4,
+                                        ),
                                         children: <TextSpan>[
                                           TextSpan(
                                             text: getText(
@@ -491,46 +604,73 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                                               'بيان خصوصية شريك التوصيل Carry.',
                                               'Carry Courier Partner Privacy Statement.'
                                             ),
-                                            style: TextStyle(color: Colors.blue[900]),
+                                            style: TextStyle(
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.w600,
+                                              decoration: TextDecoration.underline,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    value: agree,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        agree = value ?? false;
-                                        _con.agreedToPrivacy = agree;
-                                      });
-                                    },
-                                    activeColor: Colors.blue[900],
                                   ),
                                 ),
                               ],
-                            );
-                          },
+                            ),
+                          ),
                         ),
 
-                        SizedBox(height: 30),
+                        SizedBox(height: 35),
 
-                        Center(
+                        SizedBox(
+                          width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,
-                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              elevation: 2,
                             ),
                             onPressed: () async {
+                              // Mark form as touched to enable real-time validation
+                              setState(() {
+                                _formTouched = true;
+                              });
+
+                              // Check privacy agreement first
                               if (!_con.agreedToPrivacy) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(getText('אנא הסכם להצהרת הפרטיות', 'يرجى الموافقة على بيان الخصوصية', 'Please agree to the privacy statement'))),
+                                  SnackBar(
+                                    content: Text(getText(
+                                      'אנא הסכם להצהרת הפרטיות',
+                                      'يرجى الموافقة على بيان الخصوصية',
+                                      'Please agree to the privacy statement'
+                                    )),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 return;
                               }
 
                               // Validate form
+                              if (!_formKey.currentState!.validate()) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(getText(
+                                      'אנא מלא את כל השדות הנדרשים כראוי',
+                                      'يرجى ملء جميع الحقول المطلوبة بشكل صحيح',
+                                      'Please fill all required fields correctly'
+                                    )),
+                                    backgroundColor: Colors.red,
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                                return;
+                              }
+
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
 
@@ -586,28 +726,35 @@ class _SignUpWidgetState extends StateMVC<SignUpWidget> {
                           ),
                         ),
 
-                        SizedBox(height: 30),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
                 ),
 
-                SizedBox(height: 20),
+                SizedBox(height: 24),
 
                 // Back to login button
                 Center(
-                  child: MaterialButton(
-                    elevation: 0,
-                    focusElevation: 0,
-                    highlightElevation: 0,
+                  child: TextButton(
                     onPressed: () {
                       Navigator.of(context).pushNamed('/Login');
                     },
-                    textColor: Colors.blue,
-                    child: Text(getText('יש לי חשבון? חזרה להתחברות', 'لدي حساب؟ العودة لتسجيل الدخول', 'I have an account? Back to login')),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                    child: Text(
+                      getText('יש לי חשבון? חזרה להתחברות', 'لدي حساب؟ العودة لتسجيل الدخول', 'I have an account? Back to login'),
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

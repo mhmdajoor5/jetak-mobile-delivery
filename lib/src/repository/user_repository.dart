@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:deliveryboy/src/network/api_client.dart';
@@ -181,7 +182,7 @@ Future<void> updateDriverAvailability(bool value) async {
 
 Future<dynamic> upload(Document body) async {
   final String url =
-      '${GlobalConfiguration().getValue('base_url')}/api/uploads';
+      '${GlobalConfiguration().getValue('base_url')}/api/driver/register';
   var request = http.MultipartRequest("POST", Uri.parse(url));
   
   print('🔍 Upload function called with:');
@@ -236,7 +237,7 @@ Future<UserModel.User> register(UserModel.User user) async {
     List<String> possibleUrls = [
       '${GlobalConfiguration().getValue('base_url')}/api/driver/register',
       '${GlobalConfiguration().getValue('api_base_url')}driver/register',
-      'http://carrytechnologies.co/api/driver/register',
+      'https://carrytechnologies.co/api/driver/register',
     ];
 
     Exception? lastException;
@@ -263,43 +264,36 @@ Future<UserModel.User> register(UserModel.User user) async {
         // REMOVED: Mapping uploaded files to document1-5 fields - not needed anymore
         // Files will be sent as multipart only, not as text fields
         
-        // Add text fields - Send all available user data (EXCLUDING file paths)
+        // Add text fields - Send all required fields like Postman
         Map<String, String> fields = {
-          'name': fullName,
-          'email': cleanEmail,
+          'name': user.name ?? '',
+          'email': user.email ?? '',
           'password': user.password ?? '',
-          'password_confirmation': user.passwordConfirmation ?? '',
-          'is_active': '1', // إضافة is_active = 1 (نشط)
-          'firstName': user.firstName ?? '',
-          'lastName': user.lastName ?? '',
+          'password_confirmation': user.password ?? '',
+          'languagesSpoken': user.languagesSpoken ?? 'it',
+          'languagesSpokenCode': user.languagesSpokenCode ?? 'it',
+          'dateOfBirth': user.dateOfBirth ?? '2000-01-01',
+          'first_name': user.firstName ?? '',
+          'last_name': user.lastName ?? '',
           'phone': user.phone ?? '',
-          'languagesSpoken': user.languagesSpoken ?? '',
-          'languagesSpokenCode': user.languagesSpokenCode ?? '',
-          'dateOfBirth': user.dateOfBirth ?? '',
-          'country': user.country ?? '',
           'deliveryCity': user.deliveryCity ?? '',
           'vehicleType': user.vehicleType ?? '',
           'referralCode': user.referralCode ?? '',
-          'address': user.address ?? '',
-          'bio': user.bio ?? '',
-          'verifiedPhone': user.verifiedPhone?.toString() ?? 'false',
           'bankName': user.bankName ?? '',
           'accountNumber': user.accountNumber ?? '',
           'branchNumber': user.branchNumber ?? '',
-          // REMOVED: File paths from text fields - files will be sent as multipart only
-          // 'document1': user.document1 ?? '',
-          // 'document2': user.document2 ?? '',
-          // 'document3': user.document3 ?? '',
-          // 'document4': user.document4 ?? '',
-          // 'document5': user.document5 ?? '',
-          // 'drivingLicense': user.drivingLicense ?? '',
-          // 'businessLicense': user.businessLicense ?? '',
-          // 'accountingCertificate': user.accountingCertificate ?? '',
-          // 'taxCertificate': user.taxCertificate ?? '',
-          // 'accountManagementCertificate': user.accountManagementCertificate ?? '',
-          // 'bankAccountDetails': user.bankAccountDetails ?? '',
-          'device_token': user.deviceToken ?? '',
         };
+        
+        // Remove empty fields to avoid validation errors
+        fields.removeWhere((key, value) => value.isEmpty || value == '');
+        
+        // Add required headers like Postman
+        request.headers['Accept'] = 'application/json';
+        request.headers['User-Agent'] = 'Flutter/1.0';
+        request.headers['Cache-Control'] = 'no-cache';
+        
+        // Let http package set Content-Type automatically for multipart
+        // This will be: multipart/form-data; boundary=...
         
         // Print user data for debugging
         print('🔍 User data to be sent:');
@@ -328,10 +322,10 @@ Future<UserModel.User> register(UserModel.User user) async {
         
         request.fields.addAll(fields);
 
-        // Upload files using the existing upload function (one by one)
-        print('🔍 Uploading files using existing upload function...');
+        // Add files directly to the request (like in Postman)
+        print('🔍 Adding files directly to registration request...');
         
-        // Upload documents if they exist
+        // List of all required document fields
         List<String> documentFields = [
           'drivingLicense',
           'businessLicense', 
@@ -341,21 +335,90 @@ Future<UserModel.User> register(UserModel.User user) async {
           'bankAccountDetails'
         ];
         
-                                // Store file paths for upload after registration
-            Map<String, String> filesToUpload = {};
+        // Upload all required documents
+        for (String field in documentFields) {
+          print('🔍 Processing $field document...');
+          String? documentPath = _getDocumentPath(user, field);
+          
+          if (documentPath != null && documentPath.isNotEmpty && File(documentPath).existsSync()) {
+            print('🔍 Adding $field file: $documentPath');
+            print('🔍 File exists: ${File(documentPath).existsSync()}');
+            print('🔍 File size: ${File(documentPath).lengthSync()} bytes');
+            print('🔍 File name: ${documentPath.split('/').last}');
             
-            for (String field in documentFields) {
-              String? filePath = _getDocumentPath(user, field);
-              print('🔍 Checking $field: $filePath');
-              print('🔍 File exists: ${filePath != null && filePath.isNotEmpty ? File(filePath).existsSync() : false}');
-              
-              if (filePath != null && filePath.isNotEmpty && File(filePath).existsSync()) {
-                filesToUpload[field] = filePath;
-                print('🔍 Added $field to upload queue');
-              } else {
-                print('🔍 No file found for $field or file does not exist');
+            try {
+              // Read file as bytes to ensure proper file upload
+              List<int> fileBytes = await File(documentPath).readAsBytes();
+              print('🔍 File read as bytes: ${fileBytes.length} bytes');
+
+              // Determine MIME type based on file extension
+              String fileName = documentPath.split('/').last;
+              String extension = fileName.split('.').last.toLowerCase();
+              MediaType contentType;
+
+              switch (extension) {
+                case 'pdf':
+                  contentType = MediaType('application', 'pdf');
+                  break;
+                case 'jpg':
+                case 'jpeg':
+                  contentType = MediaType('image', 'jpeg');
+                  break;
+                case 'png':
+                  contentType = MediaType('image', 'png');
+                  break;
+                case 'gif':
+                  contentType = MediaType('image', 'gif');
+                  break;
+                case 'bmp':
+                  contentType = MediaType('image', 'bmp');
+                  break;
+                case 'webp':
+                  contentType = MediaType('image', 'webp');
+                  break;
+                default:
+                  // Default to application/octet-stream for unknown types
+                  contentType = MediaType('application', 'octet-stream');
+                  break;
               }
+
+              print('🔍 File extension: $extension');
+              print('🔍 Detected MIME type: ${contentType.mimeType}');
+
+              var multipartFile = http.MultipartFile.fromBytes(
+                field,
+                fileBytes,
+                filename: fileName,
+                contentType: contentType,
+              );
+
+              print('🔍 MultipartFile created: ${multipartFile.field} = ${multipartFile.filename}');
+              print('🔍 MultipartFile length: ${multipartFile.length} bytes');
+              print('🔍 MultipartFile content type: ${multipartFile.contentType}');
+
+              request.files.add(multipartFile);
+              print('✅ $field file added to request successfully');
+            } catch (e) {
+              print('❌ Error creating MultipartFile for $field: $e');
+              print('❌ Error details: ${e.toString()}');
             }
+          } else {
+            print('⚠️ No $field file found or file does not exist');
+            print('⚠️ Path: $documentPath');
+            print('⚠️ This field is required by the backend but file is missing');
+          }
+        }
+        
+        // Check if all required files are present
+        int requiredFiles = documentFields.length;
+        int uploadedFiles = request.files.length;
+        print('🔍 Required files: $requiredFiles');
+        print('🔍 Uploaded files: $uploadedFiles');
+        
+        if (uploadedFiles < requiredFiles) {
+          print('⚠️ Warning: Not all required files are uploaded');
+          print('⚠️ Missing files: ${requiredFiles - uploadedFiles}');
+        }
         
         print('🔍 Total files to upload: ${request.files.length}');
         print('🔍 Total fields to send: ${request.fields.length}');
@@ -367,10 +430,26 @@ Future<UserModel.User> register(UserModel.User user) async {
         });
 
         print('📤 Sending registration request to: $url');
+        print('📤 Request headers: ${request.headers}');
+        print('📤 Request fields count: ${request.fields.length}');
+        print('📤 Request files count: ${request.files.length}');
+        // print('📤 Request boundary: ${request.boundary}'); // boundary not available
+        
+        // Print detailed file information
+        for (int i = 0; i < request.files.length; i++) {
+          var file = request.files[i];
+          print('📤 File $i: ${file.field} = ${file.filename} (${file.length} bytes)');
+        }
+        
+        // Print request details
+        print('📤 Request method: ${request.method}');
+        print('📤 Request URL: ${request.url}');
+        
         final streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
 
         print('📥 Response status: ${response.statusCode}');
+        print('📥 Response headers: ${response.headers}');
         print('📥 Response body: ${response.body}');
 
         if (response.statusCode == 200 || response.statusCode == 201) {
@@ -381,30 +460,6 @@ Future<UserModel.User> register(UserModel.User user) async {
               setCurrentUser(response.body);
               currentUser.value = UserModel.User.fromJSON(responseData['data']);
               print('✅ Registration successful with URL: $url');
-              
-              // Upload files after successful registration
-              if (filesToUpload.isNotEmpty) {
-                print('🚀 Starting file uploads after registration...');
-                
-                for (String field in filesToUpload.keys) {
-                  String filePath = filesToUpload[field]!;
-                  try {
-                    print('🔍 Uploading $field file: $filePath');
-                    
-                    Document document = Document(
-                      uuid: const Uuid().v4(),
-                      field: field,
-                      file: File(filePath),
-                    );
-                    
-                    var uploadResponse = await upload(document);
-                    print('✅ Successfully uploaded $field file after registration');
-                    
-                  } catch (e) {
-                    print('❌ Error uploading $field file after registration: $e');
-                  }
-                }
-              }
               
               return currentUser.value;
             } else {
@@ -671,12 +726,50 @@ Future<UserModel.User> update(UserModel.User user) async {
   final String apiToken = 'api_token=${currentUser.value.apiToken}';
   final String url =
       '${GlobalConfiguration().getValue('api_base_url')}users/${currentUser.value.id}?$apiToken';
+
+  print('🔄 Updating user profile...');
+  print('👤 User ID: ${currentUser.value.id}');
+  print('📧 Email: ${user.email}');
+
+  // Check if device token is being sent
+  if (user.deviceToken != null && user.deviceToken!.isNotEmpty) {
+    print('📱 FCM Token in request: ${user.deviceToken!.substring(0, user.deviceToken!.length > 20 ? 20 : user.deviceToken!.length)}...');
+    print('📱 FCM Token length: ${user.deviceToken!.length} characters');
+    print('🔔 Sending device token to API: ${user.deviceToken}');
+  } else {
+    print('⚠️ Warning: No FCM token in update request');
+  }
+
   final client = http.Client();
   final response = await client.post(
     Uri.parse(url),
     headers: {HttpHeaders.contentTypeHeader: 'application/json'},
     body: json.encode(user.toMap()),
   );
+
+  print('📥 Update response status: ${response.statusCode}');
+  print('🔔 Device token API response: ${response.body}');
+
+  if (response.statusCode == 200) {
+    print('✅ User update successful');
+
+    // Check if the response contains the device token
+    try {
+      final responseData = json.decode(response.body);
+      final userData = responseData['data'];
+      if (userData['device_token'] != null) {
+        print('✅ Server confirmed device_token saved: ${userData['device_token'].toString().substring(0, 20)}...');
+      } else {
+        print('⚠️ Warning: Server response does not include device_token');
+      }
+    } catch (e) {
+      print('⚠️ Could not parse device_token from response: $e');
+    }
+  } else {
+    print('❌ User update failed with status: ${response.statusCode}');
+    print('❌ Response: ${response.body}');
+  }
+
   setCurrentUser(response.body);
   currentUser.value = UserModel.User.fromJSON(json.decode(response.body)['data']);
   return currentUser.value;

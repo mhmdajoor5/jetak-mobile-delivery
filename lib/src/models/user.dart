@@ -9,6 +9,7 @@ class User {
   String? email;
   String? password;
   String? passwordConfirmation;
+  String? password_confirmation;
   String? firstName;
   String? lastName;
   String? languagesSpoken;
@@ -74,6 +75,9 @@ class User {
       print('🔍 User model - is_active parsed: $isActive from ${jsonMap['is_active']}');
       name = jsonMap['name'] != null ? jsonMap['name'] : '';
       email = jsonMap['email'] != null ? jsonMap['email'] : '';
+      password = jsonMap['password'] != null ? jsonMap['password'] : '';
+      passwordConfirmation = jsonMap['password_confirmation'] != null ? jsonMap['password_confirmation'] : '';
+      password_confirmation = jsonMap['password_confirmation'] != null ? jsonMap['password_confirmation'] : '';
       firstName = jsonMap['firstName'] != null ? jsonMap['firstName'] : '';
       lastName = jsonMap['lastName'] != null ? jsonMap['lastName'] : '';
       languagesSpoken = jsonMap['languagesSpoken'] != null ? jsonMap['languagesSpoken'] : '';
@@ -139,7 +143,8 @@ class User {
     map["email"] = email;
     map["name"] = name;
     map["password"] = password;
-    map["password_confirmation"] = passwordConfirmation;
+    map["password_confirmation"] = password_confirmation ?? passwordConfirmation ?? password;
+    map["device_token"] = deviceToken; // ⭐ FCM token - CRITICAL for notifications
     map["firstName"] = firstName;
     map["lastName"] = lastName;
     map["languagesSpoken"] = languagesSpoken;
