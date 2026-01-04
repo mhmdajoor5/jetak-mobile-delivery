@@ -146,7 +146,17 @@ class NotificationController {
         driverId: user.id.toString(),
       );
 
-      final parsedOrders = PendingOrdersModel.fromJson(response);
+      print('📦 API response received: ${response.toString().substring(0, response.toString().length > 100 ? 100 : response.toString().length)}...');
+
+      late PendingOrdersModel parsedOrders;
+      try {
+        parsedOrders = PendingOrdersModel.fromJson(response);
+      } catch (parseError) {
+        print('❌ Error parsing orders response: $parseError');
+        print('❌ Response was: $response');
+        // Create empty model to continue
+        parsedOrders = PendingOrdersModel(orders: []);
+      }
 
       print('📋 Found ${parsedOrders.orders.length} total pending orders');
       print('📋 Already notified about ${_notifiedOrderIds.length} orders: $_notifiedOrderIds');
