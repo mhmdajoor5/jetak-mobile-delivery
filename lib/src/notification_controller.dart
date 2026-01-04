@@ -27,11 +27,24 @@ class NotificationController {
 
   static Future<void> initializeLocalNotifications() async {
     try {
+      print('');
+      print('═══════════════════════════════════════');
+      print('🔔 Initializing Notification System');
+      print('═══════════════════════════════════════');
+
       // تهيئة مشغل الصوت
       _audioPlayer = AudioPlayer();
 
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
+
+      print('📋 Configuring iOS notification settings...');
+      print('   - Request Alert Permission: true');
+      print('   - Request Badge Permission: true');
+      print('   - Request Sound Permission: true');
+      print('   - Default Present Alert: true');
+      print('   - Default Present Badge: true');
+      print('   - Default Present Sound: true');
 
       final InitializationSettings initializationSettings =
           InitializationSettings(
@@ -40,14 +53,19 @@ class NotificationController {
               requestAlertPermission: true,
               requestBadgePermission: true,
               requestSoundPermission: true,
-              requestCriticalPermission: true,
+              requestCriticalPermission: false, // Requires special entitlement from Apple
+              defaultPresentAlert: true,
+              defaultPresentBadge: true,
+              defaultPresentSound: true,
             ),
           );
 
-      await flutterLocalNotificationsPlugin.initialize(
+      print('🔧 Initializing flutter_local_notifications plugin...');
+      final bool? initialized = await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: onNotificationResponse,
       );
+      print('✅ Plugin initialization result: $initialized');
 
       channel = const AndroidNotificationChannel(
         'alerts', // id
@@ -65,9 +83,12 @@ class NotificationController {
           ?.createNotificationChannel(channel);
 
       // بدء فحص الطلبات الجديدة
+      print('🔍 Starting periodic order checking...');
       await startOrderChecking();
 
       print('✅ Notification system initialized successfully');
+      print('═══════════════════════════════════════');
+      print('');
     } catch (e) {
       print('⚠️ Error initializing notifications: $e');
       print('⚠️ App will continue without notifications');
@@ -183,13 +204,20 @@ class NotificationController {
             presentBadge: true,
             presentSound: true,
             sound: 'notification_sound.wav',
-            interruptionLevel: InterruptionLevel.critical,
+            interruptionLevel: InterruptionLevel.timeSensitive,
+            categoryIdentifier: 'NEW_ORDER_CATEGORY',
+            threadIdentifier: 'new_orders',
           );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics,
       );
+
+      print('📤 Attempting to show notification with ID: ${order.orderId}');
+      print('📤 Title: 🆕 طلب توصيل جديد!');
+      print('📤 Body: 👤 العميل: ${order.customerName}\n📍 ${order.address}');
+      print('📤 iOS settings: presentAlert=true, presentSound=true, sound=notification_sound.wav');
 
       await flutterLocalNotificationsPlugin.show(
         order.orderId, // استخدام ID الطلب كـ notification ID
@@ -199,7 +227,8 @@ class NotificationController {
         payload: order.orderId.toString(),
       );
 
-      print('✅ Notification sent for order: ${order.orderId}');
+      print('✅ Notification show() completed for order: ${order.orderId}');
+      print('✅ If notification didn\'t appear, check iOS Settings > Notifications > Deliveryboy');
     } catch (e) {
       print('⚠️ Error sending notification for order ${order.orderId}: $e');
       // Don't rethrow - allow app to continue
@@ -249,14 +278,18 @@ class NotificationController {
 
   static Future<void> requestPermissions() async {
     try {
+      print('📋 Requesting notification permissions...');
+
       if (settingRepo.navigatorKey.currentContext == null) {
-        print('⚠️ Navigator context is null, skipping permission request');
+        print('⚠️ Navigator context is null, skipping context-based permission request');
+        print('⚠️ Permissions should have been requested during initialization');
         return;
       }
 
       if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
           TargetPlatform.iOS) {
-        await flutterLocalNotificationsPlugin
+        print('📱 Requesting iOS notification permissions...');
+        final bool? result = await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin
             >()
@@ -264,20 +297,35 @@ class NotificationController {
               alert: true,
               badge: true,
               sound: true,
-              critical: true,
+              critical: false, // Don't request critical - requires special entitlement
             );
+        print('✅ iOS notification permissions result: $result');
+
+        // Check current permission status
+        final IOSFlutterLocalNotificationsPlugin? iosPlugin =
+            flutterLocalNotificationsPlugin
+                .resolvePlatformSpecificImplementation<
+                  IOSFlutterLocalNotificationsPlugin
+                >();
+
+        if (iosPlugin != null) {
+          print('📋 Checking iOS notification permission status...');
+        }
       } else if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
                  TargetPlatform.android) {
-        await flutterLocalNotificationsPlugin
+        print('🤖 Requesting Android notification permissions...');
+        final bool? result = await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
             >()
             ?.requestNotificationsPermission();
+        print('✅ Android notification permissions result: $result');
       }
 
       print('✅ Notification permissions requested');
     } catch (e) {
       print('⚠️ Error requesting notification permissions: $e');
+      print('⚠️ Stack trace: ${StackTrace.current}');
       // Don't rethrow - allow app to continue
     }
   }
@@ -332,13 +380,20 @@ class NotificationController {
             presentBadge: true,
             presentSound: true,
             sound: 'notification_sound.wav',
-            interruptionLevel: InterruptionLevel.critical,
+            interruptionLevel: InterruptionLevel.timeSensitive,
+            categoryIdentifier: 'FCM_ORDER_CATEGORY',
+            threadIdentifier: 'fcm_orders',
           );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics,
       );
+
+      print('📤 Attempting to show FCM notification with ID: ${notification.hashCode}');
+      print('📤 Title: ${notification.title ?? 'طلب جديد'}');
+      print('📤 Body: ${notification.body ?? 'لديك طلب جديد يحتاج للمراجعة'}');
+      print('📤 iOS settings: presentAlert=true, presentSound=true, sound=notification_sound.wav');
 
       await flutterLocalNotificationsPlugin.show(
         notification.hashCode,
@@ -348,7 +403,8 @@ class NotificationController {
         payload: message.data['order_id'],
       );
 
-      print('🔔 تم إرسال التنبيه: ${notification.title}');
+      print('✅ FCM notification show() completed: ${notification.title}');
+      print('✅ If notification didn\'t appear, check iOS Settings > Notifications > Deliveryboy');
     } catch (e) {
       print('⚠️ Error creating notification: $e');
       // Don't rethrow - allow app to continue
