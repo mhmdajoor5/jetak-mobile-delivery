@@ -124,10 +124,13 @@ class NotificationController {
 
   /// فحص الطلبات الجديدة
   static Future<void> _checkForNewOrders() async {
-    if (_isCheckingOrders) return; // منع التداخل في الطلبات
-    
+    if (_isCheckingOrders) {
+      print('⏭️ Skipping check - already checking orders');
+      return;
+    }
+
     _isCheckingOrders = true;
-    
+
     try {
       final user = userRepo.currentUser.value;
       if (user.apiToken == null || user.id == null) {
@@ -135,41 +138,67 @@ class NotificationController {
         return;
       }
 
-      print('🔍 Checking for new orders...');
-      
+      print('');
+      print('🔍 ═══ Checking for new orders (${DateTime.now().toString().substring(11, 19)}) ═══');
+
       // الحصول على الطلبات المعلقة
       final response = await pendingRepo.getPendingOrders(
         driverId: user.id.toString(),
       );
-      
+
       final parsedOrders = PendingOrdersModel.fromJson(response);
-      
-      print('📋 Found ${parsedOrders.orders.length} pending orders');
-      
+
+      print('📋 Found ${parsedOrders.orders.length} total pending orders');
+      print('📋 Already notified about ${_notifiedOrderIds.length} orders: $_notifiedOrderIds');
+
+      int newOrdersCount = 0;
+
       // فحص الطلبات الجديدة (التي لم يتم إشعار عنها)
       for (final order in parsedOrders.orders) {
         final orderId = order.orderId.toString();
-        
+
         if (!_notifiedOrderIds.contains(orderId)) {
-          print('🔔 New order detected: $orderId');
-          
+          print('🆕 New order detected: #$orderId - ${order.customerName}');
+          newOrdersCount++;
+
           // إرسال إشعار للطلب الجديد
           await _sendNewOrderNotification(order);
-          
+
           // إضافة الطلب لقائمة المبلغ عنها
           _notifiedOrderIds.add(orderId);
           await _saveNotifiedOrderIds();
+
+          print('✅ Order #$orderId added to notified list');
+        } else {
+          print('⏭️ Skipping order #$orderId - already notified');
         }
       }
-      
+
+      if (newOrdersCount == 0) {
+        print('ℹ️ No new orders to notify about');
+      } else {
+        print('✅ Sent notifications for $newOrdersCount new order(s)');
+      }
+
       // تنظيف قائمة الطلبات المبلغ عنها (إزالة الطلبات التي لم تعد معلقة)
       final currentOrderIds = parsedOrders.orders.map((o) => o.orderId.toString()).toList();
+      final beforeCleanup = _notifiedOrderIds.length;
       _notifiedOrderIds.removeWhere((id) => !currentOrderIds.contains(id));
-      await _saveNotifiedOrderIds();
-      
-    } catch (e) {
+      final afterCleanup = _notifiedOrderIds.length;
+
+      if (beforeCleanup != afterCleanup) {
+        print('🧹 Cleaned up ${beforeCleanup - afterCleanup} completed/cancelled order(s) from tracking');
+        await _saveNotifiedOrderIds();
+      }
+
+      print('═══════════════════════════════════════');
+      print('');
+
+    } catch (e, stackTrace) {
       print('❌ Error checking for new orders: $e');
-      rethrow;
+      print('❌ Stack trace: $stackTrace');
+      // DON'T rethrow - this would kill the periodic timer!
+      // Just log the error and continue
     } finally {
       _isCheckingOrders = false;
     }
@@ -178,7 +207,7 @@ class NotificationController {
   /// إرسال إشعار للطلب الجديد
   static Future<void> _sendNewOrderNotification(PendingOrderModel order) async {
     try {
-      print('🔔 Sending notification for new order: ${order.orderId}');
+      print('   🔔 Sending notification for order #${order.orderId}...');
 
       // تشغيل الصوت والاهتزاز
       await playNotificationSound();
@@ -214,11 +243,6 @@ class NotificationController {
         iOS: iOSPlatformChannelSpecifics,
       );
 
-      print('📤 Attempting to show notification with ID: ${order.orderId}');
-      print('📤 Title: 🆕 طلب توصيل جديد!');
-      print('📤 Body: 👤 العميل: ${order.customerName}\n📍 ${order.address}');
-      print('📤 iOS settings: presentAlert=true, presentSound=true, sound=notification_sound.wav');
-
       await flutterLocalNotificationsPlugin.show(
         order.orderId, // استخدام ID الطلب كـ notification ID
         '🆕 طلب توصيل جديد!',
@@ -227,8 +251,7 @@ class NotificationController {
         payload: order.orderId.toString(),
       );
 
-      print('✅ Notification show() completed for order: ${order.orderId}');
-      print('✅ If notification didn\'t appear, check iOS Settings > Notifications > Deliveryboy');
+      print('   ✅ Notification displayed for order #${order.orderId}');
     } catch (e) {
       print('⚠️ Error sending notification for order ${order.orderId}: $e');
       // Don't rethrow - allow app to continue
