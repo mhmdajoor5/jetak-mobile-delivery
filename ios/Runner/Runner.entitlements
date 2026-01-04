@@ -4,8 +4,8 @@
 <dict>
 	<!-- Push Notifications Capability -->
 	<key>aps-environment</key>
-	<string>development</string>
-	<!-- Note: Use 'development' for testing builds, 'production' for App Store builds -->
+	<string>production</string>
+	<!-- Production mode works with both Sandbox & Production APNs -->
 
 	<!-- Push Notifications Entitlement (Required for iOS 13+) -->
 	<key>com.apple.developer.push-notifications</key>
