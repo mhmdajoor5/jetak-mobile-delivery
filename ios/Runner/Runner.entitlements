@@ -3,6 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>production</string>
+	<!-- Note: Use 'development' for testing builds, 'production' for App Store builds -->
 </dict>
 </plist>

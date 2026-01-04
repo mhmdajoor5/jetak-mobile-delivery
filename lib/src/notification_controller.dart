@@ -182,7 +182,7 @@ class NotificationController {
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
-            // Using default system notification sound
+            sound: 'notification_sound.wav',
             interruptionLevel: InterruptionLevel.critical,
           );
 
@@ -331,7 +331,7 @@ class NotificationController {
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
-            // Using default system notification sound
+            sound: 'notification_sound.wav',
             interruptionLevel: InterruptionLevel.critical,
           );
 
