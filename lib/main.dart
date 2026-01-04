@@ -44,8 +44,6 @@ void main() async {
   // Initialize local notifications first (requests permissions)
   await NotificationController.initializeLocalNotifications();
 
-  // Then get FCM token (requires APNs token on iOS)
-  await NotificationController.getDeviceToken();
 
   // Setup FCM token refresh listener
   FirebaseUtil.setupTokenRefreshListener();
