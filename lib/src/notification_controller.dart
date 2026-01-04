@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
@@ -446,20 +447,63 @@ class NotificationController {
 
   static Future<void> getDeviceToken() async {
     try {
-      await FirebaseMessaging.instance.getAPNSToken();
-      
+      print('');
+      print('═══════════════════════════════════════');
+      print('🔑 Getting FCM Device Token');
+      print('═══════════════════════════════════════');
+
+      // On iOS, we MUST get APNs token first before FCM token will work
+      if (Platform.isIOS) {
+        print('📱 iOS detected - retrieving APNs token first...');
+
+        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+        if (apnsToken == null) {
+          print('⏳ APNs token not available yet, waiting 3 seconds...');
+          await Future.delayed(Duration(seconds: 3));
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+          if (apnsToken == null) {
+            print('⚠️ APNs token still not available after waiting');
+            print('⚠️ This may indicate:');
+            print('   - Running on iOS Simulator (APNs not supported)');
+            print('   - Push notifications not properly configured');
+            print('   - Network issues preventing APNs registration');
+            print('═══════════════════════════════════════');
+            print('');
+            return;
+          }
+        }
+
+        print('✅ APNs token retrieved: ${apnsToken.substring(0, 20)}...');
+      }
+
+      print('🔄 Requesting FCM token...');
       String? token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
+
+      if (token != null && token.isNotEmpty) {
+        print('✅ FCM Token retrieved successfully');
+        print('🔑 Token (first 30 chars): ${token.substring(0, token.length > 30 ? 30 : token.length)}...');
+        print('🔑 Full token: $token');
+        print('📏 Token length: ${token.length} characters');
+
         if (kDebugMode) {
           print('🔑 FCM Token: $token');
         }
       } else {
+        print('❌ Failed to get FCM token - token is null or empty');
         if (kDebugMode) {
           print('❌ Failed to get FCM token');
         }
       }
+
+      print('═══════════════════════════════════════');
+      print('');
     } catch (e) {
       print('❌ Error getting FCM token: $e');
+      print('❌ Stack trace: ${StackTrace.current}');
+      print('═══════════════════════════════════════');
+      print('');
     }
   }
 

@@ -37,13 +37,18 @@ void main() async {
   // Login unidentified user for Intercom (for visitors/guests)
   await IntercomHelper.loginUnidentifiedUser();
 
-  // Setup FCM token refresh listener early (before getting token)
-  print('🚀 Setting up FCM token refresh listener at app startup...');
-  FirebaseUtil.setupTokenRefreshListener();
-
-  await NotificationController.getDeviceToken();
+  // Setup FCM and notifications
+  print('🚀 Setting up FCM and notifications...');
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Initialize local notifications first (requests permissions)
   await NotificationController.initializeLocalNotifications();
+
+  // Then get FCM token (requires APNs token on iOS)
+  await NotificationController.getDeviceToken();
+
+  // Setup FCM token refresh listener
+  FirebaseUtil.setupTokenRefreshListener();
   runApp(MyApp());
 }
 
