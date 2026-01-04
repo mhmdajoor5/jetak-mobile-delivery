@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
+import '../helpers/FirebaseUtils.dart';
 import '../models/address.dart';
 import '../models/credit_card.dart';
 import '../models/document.dart';
@@ -587,9 +588,37 @@ Future<bool> resetPassword(UserModel.User user) async {
 }
 
 Future<void> logout() async {
+  print('');
+  print('═══════════════════════════════════════');
+  print('👋 Logging out user');
+  print('═══════════════════════════════════════');
+
+  // Clear FCM token from backend BEFORE clearing current user
+  if (currentUser.value.id != null && currentUser.value.apiToken != null) {
+    try {
+      print('🧹 Clearing FCM token from backend...');
+      // Import FirebaseUtils at the top of the file
+      await FirebaseUtil.clearFCMTokenForUser(currentUser.value);
+
+      // Optional: Delete token completely to force new token on next login
+      // This ensures each account gets a unique token
+      await FirebaseUtil.deleteFCMToken();
+    } catch (e) {
+      print('⚠️ Error clearing FCM token during logout: $e');
+      // Continue with logout even if token cleanup fails
+    }
+  }
+
+  // Clear local user data
+  print('🧹 Clearing local user data...');
   currentUser.value = UserModel.User();
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove('current_user');
+
+  print('✅ Logout completed successfully');
+  print('═══════════════════════════════════════');
+  print('');
 }
 
 void setCurrentUser(jsonString) async {

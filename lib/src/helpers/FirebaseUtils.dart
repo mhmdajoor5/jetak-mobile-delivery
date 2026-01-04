@@ -283,6 +283,59 @@ class FirebaseUtil {
     }
   }
 
+  /// Clear FCM token from backend when user logs out
+  static Future<void> clearFCMTokenForUser(UserModel.User user) async {
+    try {
+      print('');
+      print('═══════════════════════════════════════');
+      print('🧹 Clearing FCM token for logged out user');
+      print('═══════════════════════════════════════');
+      print('👤 User ID: ${user.id}');
+      print('📧 Email: ${user.email}');
+
+      if (user.apiToken == null || user.id == null) {
+        print('⚠️ User not authenticated, cannot clear token');
+        print('═══════════════════════════════════════');
+        print('');
+        return;
+      }
+
+      // Set device token to empty string to remove it from backend
+      user.deviceToken = '';
+
+      // Update user on backend with empty token
+      print('💾 Removing device token from backend...');
+      await userRepo.update(user);
+
+      print('✅ FCM token cleared from backend successfully!');
+      print('═══════════════════════════════════════');
+      print('');
+    } catch (e) {
+      print('❌ Error clearing FCM token: $e');
+      print('═══════════════════════════════════════');
+    }
+  }
+
+  /// Delete FCM token completely (force new token on next login)
+  static Future<void> deleteFCMToken() async {
+    try {
+      print('');
+      print('═══════════════════════════════════════');
+      print('🗑️ Deleting FCM token from device');
+      print('═══════════════════════════════════════');
+
+      await FirebaseMessaging.instance.deleteToken();
+
+      print('✅ FCM token deleted successfully!');
+      print('ℹ️ A new token will be generated on next app start');
+      print('═══════════════════════════════════════');
+      print('');
+    } catch (e) {
+      print('❌ Error deleting FCM token: $e');
+      print('═══════════════════════════════════════');
+    }
+  }
+
   /// Save FCM token for a specific user (called after login/registration)
   static Future<void> saveFCMTokenForUser(UserModel.User user) async {
     try {
