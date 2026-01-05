@@ -175,7 +175,7 @@ class NotificationController {
             playSound: true,
             // Using default system notification sound
             largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-            color: Color(0xFF4CAF50), // أخضر للطلبات الجديدة
+            color: Color(0xFF4CAF50),
           );
 
       const DarwinNotificationDetails iOSPlatformChannelSpecifics =
@@ -192,10 +192,20 @@ class NotificationController {
         iOS: iOSPlatformChannelSpecifics,
       );
 
+      // Build notification body from order data without emojis
+      String notificationBody = '';
+      if (order.customerName.isNotEmpty) {
+        notificationBody += 'Customer: ${order.customerName}';
+      }
+      if (order.address.isNotEmpty) {
+        if (notificationBody.isNotEmpty) notificationBody += '\n';
+        notificationBody += 'Address: ${order.address}';
+      }
+
       await flutterLocalNotificationsPlugin.show(
-        order.orderId, // استخدام ID الطلب كـ notification ID
-        '🆕 طلب توصيل جديد!',
-        '👤 العميل: ${order.customerName}\n📍 ${order.address}',
+        order.orderId,
+        'New Delivery Order',
+        notificationBody.isNotEmpty ? notificationBody : 'You have a new order',
         platformChannelSpecifics,
         payload: order.orderId.toString(),
       );
@@ -341,15 +351,16 @@ class NotificationController {
         iOS: iOSPlatformChannelSpecifics,
       );
 
+      // Use title and body directly from FCM notification object
       await flutterLocalNotificationsPlugin.show(
         notification.hashCode,
-        notification.title ?? 'طلب جديد',
-        notification.body ?? 'لديك طلب جديد يحتاج للمراجعة',
+        notification.title ?? '',
+        notification.body ?? '',
         platformChannelSpecifics,
         payload: message.data['order_id'],
       );
 
-      print('🔔 تم إرسال التنبيه: ${notification.title}');
+      print('🔔 Notification displayed: ${notification.title}');
     } catch (e) {
       print('⚠️ Error creating notification: $e');
       // Don't rethrow - allow app to continue
