@@ -527,7 +527,7 @@ Future<Map<String, dynamic>> rejectOrderWithId(
   String orderId, {
   String? reason,
 }) async {
-  Uri uri = Helper.getUri('api/orders/$orderId/reject');
+  Uri uri = Helper.getUri('api/driver/reject-order-by-driver');
   User user = userRepo.currentUser.value;
 
   try {
@@ -541,20 +541,25 @@ Future<Map<String, dynamic>> rejectOrderWithId(
       body: json.encode({
         'api_token': user.apiToken,
         'driver_id': user.id,
-        'reason': reason ?? 'Driver unavailable',
+        'order_id': orderId,
+        'reason': reason ?? 'Driver rejected from notification screen',
       }),
     );
 
-    if (response.statusCode == 200) {
+    print('🔍 Reject Order Response Status: ${response.statusCode}');
+    print('🔍 Reject Order Response Body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return {'success': true, 'message': 'Order rejected successfully'};
     } else {
       return {
         'success': false,
         'message': 'Failed to reject order: ${response.statusCode}',
+        'error_body': response.body,
       };
     }
   } catch (e) {
-    print('Error rejecting order: $e');
+    print('❌ Error rejecting order: $e');
     return {'success': false, 'message': 'Network error: $e'};
   }
 }

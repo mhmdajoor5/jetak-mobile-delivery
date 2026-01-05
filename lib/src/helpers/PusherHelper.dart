@@ -20,39 +20,33 @@ class PusherHelper {
     }
 
     try {
-      print("🚀 Initializing Pusher for driver: ${userRepo.currentUser.value.id}");
+      print("🚀 Initializing Pusher (Public Channel) for driver: ${userRepo.currentUser.value.id}");
       
       await pusher.init(
         apiKey: "35debf4f355736840916",
         cluster: "ap2",
         onEvent: onEvent,
-        authEndpoint: "https://carrytechnologies.co/broadcasting/auth",
-        authParams: {
-          'headers': {
-            'Authorization': 'Bearer ${userRepo.currentUser.value.apiToken}',
-            'Accept': 'application/json',
-          }
-        },
         onSubscriptionSucceeded: (channelName, data) {
           print("✅ Pusher: Subscribed to $channelName");
         },
-        onSubscriptionError: (message, error, e) {
+        onSubscriptionError: (message, error) {
           print("❌ Pusher Subscription Error: $message");
+          print("❌ Error Detail: $error");
         },
-        onError: (message, code, e) {
-          print("❌ Pusher Error: $message (code: $code)");
+        onError: (message, code, error) {
+          print("❌ Pusher Global Error: $message (code: $code)");
         },
         onConnectionStateChange: (currentState, previousState) {
           print("🔄 Pusher Connection State: $previousState -> $currentState");
         },
       );
 
-      final channelName = 'private-driver.${userRepo.currentUser.value.id}';
+      // التأكد من أن القناة عامة (driver.{id})
+      final channelName = 'driver.${userRepo.currentUser.value.id}';
       print("📡 Subscribing to channel: $channelName");
       await pusher.subscribe(channelName: channelName);
       await pusher.connect();
       _isInitialized = true;
-      print("✅ Pusher connected successfully");
     } catch (e) {
       print("❌ Error initializing Pusher: $e");
     }
@@ -60,37 +54,61 @@ class PusherHelper {
 
   static void onEvent(PusherEvent event) {
     print("🔔 Received Pusher Event: ${event.eventName}");
-    print("📋 Event Data: ${event.data}");
-
-    if (event.eventName == 'order.new' || event.eventName == 'App\\Events\\NewOrderForDriver') {
+    print("📋 Raw Event Data: ${event.data}");
+    
+    // تنفيذ الكود في إطار العمل الرئيسي لضمان ظهور الشاشة فوراً
+    Future.delayed(Duration.zero, () {
       try {
-        final data = json.decode(event.data);
-        showNewOrderNotification(data);
+        // التحقق من اسم الحدث (Laravel يرسله أحياناً بالاسم الكامل للفئة)
+        if (event.eventName.contains('order.new') || 
+            event.eventName.contains('NewOrderForDriver')) {
+          
+          final dynamic decoded = json.decode(event.data);
+          Map<String, dynamic> data;
+          
+          if (decoded is Map) {
+            data = Map<String, dynamic>.from(decoded);
+          } else {
+            print("⚠️ Pusher Data is not a Map, skipping...");
+            return;
+          }
+          
+          showNewOrderNotification(data);
+        }
       } catch (e) {
-        print("❌ Error parsing Pusher event data: $e");
-      }
-    }
+        print("❌ Error in Pusher onEvent: $e");
+          }
+    });
   }
 
   static void showNewOrderNotification(Map<String, dynamic> data) {
-    print("🖥️ Showing New Order Notification Screen");
-    
-    // We use the navigatorKey from settingRepo to navigate from anywhere
+    print("🖥️ Preparing to show notification screen...");
     if (settingRepo.navigatorKey.currentState != null) {
-      // Prepare the arguments in the format OrderNotificationScreen expects
-      // argsMap['id'], argsMap['title'], argsMap['text']
       
+      // استخراج العنوان والملاحظات بشكل آمن
+      String address = '';
+      String description = '';
+      
+      if (data['delivery_address'] != null && data['delivery_address'] is Map) {
+        address = data['delivery_address']['address']?.toString() ?? '';
+        description = data['delivery_address']['description']?.toString() ?? '';
+      }
+
       final Map<String, dynamic> argsMap = {
         'id': data['order_id']?.toString() ?? '',
         'title': 'New Order from ${data['restaurant'] ?? 'Restaurant'}',
-        'text': 'User: ${data['user'] ?? 'Customer'}\nTotal: ${data['total'] ?? '0.0'}\nStatus: ${data['status'] ?? ''}',
+        'user': data['user']?.toString() ?? 'Customer',
+        'total': data['total']?.toString() ?? '0.0',
+        'status': data['status']?.toString() ?? 'Pending',
+        'address': address,
+        'description': description,
       };
 
+      print("🚀 Navigating to /orderNotification with ID: ${argsMap['id']}");
+      
       settingRepo.navigatorKey.currentState!.pushNamed(
         '/orderNotification',
-        arguments: {
-          'message': json.encode(argsMap)
-        },
+        arguments: {'message': json.encode(argsMap)},
       );
     } else {
       print("❌ Navigator state is null, cannot show notification screen");
@@ -107,4 +125,3 @@ class PusherHelper {
     }
   }
 }
-
