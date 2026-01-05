@@ -156,64 +156,20 @@ class NotificationController {
   }
 
   /// إرسال إشعار للطلب الجديد
+  /// Note: This method is for local order polling only.
+  /// For Firebase notifications, all formatting should come from Backend.
   static Future<void> _sendNewOrderNotification(PendingOrderModel order) async {
     try {
-      print('🔔 Sending notification for new order: ${order.orderId}');
+      print('🔔 New order detected from polling: ${order.orderId}');
+      print('⚠️ No local notification will be shown. Notifications should come from Firebase/Backend.');
 
-      // تشغيل الصوت والاهتزاز
+      // Play sound/vibration only - no notification display
+      // The Backend should send a proper FCM notification with formatted title/body
       await playNotificationSound();
 
-      const AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-            'new_orders',
-            'New Orders',
-            channelDescription: 'Notifications for new delivery orders',
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: true,
-            enableVibration: true,
-            playSound: true,
-            // Using default system notification sound
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-            color: Color(0xFF4CAF50),
-          );
-
-      const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            // Using default system notification sound
-            interruptionLevel: InterruptionLevel.critical,
-          );
-
-      const NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics,
-      );
-
-      // Build notification body from order data without emojis
-      String notificationBody = '';
-      if (order.customerName.isNotEmpty) {
-        notificationBody += 'Customer: ${order.customerName}';
-      }
-      if (order.address.isNotEmpty) {
-        if (notificationBody.isNotEmpty) notificationBody += '\n';
-        notificationBody += 'Address: ${order.address}';
-      }
-
-      await flutterLocalNotificationsPlugin.show(
-        order.orderId,
-        'New Delivery Order',
-        notificationBody.isNotEmpty ? notificationBody : 'You have a new order',
-        platformChannelSpecifics,
-        payload: order.orderId.toString(),
-      );
-
-      print('✅ Notification sent for order: ${order.orderId}');
+      // No notification display here - rely entirely on Firebase notifications from Backend
     } catch (e) {
-      print('⚠️ Error sending notification for order ${order.orderId}: $e');
-      // Don't rethrow - allow app to continue
+      print('⚠️ Error in order notification handler: $e');
     }
   }
 
