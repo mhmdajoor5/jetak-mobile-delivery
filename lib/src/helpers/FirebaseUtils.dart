@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 
@@ -110,6 +111,15 @@ class FirebaseUtil {
     try {
       print('🔑 Getting FCM device token...');
 
+      // Force refresh token to solve 404/invalid token issues
+      try {
+        print('🗑️ Deleting current token to force a fresh one...');
+        await FirebaseMessaging.instance.deleteToken();
+        await Future.delayed(Duration(milliseconds: 500));
+      } catch (e) {
+        print('ℹ️ No existing token to delete or delete failed');
+      }
+
       // Check if running on iOS Simulator
       if (Platform.isIOS) {
         bool isSimulator = await isIOSSimulator();
@@ -121,20 +131,22 @@ class FirebaseUtil {
         }
 
         // Real iOS device - get APNS token first
-        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        print('📱 iOS APNS Token: ${apnsToken ?? "Not available yet"}');
-
-        // If APNS token is not available, wait a bit and retry
-        if (apnsToken == null) {
-          print('⏳ Waiting for APNS token...');
-          await Future.delayed(Duration(seconds: 2));
+        String? apnsToken;
+        int retries = 0;
+        while (apnsToken == null && retries < 10) {
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-          print('📱 iOS APNS Token (retry): ${apnsToken ?? "Still not available"}');
-
           if (apnsToken == null) {
-            print('❌ APNS token still not available after retry');
-            print('⚠️ This may affect push notification delivery');
+            print('⏳ Waiting for APNS token (attempt ${retries + 1}/10)...');
+            await Future.delayed(Duration(seconds: 2));
+            retries++;
           }
+        }
+        
+        print('📱 iOS APNS Token: ${apnsToken ?? "Still not available"}');
+
+        if (apnsToken == null) {
+          print('❌ APNS token still not available after $retries retries');
+          print('⚠️ This may affect push notification delivery');
         }
       }
 
@@ -205,6 +217,16 @@ class FirebaseUtil {
       print('🚀 Starting FCM Registration Process');
       print('═══════════════════════════════════════');
       print('📱 Platform: ${Platform.operatingSystem}');
+
+      // Log Firebase configuration details
+      try {
+        final options = Firebase.app().options;
+        print('🔥 Firebase Project ID: ${options.projectId}');
+        print('🔥 Firebase App ID: ${options.appId}');
+        print('🔥 Firebase Sender ID: ${options.messagingSenderId}');
+      } catch (e) {
+        print('⚠️ Could not log Firebase options: $e');
+      }
 
       // Check for iOS Simulator early
       if (Platform.isIOS) {
