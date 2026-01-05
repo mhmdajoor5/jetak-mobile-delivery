@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
+import '../helpers/FirebaseUtils.dart';
 import '../models/address.dart';
 import '../models/credit_card.dart';
 import '../models/document.dart';
@@ -75,6 +76,10 @@ Future<UserModel.User> login(UserModel.User user) async {
           if (responseData['data'] != null) {
             setCurrentUser(json.encode(responseData));
             currentUser.value = UserModel.User.fromJSON(responseData['data']);
+            
+            // Save FCM token to backend after successful login
+            FirebaseUtil.saveFCMTokenForUser(currentUser.value);
+            
             return currentUser.value;
           } else {
             print('❌ Login response missing "data" field');
@@ -460,6 +465,9 @@ Future<UserModel.User> register(UserModel.User user) async {
               setCurrentUser(response.body);
               currentUser.value = UserModel.User.fromJSON(responseData['data']);
               print('✅ Registration successful with URL: $url');
+              
+              // Save FCM token to backend after successful registration
+              FirebaseUtil.saveFCMTokenForUser(currentUser.value);
               
               return currentUser.value;
             } else {

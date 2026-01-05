@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
@@ -40,7 +41,7 @@ class NotificationController {
               requestAlertPermission: true,
               requestBadgePermission: true,
               requestSoundPermission: true,
-              requestCriticalPermission: true,
+              requestCriticalPermission: false,
             ),
           );
 
@@ -357,17 +358,27 @@ class NotificationController {
 
   static Future<void> getDeviceToken() async {
     try {
-      await FirebaseMessaging.instance.getAPNSToken();
+      print('🔑 Getting FCM Device Token from NotificationController...');
+      
+      if (Platform.isIOS) {
+        String? apnsToken;
+        int retries = 0;
+        while (apnsToken == null && retries < 10) {
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+          if (apnsToken == null) {
+            print('⏳ Waiting for APNS token (attempt ${retries + 1}/10)...');
+            await Future.delayed(Duration(seconds: 2));
+            retries++;
+          }
+        }
+        print('📱 APNS Token retrieved: ${apnsToken != null ? "SUCCESS" : "FAILED"}');
+      }
       
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        if (kDebugMode) {
-          print('🔑 FCM Token: $token');
-        }
+        print('🔑 FCM Token: $token');
       } else {
-        if (kDebugMode) {
-          print('❌ Failed to get FCM token');
-        }
+        print('❌ Failed to get FCM token');
       }
     } catch (e) {
       print('❌ Error getting FCM token: $e');

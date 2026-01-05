@@ -2,18 +2,24 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CLIENT_ID</key>
+	<string>651078762961-2tp1mn4j200i1dp64ldks931pgik0uli.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.651078762961-2tp1mn4j200i1dp64ldks931pgik0uli</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>651078762961-50ikou1f1pop38hg2lnhtsue3p6uibm5.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyC5p1QVvhaJ7I3RQFejUy4ukriz_gd6lNk</string>
+	<string>AIzaSyDab_p36hOZq2_QwQJd9Sn7we-a3Ik1sXg</string>
 	<key>GCM_SENDER_ID</key>
-	<string>501984000106</string>
+	<string>651078762961</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.carryeats.driver</string>
+	<string>com.carry.carrydriver</string>
 	<key>PROJECT_ID</key>
-	<string>carry-eats</string>
+	<string>fooddelivery-e663e</string>
 	<key>STORAGE_BUCKET</key>
-	<string>carry-eats.appspot.com</string>
+	<string>fooddelivery-e663e.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:501984000106:ios:92d31dfd708113c9e3b213</string>
+	<string>1:651078762961:ios:4eaa5a9ff58c98550760f0</string>
 </dict>
 </plist>
