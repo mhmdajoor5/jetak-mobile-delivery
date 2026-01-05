@@ -336,6 +336,67 @@ class FirebaseUtil {
     }
   }
 
+  /// Force refresh FCM token (useful for testing and fixing stale tokens)
+  static Future<void> forceRefreshToken() async {
+    try {
+      print('');
+      print('═══════════════════════════════════════');
+      print('🔄 Force Refreshing FCM Token');
+      print('═══════════════════════════════════════');
+
+      // Check for iOS Simulator
+      if (Platform.isIOS) {
+        bool isSimulator = await isIOSSimulator();
+        if (isSimulator) {
+          print('⚠️ Running on iOS Simulator - Cannot refresh token');
+          print('═══════════════════════════════════════');
+          return;
+        }
+      }
+
+      // Delete the old token
+      print('🗑️ Deleting old FCM token...');
+      await FirebaseMessaging.instance.deleteToken();
+      print('✅ Old token deleted');
+
+      // Wait a moment
+      await Future.delayed(Duration(seconds: 2));
+
+      // Request notification permission again
+      print('🔔 Requesting notification permission...');
+      await requestNotificationPermission();
+
+      // Get new token
+      print('🔑 Getting new FCM token...');
+      String? newToken = await getDeviceToken();
+
+      if (newToken.isEmpty) {
+        print('❌ Failed to get new token');
+        print('═══════════════════════════════════════');
+        return;
+      }
+
+      print('✅ New token obtained: ${newToken.substring(0, 20)}...');
+
+      // Save to backend
+      UserModel.User currentUser = await userRepo.getCurrentUser();
+      if (currentUser.auth == true && currentUser.id != null) {
+        print('💾 Saving new token to backend...');
+        currentUser.deviceToken = newToken;
+        await userRepo.update(currentUser);
+        print('✅ New token saved to backend successfully!');
+      } else {
+        print('⚠️ User not authenticated, cannot save token');
+      }
+
+      print('═══════════════════════════════════════');
+      print('');
+    } catch (e) {
+      print('❌ Error force refreshing token: $e');
+      print('═══════════════════════════════════════');
+    }
+  }
+
   /// Save FCM token for a specific user (called after login/registration)
   static Future<void> saveFCMTokenForUser(UserModel.User user) async {
     try {
