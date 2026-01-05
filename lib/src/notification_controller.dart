@@ -396,6 +396,32 @@ class NotificationController {
     print('🔄 Reset notification history');
   }
 
+  /// مسح جميع بيانات الإشعارات المخزنة
+  static Future<void> clearAllNotificationData() async {
+    try {
+      print('🗑️ Clearing all notification data...');
+
+      // 1. Clear notified order IDs
+      _notifiedOrderIds.clear();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('notified_order_ids');
+      print('✅ Cleared notified order IDs');
+
+      // 2. Clear FCM message ID
+      await prefs.remove('google.message_id');
+      print('✅ Cleared FCM message ID');
+
+      // 3. Cancel all pending notifications
+      await cancelNotifications();
+      print('✅ Cancelled all notifications');
+
+      print('✅ All notification data has been cleared successfully');
+    } catch (e) {
+      print('❌ Error clearing notification data: $e');
+      rethrow;
+    }
+  }
+
   /// اختبار صوت الإشعار
   static Future<void> testNotificationSound() async {
     print('🧪 اختبار صوت التنبيه...');
