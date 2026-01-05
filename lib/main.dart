@@ -37,90 +37,14 @@ void main() async {
   // Login unidentified user for Intercom (for visitors/guests)
   await IntercomHelper.loginUnidentifiedUser();
 
-  // Setup FCM and notifications
-  print('🚀 Setting up FCM and notifications...');
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Initialize local notifications first (requests permissions)
-  await NotificationController.initializeLocalNotifications();
-
-
-  // Setup FCM token refresh listener
+  // Setup FCM token refresh listener early (before getting token)
+  print('🚀 Setting up FCM token refresh listener at app startup...');
   FirebaseUtil.setupTokenRefreshListener();
 
-  // Setup FCM message listeners for all app states
-  _setupFCMListeners();
-
+  await NotificationController.getDeviceToken();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await NotificationController.initializeLocalNotifications();
   runApp(MyApp());
-}
-
-/// Setup FCM listeners for foreground and notification tap events
-void _setupFCMListeners() {
-  print('🔔 Setting up FCM message listeners...');
-
-  // Listen to messages when app is in FOREGROUND
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('');
-    print('═══════════════════════════════════════');
-    print('📩 FCM Message received (FOREGROUND)');
-    print('═══════════════════════════════════════');
-    print('📬 Title: ${message.notification?.title ?? 'No title'}');
-    print('📬 Body: ${message.notification?.body ?? 'No body'}');
-    print('📬 Data: ${message.data}');
-    print('═══════════════════════════════════════');
-
-    // Show local notification with sound
-    NotificationController.createNewNotification(message);
-  });
-
-  // Listen when app is opened from a TERMINATED state via notification tap
-  FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
-    if (message != null) {
-      print('');
-      print('═══════════════════════════════════════');
-      print('📲 App opened from TERMINATED state via notification');
-      print('═══════════════════════════════════════');
-      print('📬 Title: ${message.notification?.title ?? 'No title'}');
-      print('📬 Data: ${message.data}');
-      print('═══════════════════════════════════════');
-
-      // Handle navigation or other actions
-      _handleNotificationTap(message);
-    }
-  });
-
-  // Listen when app is opened from BACKGROUND state via notification tap
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('');
-    print('═══════════════════════════════════════');
-    print('📲 App opened from BACKGROUND via notification');
-    print('═══════════════════════════════════════');
-    print('📬 Title: ${message.notification?.title ?? 'No title'}');
-    print('📬 Data: ${message.data}');
-    print('═══════════════════════════════════════');
-
-    // Handle navigation or other actions
-    _handleNotificationTap(message);
-  });
-
-  print('✅ FCM message listeners setup complete');
-}
-
-/// Handle notification tap to navigate to relevant screen
-void _handleNotificationTap(RemoteMessage message) {
-  // Navigate to orders page if order_id is present
-  if (message.data.containsKey('order_id')) {
-    String? orderId = message.data['order_id'];
-    print('🔔 Navigating to order: $orderId');
-
-    // Use navigator key to navigate
-    if (settingRepo.navigatorKey.currentState != null) {
-      settingRepo.navigatorKey.currentState!.pushReplacementNamed(
-        '/Pages',
-        arguments: 1, // Index for orders page
-      );
-    }
-  }
 }
 
 class MyApp extends StatefulWidget {
@@ -135,12 +59,22 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    super.initState();
+    NotificationController.createNewNotification(
+      RemoteMessage(
+        senderId: "123456789",
+        messageId: "619045",
+        data: {"key": "value", 'order_id': "123"},
+        notification: RemoteNotification(
+          title: "Test Notification",
+          body: "This is a test notification",
+        ),
+      ),
+    );
 
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
     userRepo.getCurrentUser();
-
+    
     // Set Hebrew as default language if not already set
     if (settingRepo.setting.value.mobileLanguage.value.languageCode != 'he') {
       settingRepo.setting.value.mobileLanguage.value = Locale('he', '');
@@ -148,9 +82,23 @@ class _MyAppState extends State<MyApp> {
       // Force rebuild to apply language change
       settingRepo.setting.notifyListeners();
     }
+    // NotificationController.startListeningNotificationEvents();
 
-    // FCM listeners are now set up in main() before runApp()
-    // This ensures they catch all messages from app startup
+    // Listen to messages when app is in foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📩 onMessage: ${message.notification?.title}');
+      showLocalNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('📲 App opened from notification: ${message.data}');
+    });
+    super.initState();
+  }
+
+  void showLocalNotification(RemoteMessage message) {
+    // استخدام NotificationController لعرض التنبيه مع الصوت
+    NotificationController.createNewNotification(message);
   }
 
   @override

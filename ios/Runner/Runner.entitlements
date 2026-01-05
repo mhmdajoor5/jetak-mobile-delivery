@@ -2,13 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Push Notifications Capability -->
 	<key>aps-environment</key>
-	<string>production</string>
-	<!-- Production mode works with both Sandbox & Production APNs -->
-
-	<!-- Push Notifications Entitlement (Required for iOS 13+) -->
-	<key>com.apple.developer.push-notifications</key>
-	<true/>
+	<string>development</string>
 </dict>
 </plist>

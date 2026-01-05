@@ -18,8 +18,7 @@ class SettingsController extends ControllerMVC {
   }
 
   void update(User user) async {
-    // DON'T set deviceToken to null - this would break push notifications!
-    // The device token should only be cleared on logout
+    user.deviceToken = null;
     repository.update(user).then((value) {
       setState(() {
         //this.favorite = value;

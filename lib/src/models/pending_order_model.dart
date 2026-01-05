@@ -21,11 +21,9 @@ class PendingOrdersModel {
 
   factory PendingOrdersModel.fromJson(Map<String, dynamic> json) =>
       PendingOrdersModel(
-        orders: json["orders"] != null
-            ? List<PendingOrderModel>.from(
-                json["orders"].map((x) => PendingOrderModel.fromJson(x)),
-              )
-            : [],
+        orders: List<PendingOrderModel>.from(
+          json["orders"].map((x) => PendingOrderModel.fromJson(x)),
+        ),
       );
 
   Map<String, dynamic> toJson() => {

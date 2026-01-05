@@ -18,7 +18,7 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
     // استخدام API endpoint الصحيح للطلبات المعلقة
     final baseUrl = GlobalConfiguration().getValue('api_base_url');
     final url = '${baseUrl}driver/driver-candidate-orders/$driverId';
-
+    
     final response = await http.post(
       Uri.parse(url),
       body: json.encode({
@@ -31,27 +31,33 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
         'sortedBy': 'desc',
         'limit': '20'
       }),
-
+     
       headers: {'Content-Type': 'application/json'},
-    ).timeout(
-      Duration(seconds: 15),
-      onTimeout: () {
-        print('⏱️ Request timeout after 15 seconds');
-        throw Exception('Request timeout - server did not respond in time');
-      },
     );
 
+    print('🔍 API URL: $url');
+    print('🔍 API Response Status: ${response.statusCode}');
+    print('🔍 API Response Headers: ${response.headers}');
+    
     if (response.statusCode == 200) {
+      print('✅ getPendingOrders: success');
+      
       final jsonData = json.decode(response.body);
-
+      print('📦 Raw JSON Response:');
+      print(jsonData);
+      
       // تحويل البيانات لتتناسب مع PendingOrderModel
       final ordersData = jsonData['orders'] ?? [];
-
+      
       if (ordersData is List) {
-        print('   ✅ API returned ${ordersData.length} pending order(s)');
-
+        print('📋 Found ${ordersData.length} pending orders');
+        
         // تحويل البيانات لصيغة PendingOrderModel
         final convertedOrders = ordersData.map((order) {
+          print('🔍 Converting Order ${order['order_id']}:');
+          print('  - User: ${order['user']}');
+          print('  - Delivery Address: ${order['delivery_address']}');
+          
           return {
             'order_id': order['order_id'],
             'tax': (order['tax'] ?? 0.0).toDouble(),
@@ -71,18 +77,15 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
         return {'orders': []};
       }
     } else {
-      print('❌ getPendingOrders: HTTP error ${response.statusCode}');
+      print('❌ getPendingOrders: error ${response.statusCode}');
       print('❌ Response body: ${response.body}');
-
-      // Return empty orders list, not empty dict
-      return {'orders': []};
+      
+      // إرجاع بيانات وهمية للاختبار
+      return {};
     }
-  } catch (e, stackTrace) {
+  } catch (e) {
     print('❌ Exception in getPendingOrders: $e');
-    print('❌ Stack trace: $stackTrace');
-
-    // Return empty orders list to allow app to continue
-    return {'orders': []};
+    return {};
   }
 }
 
