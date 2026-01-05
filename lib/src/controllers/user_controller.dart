@@ -33,11 +33,6 @@ class UserController extends ControllerMVC {
   
   UserController._internal() {
     loginFormKey = GlobalKey<FormState>();
-    _firebaseMessaging = FirebaseMessaging.instance;
-    _firebaseMessaging.getToken().then((deviceToken) {
-      user.deviceToken = deviceToken;
-      print('🔔 FCM Token obtained in UserController: $deviceToken');
-    });
   }
 
   Future<void> submitApplication(Map<String, Triple<bool, File, String>> uploadedFiles) async {

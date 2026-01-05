@@ -28,11 +28,24 @@ class NotificationController {
 
   static Future<void> initializeLocalNotifications() async {
     try {
+      print('');
+      print('═══════════════════════════════════════');
+      print('🔔 Initializing Notification System');
+      print('═══════════════════════════════════════');
+
       // تهيئة مشغل الصوت
       _audioPlayer = AudioPlayer();
 
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
+
+      print('📋 Configuring iOS notification settings...');
+      print('   - Request Alert Permission: true');
+      print('   - Request Badge Permission: true');
+      print('   - Request Sound Permission: true');
+      print('   - Default Present Alert: true');
+      print('   - Default Present Badge: true');
+      print('   - Default Present Sound: true');
 
       final InitializationSettings initializationSettings =
           InitializationSettings(
@@ -41,14 +54,19 @@ class NotificationController {
               requestAlertPermission: true,
               requestBadgePermission: true,
               requestSoundPermission: true,
-              requestCriticalPermission: false,
+              requestCriticalPermission: false, // Requires special entitlement from Apple
+              defaultPresentAlert: true,
+              defaultPresentBadge: true,
+              defaultPresentSound: true,
             ),
           );
 
-      await flutterLocalNotificationsPlugin.initialize(
+      print('🔧 Initializing flutter_local_notifications plugin...');
+      final bool? initialized = await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: onNotificationResponse,
       );
+      print('✅ Plugin initialization result: $initialized');
 
       channel = const AndroidNotificationChannel(
         'alerts', // id
@@ -66,9 +84,12 @@ class NotificationController {
           ?.createNotificationChannel(channel);
 
       // بدء فحص الطلبات الجديدة
+      print('🔍 Starting periodic order checking...');
       await startOrderChecking();
 
       print('✅ Notification system initialized successfully');
+      print('═══════════════════════════════════════');
+      print('');
     } catch (e) {
       print('⚠️ Error initializing notifications: $e');
       print('⚠️ App will continue without notifications');
@@ -104,10 +125,13 @@ class NotificationController {
 
   /// فحص الطلبات الجديدة
   static Future<void> _checkForNewOrders() async {
-    if (_isCheckingOrders) return; // منع التداخل في الطلبات
-    
+    if (_isCheckingOrders) {
+      print('⏭️ Skipping check - already checking orders');
+      return;
+    }
+
     _isCheckingOrders = true;
-    
+
     try {
       final user = userRepo.currentUser.value;
       if (user.apiToken == null || user.id == null) {
@@ -115,41 +139,77 @@ class NotificationController {
         return;
       }
 
-      print('🔍 Checking for new orders...');
-      
+      print('');
+      print('🔍 ═══ Checking for new orders (${DateTime.now().toString().substring(11, 19)}) ═══');
+
       // الحصول على الطلبات المعلقة
       final response = await pendingRepo.getPendingOrders(
         driverId: user.id.toString(),
       );
-      
-      final parsedOrders = PendingOrdersModel.fromJson(response);
-      
-      print('📋 Found ${parsedOrders.orders.length} pending orders');
-      
+
+      print('📦 API response received: ${response.toString().substring(0, response.toString().length > 100 ? 100 : response.toString().length)}...');
+
+      late PendingOrdersModel parsedOrders;
+      try {
+        parsedOrders = PendingOrdersModel.fromJson(response);
+      } catch (parseError) {
+        print('❌ Error parsing orders response: $parseError');
+        print('❌ Response was: $response');
+        // Create empty model to continue
+        parsedOrders = PendingOrdersModel(orders: []);
+      }
+
+      print('📋 Found ${parsedOrders.orders.length} total pending orders');
+      print('📋 Already notified about ${_notifiedOrderIds.length} orders: $_notifiedOrderIds');
+
+      int newOrdersCount = 0;
+
       // فحص الطلبات الجديدة (التي لم يتم إشعار عنها)
       for (final order in parsedOrders.orders) {
         final orderId = order.orderId.toString();
-        
+
         if (!_notifiedOrderIds.contains(orderId)) {
-          print('🔔 New order detected: $orderId');
-          
+          print('🆕 New order detected: #$orderId - ${order.customerName}');
+          newOrdersCount++;
+
           // إرسال إشعار للطلب الجديد
           await _sendNewOrderNotification(order);
-          
+
           // إضافة الطلب لقائمة المبلغ عنها
           _notifiedOrderIds.add(orderId);
           await _saveNotifiedOrderIds();
+
+          print('✅ Order #$orderId added to notified list');
+        } else {
+          print('⏭️ Skipping order #$orderId - already notified');
         }
       }
-      
+
+      if (newOrdersCount == 0) {
+        print('ℹ️ No new orders to notify about');
+      } else {
+        print('✅ Sent notifications for $newOrdersCount new order(s)');
+      }
+
       // تنظيف قائمة الطلبات المبلغ عنها (إزالة الطلبات التي لم تعد معلقة)
       final currentOrderIds = parsedOrders.orders.map((o) => o.orderId.toString()).toList();
+      final beforeCleanup = _notifiedOrderIds.length;
       _notifiedOrderIds.removeWhere((id) => !currentOrderIds.contains(id));
-      await _saveNotifiedOrderIds();
-      
-    } catch (e) {
+      final afterCleanup = _notifiedOrderIds.length;
+
+      if (beforeCleanup != afterCleanup) {
+        print('🧹 Cleaned up ${beforeCleanup - afterCleanup} completed/cancelled order(s) from tracking');
+        await _saveNotifiedOrderIds();
+      }
+
+      print('═══════════════════════════════════════');
+      print('');
+
+    } catch (e, stackTrace) {
       print('❌ Error checking for new orders: $e');
-      rethrow;
+      print('❌ Stack trace: $stackTrace');
+      // DON'T rethrow - this would kill the periodic timer!
+      // Just log the error and continue
     } finally {
       _isCheckingOrders = false;
     }
@@ -158,7 +218,7 @@ class NotificationController {
   /// إرسال إشعار للطلب الجديد
   static Future<void> _sendNewOrderNotification(PendingOrderModel order) async {
     try {
-      print('🔔 Sending notification for new order: ${order.orderId}');
+      print('   🔔 Sending notification for order #${order.orderId}...');
 
       // تشغيل الصوت والاهتزاز
       await playNotificationSound();
@@ -183,8 +243,10 @@ class NotificationController {
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
-            // Using default system notification sound
-            interruptionLevel: InterruptionLevel.critical,
+            sound: 'notification_sound.wav',
+            interruptionLevel: InterruptionLevel.timeSensitive,
+            categoryIdentifier: 'NEW_ORDER_CATEGORY',
+            threadIdentifier: 'new_orders',
           );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -200,7 +262,7 @@ class NotificationController {
         payload: order.orderId.toString(),
       );
 
-      print('✅ Notification sent for order: ${order.orderId}');
+      print('   ✅ Notification displayed for order #${order.orderId}');
     } catch (e) {
       print('⚠️ Error sending notification for order ${order.orderId}: $e');
       // Don't rethrow - allow app to continue
@@ -250,14 +312,18 @@ class NotificationController {
 
   static Future<void> requestPermissions() async {
     try {
+      print('📋 Requesting notification permissions...');
+
       if (settingRepo.navigatorKey.currentContext == null) {
-        print('⚠️ Navigator context is null, skipping permission request');
+        print('⚠️ Navigator context is null, skipping context-based permission request');
+        print('⚠️ Permissions should have been requested during initialization');
         return;
       }
 
       if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
           TargetPlatform.iOS) {
-        await flutterLocalNotificationsPlugin
+        print('📱 Requesting iOS notification permissions...');
+        final bool? result = await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin
             >()
@@ -265,20 +331,35 @@ class NotificationController {
               alert: true,
               badge: true,
               sound: true,
-              critical: true,
+              critical: false, // Don't request critical - requires special entitlement
             );
+        print('✅ iOS notification permissions result: $result');
+
+        // Check current permission status
+        final IOSFlutterLocalNotificationsPlugin? iosPlugin =
+            flutterLocalNotificationsPlugin
+                .resolvePlatformSpecificImplementation<
+                  IOSFlutterLocalNotificationsPlugin
+                >();
+
+        if (iosPlugin != null) {
+          print('📋 Checking iOS notification permission status...');
+        }
       } else if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
                  TargetPlatform.android) {
-        await flutterLocalNotificationsPlugin
+        print('🤖 Requesting Android notification permissions...');
+        final bool? result = await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
             >()
             ?.requestNotificationsPermission();
+        print('✅ Android notification permissions result: $result');
       }
 
       print('✅ Notification permissions requested');
     } catch (e) {
       print('⚠️ Error requesting notification permissions: $e');
+      print('⚠️ Stack trace: ${StackTrace.current}');
       // Don't rethrow - allow app to continue
     }
   }
@@ -332,14 +413,21 @@ class NotificationController {
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
-            // Using default system notification sound
-            interruptionLevel: InterruptionLevel.critical,
+            sound: 'notification_sound.wav',
+            interruptionLevel: InterruptionLevel.timeSensitive,
+            categoryIdentifier: 'FCM_ORDER_CATEGORY',
+            threadIdentifier: 'fcm_orders',
           );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics,
       );
+
+      print('📤 Attempting to show FCM notification with ID: ${notification.hashCode}');
+      print('📤 Title: ${notification.title ?? 'طلب جديد'}');
+      print('📤 Body: ${notification.body ?? 'لديك طلب جديد يحتاج للمراجعة'}');
+      print('📤 iOS settings: presentAlert=true, presentSound=true, sound=notification_sound.wav');
 
       await flutterLocalNotificationsPlugin.show(
         notification.hashCode,
@@ -349,7 +437,8 @@ class NotificationController {
         payload: message.data['order_id'],
       );
 
-      print('🔔 تم إرسال التنبيه: ${notification.title}');
+      print('✅ FCM notification show() completed: ${notification.title}');
+      print('✅ If notification didn\'t appear, check iOS Settings > Notifications > Deliveryboy');
     } catch (e) {
       print('⚠️ Error creating notification: $e');
       // Don't rethrow - allow app to continue
@@ -358,30 +447,63 @@ class NotificationController {
 
   static Future<void> getDeviceToken() async {
     try {
-      print('🔑 Getting FCM Device Token from NotificationController...');
-      
+      print('');
+      print('═══════════════════════════════════════');
+      print('🔑 Getting FCM Device Token');
+      print('═══════════════════════════════════════');
+
+      // On iOS, we MUST get APNs token first before FCM token will work
       if (Platform.isIOS) {
-        String? apnsToken;
-        int retries = 0;
-        while (apnsToken == null && retries < 10) {
+        print('📱 iOS detected - retrieving APNs token first...');
+
+        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+        if (apnsToken == null) {
+          print('⏳ APNs token not available yet, waiting 3 seconds...');
+          await Future.delayed(Duration(seconds: 3));
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
           if (apnsToken == null) {
-            print('⏳ Waiting for APNS token (attempt ${retries + 1}/10)...');
-            await Future.delayed(Duration(seconds: 2));
-            retries++;
+            print('⚠️ APNs token still not available after waiting');
+            print('⚠️ This may indicate:');
+            print('   - Running on iOS Simulator (APNs not supported)');
+            print('   - Push notifications not properly configured');
+            print('   - Network issues preventing APNs registration');
+            print('═══════════════════════════════════════');
+            print('');
+            return;
           }
         }
-        print('📱 APNS Token retrieved: ${apnsToken != null ? "SUCCESS" : "FAILED"}');
+
+        print('✅ APNs token retrieved: ${apnsToken.substring(0, 20)}...');
       }
-      
+
+      print('🔄 Requesting FCM token...');
       String? token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        print('🔑 FCM Token: $token');
+
+      if (token != null && token.isNotEmpty) {
+        print('✅ FCM Token retrieved successfully');
+        print('🔑 Token (first 30 chars): ${token.substring(0, token.length > 30 ? 30 : token.length)}...');
+        print('🔑 Full token: $token');
+        print('📏 Token length: ${token.length} characters');
+
+        if (kDebugMode) {
+          print('🔑 FCM Token: $token');
+        }
       } else {
-        print('❌ Failed to get FCM token');
+        print('❌ Failed to get FCM token - token is null or empty');
+        if (kDebugMode) {
+          print('❌ Failed to get FCM token');
+        }
       }
+
+      print('═══════════════════════════════════════');
+      print('');
     } catch (e) {
       print('❌ Error getting FCM token: $e');
+      print('❌ Stack trace: ${StackTrace.current}');
+      print('═══════════════════════════════════════');
+      print('');
     }
   }
 
