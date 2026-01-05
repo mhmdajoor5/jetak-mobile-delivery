@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:audioplayers/audioplayers.dart';
 import 'package:deliveryboy/src/models/route_argument.dart';
 import 'package:flutter/material.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -20,196 +20,220 @@ class OrderNotificationScreen extends StatefulWidget {
 
 class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
   late OrderController _con;
+  AudioPlayer? _audioPlayer;
 
   _OrderNotificationScreenState() : super(OrderController()) {
     _con = (controller as OrderController?)!;
   }
 
-  // AudioPlayer player = AudioPlayer();
-  String audioasset = "notification_sound.wav";
-
   @override
   void initState() {
-    play();
     super.initState();
+    _playNotificationSound();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer?.dispose();
+    super.dispose();
+  }
+
+  void _playNotificationSound() async {
+    try {
+      _audioPlayer = AudioPlayer();
+      await _audioPlayer?.play(AssetSource("notification_sound.wav"));
+      _audioPlayer?.setReleaseMode(ReleaseMode.loop);
+    } catch (e) {
+      print("❌ Error playing sound: $e");
+    }
+  }
+
+  void _stopNotificationSound() {
+    _audioPlayer?.stop();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    
+    Map<String, dynamic> argsMap = {};
+    try {
+      final args = (widget.routeArgument as Map<String, dynamic>)["message"];
+      argsMap = json.decode(args as String);
+    } catch (e) {
+      print("❌ Error parsing notification args: $e");
+    }
 
-    final args = (widget.routeArgument as Map<String, dynamic>)["message"];
-    final argsMap = json.decode(args as String);
-    print("argsMap: $argsMap");
-    // final orderID = args.payload["offrderId"];
+    final orderId = argsMap['id']?.toString() ?? '';
+    final title = argsMap['title'] ?? 'New Order';
+    final text = argsMap['text'] ?? '';
+
     return Scaffold(
-      key: _con.scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: SizedBox(
-          height: config.App(context).appHeight(110),
-          child: Stack(
-            alignment: AlignmentDirectional.topCenter,
-            children: <Widget>[
-              Positioned(
-                top: 0,
-                child: Container(
-                  width: config.App(context).appWidth(100),
-                  height: config.App(context).appHeight(29.5),
-                  decoration: BoxDecoration(color: Colors.black54),
+      backgroundColor: Colors.white,
+      body: Container(
+        height: size.height,
+        width: size.width,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              config.Colors().mainColor(1),
+              config.Colors().mainColor(0.8),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Spacer(),
+              Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    )
+                  ],
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 80,
+                  color: config.Colors().mainColor(1),
                 ),
               ),
-              Positioned(
-                top: config.App(context).appHeight(29.5) - 140,
-                child: SizedBox(
-                  width: config.App(context).appWidth(84),
-                  height: config.App(context).appHeight(29.5),
-                  child: Text(
-                    "You have a new order!",
-                    style: Theme.of(context).textTheme.displaySmall!.merge(
-                      TextStyle(color: Colors.black54),
-                    ),
-                  ),
+              SizedBox(height: 30),
+              Text(
+                "جديد! طلب جديد وصل",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              Positioned(
-                top: config.App(context).appHeight(29.5) - 50,
-                child: Container(
-                  height: size.height * 0.80,
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 50,
-                        color: Theme.of(context).hintColor.withOpacity(0.2),
+              SizedBox(height: 10),
+              Text(
+                "Order #$orderId",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 40),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 30),
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                  margin: EdgeInsets.symmetric(horizontal: 20),
-                  padding: EdgeInsets.symmetric(vertical: 40, horizontal: 27),
-                  width: config.App(context).appWidth(88),
-                  child: Form(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 60),
-                        Text(
-                          argsMap['title'],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          argsMap['text'],
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.merge(TextStyle(color: Colors.black54)),
-                        ),
-                        Expanded(child: SizedBox()),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: BlockButtonWidget(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                text: Text(
-                                  "Reject",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                color: Colors.red,
-                                onPressed: () async {
-                                  try {
-                                    // await _con.scc(orderID);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "The order #${argsMap['id']} was rejected",
-                                        ),
-                                      ),
-                                    );
-
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      '/Pages',
-                                      (Route<dynamic> route) => false,
-                                    );
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: BlockButtonWidget(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                text: Text(
-                                  "Accept",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                                color: Colors.green,
-                                onPressed: () async {
-                                  try {
-                                    print("argsMap['id']: ${argsMap['id']}");
-                                    // await _con.acceptOrder(argsMap['id']);
-                                    _con.acceptOrder(argsMap['id']);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "The order #${argsMap['id']} was accepted",
-                                        ),
-                                      ),
-                                    );
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      '/Pages',
-                                      (Route<dynamic> route) => false,
-                                    );
-                                    Navigator.of(context).pushNamed(
-                                      '/OrderDetails',
-                                      arguments: RouteArgument(
-                                        id: argsMap['id'],
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    print("Err: $e");
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 128),
-                      ],
                     ),
-                  ),
+                    SizedBox(height: 15),
+                    Text(
+                      text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              Spacer(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: BlockButtonWidget(
+                        text: Text(
+                          "Reject",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        color: Colors.redAccent,
+                        onPressed: () async {
+                          _stopNotificationSound();
+                          try {
+                            if (orderId.isNotEmpty) {
+                              await _con.rejectOrder(orderId);
+                            }
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/Pages',
+                              (Route<dynamic> route) => false,
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: BlockButtonWidget(
+                        text: Text(
+                          "Accept",
+                          style: TextStyle(
+                            color: config.Colors().mainColor(1),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        color: Colors.white,
+                        onPressed: () async {
+                          _stopNotificationSound();
+                          try {
+                            if (orderId.isNotEmpty) {
+                              await _con.acceptOrder(orderId);
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                '/Pages',
+                                (Route<dynamic> route) => false,
+                              );
+                              Navigator.of(context).pushNamed(
+                                '/OrderDetails',
+                                arguments: RouteArgument(id: orderId),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
             ],
           ),
         ),
       ),
     );
-  }
-
-  void play() async {
-    // await player.pause();
-    // await player.play(AssetSource(audioasset));
-    // player.onPlayerComplete.listen((event) {
-    //   player.play(AssetSource(audioasset));
-    // });
   }
 }

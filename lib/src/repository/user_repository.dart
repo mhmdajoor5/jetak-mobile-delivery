@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/custom_trace.dart';
 import '../helpers/helper.dart';
 import '../helpers/FirebaseUtils.dart';
+import '../helpers/PusherHelper.dart';
 import '../models/address.dart';
 import '../models/credit_card.dart';
 import '../models/document.dart';
@@ -76,6 +77,9 @@ Future<UserModel.User> login(UserModel.User user) async {
           if (responseData['data'] != null) {
             setCurrentUser(json.encode(responseData));
             currentUser.value = UserModel.User.fromJSON(responseData['data']);
+            
+            // Initialize Pusher after login
+            PusherHelper.initPusher();
             
             // Save FCM token to backend after successful login
             FirebaseUtil.saveFCMTokenForUser(currentUser.value);
@@ -466,6 +470,9 @@ Future<UserModel.User> register(UserModel.User user) async {
               currentUser.value = UserModel.User.fromJSON(responseData['data']);
               print('✅ Registration successful with URL: $url');
               
+              // Initialize Pusher after registration
+              PusherHelper.initPusher();
+              
               // Save FCM token to backend after successful registration
               FirebaseUtil.saveFCMTokenForUser(currentUser.value);
               
@@ -598,6 +605,9 @@ Future<void> logout() async {
   currentUser.value = UserModel.User();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove('current_user');
+  
+  // Disconnect Pusher upon logout
+  PusherHelper.disconnect();
 }
 
 void setCurrentUser(jsonString) async {
@@ -661,6 +671,9 @@ Future<UserModel.User> getCurrentUser() async {
       json.decode(prefs.get('current_user') as String),
     );
     currentUser.value.auth = true;
+    
+    // Initialize Pusher for already logged in user
+    PusherHelper.initPusher();
     
     // Check if locally saved user is inactive
     if (currentUser.value.isActive == 0) {

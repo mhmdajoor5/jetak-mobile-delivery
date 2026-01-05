@@ -88,6 +88,10 @@ dependencies:
   geocoding: ^4.0.0
   get: any
   intercom_flutter: ^9.4.3
+  pusher_channels_flutter:
+    git:
+      url: https://github.com/kishormainali/pusher-channels-flutter.git
+      ref: master
 dependency_overrides:
   intl: ^0.20.2
 
