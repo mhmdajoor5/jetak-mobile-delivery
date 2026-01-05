@@ -133,41 +133,44 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                    Center(
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    SizedBox(height: 15),
-                    Text(
-                      text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 16,
-                        height: 1.5,
-                      ),
-                    ),
+                    SizedBox(height: 20),
+                    _buildInfoRow(Icons.person_outline, "User", argsMap['user'] ?? 'Customer'),
+                    SizedBox(height: 10),
+                    _buildInfoRow(Icons.payments_outlined, "Total", "${argsMap['total'] ?? '0.0'}"),
+                    SizedBox(height: 10),
+                    _buildInfoRow(Icons.info_outline, "Status", argsMap['status'] ?? 'Pending'),
                   ],
                 ),
               ),
               Spacer(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
                       child: BlockButtonWidget(
+                        padding: EdgeInsets.symmetric(vertical: 12),
                         text: Text(
                           "Reject",
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -191,14 +194,17 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                         },
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 15),
                     Expanded(
                       child: BlockButtonWidget(
+                        padding: EdgeInsets.symmetric(vertical: 12),
                         text: Text(
                           "Accept",
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
                           style: TextStyle(
                             color: config.Colors().mainColor(1),
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -234,6 +240,31 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white70, size: 20),
+        SizedBox(width: 10),
+        Text(
+          "$label:",
+          style: TextStyle(color: Colors.white70, fontSize: 15),
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
