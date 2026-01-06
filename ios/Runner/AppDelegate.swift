@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import Firebase
+import FirebaseMessaging
 import GoogleMaps
 
 
@@ -27,6 +28,9 @@ import GoogleMaps
   }
 
   override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    // Manually set APNs token for Firebase Messaging
+    Messaging.messaging().apnsToken = deviceToken
+    
     let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
     let token = tokenParts.joined()
     print("📱 APNs Token: \(token)")

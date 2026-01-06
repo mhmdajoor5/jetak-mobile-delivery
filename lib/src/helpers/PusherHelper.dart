@@ -54,6 +54,7 @@ class PusherHelper {
 
   static void onEvent(PusherEvent event) {
     print("🔔 Received Pusher Event: ${event.eventName}");
+    print("📨 Channel: ${event.channelName} | User: ${event.userId}");
     print("📋 Raw Event Data: ${event.data}");
     
     // تنفيذ الكود في إطار العمل الرئيسي لضمان ظهور الشاشة فوراً
@@ -74,6 +75,8 @@ class PusherHelper {
           }
           
           showNewOrderNotification(data);
+        } else {
+          print("ℹ️ Pusher event ignored (name not matched): ${event.eventName}");
         }
       } catch (e) {
         print("❌ Error in Pusher onEvent: $e");
@@ -83,6 +86,7 @@ class PusherHelper {
 
   static void showNewOrderNotification(Map<String, dynamic> data) {
     print("🖥️ Preparing to show notification screen...");
+    print("🧾 Parsed notification data: $data");
     if (settingRepo.navigatorKey.currentState != null) {
       
       // استخراج العنوان والملاحظات بشكل آمن
@@ -97,13 +101,20 @@ class PusherHelper {
       final Map<String, dynamic> argsMap = {
         'id': data['order_id']?.toString() ?? '',
         'title': 'New Order from ${data['restaurant'] ?? 'Restaurant'}',
+        'restaurant': data['restaurant']?.toString() ?? '',
+        'restaurant_latitude': data['restaurant_latitude'],
+        'restaurant_longitude': data['restaurant_longitude'],
         'user': data['user']?.toString() ?? 'Customer',
         'total': data['total']?.toString() ?? '0.0',
+        // status من الخادم، وإذا لم يصل نعرض Pending
         'status': data['status']?.toString() ?? 'Pending',
         'address': address,
         'description': description,
+        'delivery_latitude': data['delivery_address']?['latitude'],
+        'delivery_longitude': data['delivery_address']?['longitude'],
       };
 
+      print("🧭 Navigation args map: $argsMap");
       print("🚀 Navigating to /orderNotification with ID: ${argsMap['id']}");
       
       settingRepo.navigatorKey.currentState!.pushNamed(

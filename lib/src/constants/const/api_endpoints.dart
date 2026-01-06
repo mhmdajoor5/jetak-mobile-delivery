@@ -31,6 +31,7 @@ class ApiEndpoints {
   static const String acceptOrder = '$driver/accept-order-by-driver';
   static const String rejectOrder = '$driver/reject-order-by-driver';
   static String driverCandidateOrders(String driverId) => '$driver/driver-candidate-orders/$driverId';
+  static const String assignedOrders = '$driver/assigned-orders';
   static const String updateDriverLocation = '$driver/orders/update-driver-location';
 
   // Restaurant endpoints
@@ -67,6 +68,7 @@ class ApiEndpoints {
   static String getAcceptOrderUrl() => '$baseUrl$acceptOrder';
   static String getRejectOrderUrl() => '$baseUrl$rejectOrder';
   static String getDriverCandidateOrdersUrl(String driverId) => '$baseUrl${driverCandidateOrders(driverId)}';
+  static String getAssignedOrdersUrl(String driverId) => '$baseUrl$assignedOrders/$driverId';
   static String getUpdateDriverLocationUrl() => '$baseUrl$updateDriverLocation';
   static String getRestaurantsUrl() => '$baseUrl$restaurants';
   static String getCartsUrl() => '$baseUrl$carts';

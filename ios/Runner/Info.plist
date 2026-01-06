@@ -118,5 +118,7 @@
 		<string>j3he2pue</string>
 		<key>IntercomApiKey</key>
 		<string>ios_sdk-9dd934131d451492917c16a61a9ec34824400eee</string>
+		<key>FirebaseAppDelegateProxyEnabled</key>
+		<false/>
 	</dict>
 </plist>

@@ -7,11 +7,13 @@ import 'package:deliveryboy/src/models/order.dart';
 import 'package:deliveryboy/src/models/order_status.dart';
 import 'package:deliveryboy/src/models/pending_order_model.dart' hide OrderStatus;
 import 'package:deliveryboy/src/models/route_argument.dart';
+import 'package:deliveryboy/src/repository/orders/assigned_order_repo.dart' as assignedRepo;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order_history_model.dart';
 import '../repository/order_repository.dart' as orderRepo;
+import '../repository/user_repository.dart' as userRepo;
 
 
 class OrderHistoryPage extends StatefulWidget {
@@ -26,9 +28,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   final OrderHistoryController controller = OrderHistoryController();
   String selectedStatus = 'delivered'; // Default to delivered orders
   bool isLoading = true;
+  bool isLoadingAssignedOrders = false;
   List<OrderHistoryModel> orders = [];
+  List<PendingOrderModel> assignedOrders = [];
   Map<String, dynamic> statistics = {};
   List<OrderStatus> orderStatuses = [];
+  String? assignedOrdersError;
   Timer? _locationUpdateTimer;
   String? _currentActiveOrderId;
   @override
@@ -174,27 +179,53 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Future<void> _loadData() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      isLoadingAssignedOrders = true;
+      assignedOrdersError = null;
+      assignedOrders = [];
+    });
     
     try {
-      final [ordersList, stats] = await Future.wait([
+      final results = await Future.wait([
         controller.getOrdersByStatus(selectedStatus),
         controller.getOrdersStatistics(),
+        _fetchAssignedOrders(),
       ]);
       
       setState(() {
-        orders = ordersList as List<OrderHistoryModel>;
-        statistics = stats as Map<String, dynamic>;
+        orders = results[0] as List<OrderHistoryModel>;
+        statistics = results[1] as Map<String, dynamic>;
+        assignedOrders = results[2] as List<PendingOrderModel>;
         isLoading = false;
+        isLoadingAssignedOrders = false;
       });
     } catch (e) {
       print('Error loading data: $e');
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+        isLoadingAssignedOrders = false;
+        assignedOrdersError = e.toString();
+        assignedOrders = [];
+      });
     }
   }
 
   Future<void> _refreshData() async {
     await _loadData();
+  }
+
+  Future<List<PendingOrderModel>> _fetchAssignedOrders() async {
+    final driverId = userRepo.currentUser.value.id?.toString();
+    if (driverId == null) return [];
+
+    try {
+      final response = await assignedRepo.getAssignedOrders(driverId: driverId);
+      return PendingOrdersModel.fromJson(response).orders;
+    } catch (e) {
+      print('Error fetching assigned orders: $e');
+      rethrow;
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -270,6 +301,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               
               // Filter Tabs
               _buildFilterTabs(),
+
+              // Accepted/assigned orders section near filters
+              _buildAssignedOrdersSection(),
               
               // Orders List
               Expanded(
@@ -282,6 +316,126 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAssignedOrdersSection() {
+    if (isLoadingAssignedOrders) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (assignedOrdersError != null) {
+      return Padding(
+        padding: EdgeInsets.all(16),
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.red.shade200),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red[700]),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _tr(
+                    context,
+                    ar: 'تعذر تحميل الطلب الجاري',
+                    he: 'שגיאה בטעינת ההזמנה הפעילה',
+                    en: 'Could not load the current order',
+                  ),
+                  style: TextStyle(color: Colors.red[700]),
+                ),
+              ),
+              TextButton(
+                onPressed: _refreshData,
+                child: Text(
+                  _tr(context, ar: 'إعادة المحاولة', he: 'נסה שוב', en: 'Retry'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (assignedOrders.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    final activeOrder = assignedOrders.first;
+
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.blue.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_shipping, color: Colors.blue[700]),
+              SizedBox(width: 8),
+              Text(
+                _tr(context, ar: 'الطلبات المقبولة', he: 'הזמנות מאושרות', en: 'Accepted orders'),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  activeOrder.orderStatus.status ?? '',
+                  style: TextStyle(
+                    color: Colors.green[800],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Text(
+            '${_tr(context, ar: 'طلب رقم', he: 'מספר הזמנה', en: 'Order #')}: ${activeOrder.orderId}',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          SizedBox(height: 6),
+          Text(
+            '${_tr(context, ar: 'العميل', he: 'לקוח', en: 'Customer')}: ${activeOrder.user.name}',
+            style: TextStyle(color: Colors.grey[800]),
+          ),
+          if (activeOrder.deliveryAddress != null) ...[
+            SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on, color: Colors.orange[700], size: 18),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    activeOrder.deliveryAddress?.address ?? '',
+                    style: TextStyle(color: Colors.grey[800]),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

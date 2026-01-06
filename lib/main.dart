@@ -1,4 +1,6 @@
 // // import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:fcm_config/fcm_config.dart';
+
 import 'src/notification_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -26,11 +28,36 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Call your NotificationController to create a local notification
   NotificationController.createNewNotification(message);
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
   await Firebase.initializeApp();
+  // void main() async {
+    await FCMConfig.instance
+        .init(
+      onBackgroundMessage:_firebaseMessagingBackgroundHandler,
+      defaultAndroidForegroundIcon: '@mipmap/ic_launcher', //default is @mipmap/ic_launcher
+      defaultAndroidChannel: AndroidNotificationChannel(
+        'high_importance_channel',// same as value from android setup
+        'Fcm config',
+        importance: Importance.high,
+        sound: RawResourceAndroidNotificationSound('notification'),
+      ),
+    );
+    // runApp(MaterialApp(
+    //   home: MyHomePage(),
+    // ));
+  // }
 
+
+
+
+  // void main() async {
+  //   runApp(MaterialApp(
+  //     home: MyHomePage(),
+  //   ));
+  // }
   // Initialize Intercom
   await IntercomHelper.initialize();
 
