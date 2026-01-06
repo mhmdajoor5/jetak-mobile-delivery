@@ -24,7 +24,43 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in your background handlers,
   // such as Firestore, make sure to call `initializeApp` before using them.
   await Firebase.initializeApp();
-  print('Handling a background message from main.dart: ${message.messageId}');
+
+  print('');
+  print('╔═══════════════════════════════════════════════════════════════╗');
+  print('║  🔔 BACKGROUND MESSAGE HANDLER CALLED (FROM MAIN.DART)       ║');
+  print('╚═══════════════════════════════════════════════════════════════╝');
+  print('📬 Message ID: ${message.messageId}');
+  print('📬 Sent Time: ${message.sentTime}');
+  print('📬 From: ${message.from}');
+  print('');
+  print('🔔 Notification Object:');
+  if (message.notification != null) {
+    print('   ✅ Has notification object (GOOD - iOS can handle this)');
+    print('   📝 Title: ${message.notification!.title}');
+    print('   📝 Body: ${message.notification!.body}');
+    print('   🍎 Apple: ${message.notification!.apple}');
+    print('   🤖 Android: ${message.notification!.android}');
+  } else {
+    print('   ❌ NO notification object (BAD - iOS will reject in background!)');
+    print('   ⚠️  This is likely why notifications don\'t appear in background!');
+  }
+  print('');
+  print('📦 Data Payload:');
+  if (message.data.isNotEmpty) {
+    print('   ✅ Has data: ${message.data}');
+    message.data.forEach((key, value) {
+      print('   - $key: $value');
+    });
+  } else {
+    print('   ℹ️  No data payload');
+  }
+  print('');
+  print('🔧 Message Category: ${message.category}');
+  print('🔧 Content Available: ${message.contentAvailable}');
+  print('🔧 Message Type: ${message.messageType}');
+  print('╚═══════════════════════════════════════════════════════════════╝');
+  print('');
+
   // Call your NotificationController to create a local notification
   NotificationController.createNewNotification(message);
 }
@@ -71,6 +107,10 @@ void main() async {
   await NotificationController.getDeviceToken();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await NotificationController.initializeLocalNotifications();
+
+  // Clear all notification data (remove this line after running once)
+  await NotificationController.clearAllNotificationData();
+
   runApp(MyApp());
 }
 
@@ -86,17 +126,18 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    NotificationController.createNewNotification(
-      RemoteMessage(
-        senderId: "123456789",
-        messageId: "619045",
-        data: {"key": "value", 'order_id': "123"},
-        notification: RemoteNotification(
-          title: "Test Notification",
-          body: "This is a test notification",
-        ),
-      ),
-    );
+    // Test notification removed - notifications will come from Backend/Firebase only
+    // NotificationController.createNewNotification(
+    //   RemoteMessage(
+    //     senderId: "123456789",
+    //     messageId: "619045",
+    //     data: {"key": "value", 'order_id': "123"},
+    //     notification: RemoteNotification(
+    //       title: "Test Notification",
+    //       body: "This is a test notification",
+    //     ),
+    //   ),
+    // );
 
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();

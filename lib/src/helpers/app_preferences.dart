@@ -298,7 +298,19 @@ class AppPreferences {
   String? getMessageId() {
     return _prefs.getString(_keyGoogleMessageId);
   }
-  
+
+  /// Clear FCM message ID
+  Future<bool> clearMessageId() async {
+    try {
+      final result = await _prefs.remove(_keyGoogleMessageId);
+      debugPrint('✅ Cleared FCM message ID');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error clearing FCM message ID: $e');
+      return false;
+    }
+  }
+
   // ========== Helper Methods ==========
   
   /// Clear all preferences (for logout)

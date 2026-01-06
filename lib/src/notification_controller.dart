@@ -156,54 +156,20 @@ class NotificationController {
   }
 
   /// إرسال إشعار للطلب الجديد
+  /// Note: This method is for local order polling only.
+  /// For Firebase notifications, all formatting should come from Backend.
   static Future<void> _sendNewOrderNotification(PendingOrderModel order) async {
     try {
-      print('🔔 Sending notification for new order: ${order.orderId}');
+      print('🔔 New order detected from polling: ${order.orderId}');
+      print('⚠️ No local notification will be shown. Notifications should come from Firebase/Backend.');
 
-      // تشغيل الصوت والاهتزاز
+      // Play sound/vibration only - no notification display
+      // The Backend should send a proper FCM notification with formatted title/body
       await playNotificationSound();
 
-      const AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-            'new_orders',
-            'New Orders',
-            channelDescription: 'Notifications for new delivery orders',
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: true,
-            enableVibration: true,
-            playSound: true,
-            // Using default system notification sound
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-            color: Color(0xFF4CAF50), // أخضر للطلبات الجديدة
-          );
-
-      const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            // Using default system notification sound
-            interruptionLevel: InterruptionLevel.critical,
-          );
-
-      const NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics,
-      );
-
-      await flutterLocalNotificationsPlugin.show(
-        order.orderId, // استخدام ID الطلب كـ notification ID
-        '🆕 طلب توصيل جديد!',
-        '👤 العميل: ${order.customerName}\n📍 ${order.address}',
-        platformChannelSpecifics,
-        payload: order.orderId.toString(),
-      );
-
-      print('✅ Notification sent for order: ${order.orderId}');
+      // No notification display here - rely entirely on Firebase notifications from Backend
     } catch (e) {
-      print('⚠️ Error sending notification for order ${order.orderId}: $e');
-      // Don't rethrow - allow app to continue
+      print('⚠️ Error in order notification handler: $e');
     }
   }
 
@@ -341,15 +307,16 @@ class NotificationController {
         iOS: iOSPlatformChannelSpecifics,
       );
 
+      // Use title and body directly from FCM notification object
       await flutterLocalNotificationsPlugin.show(
         notification.hashCode,
-        notification.title ?? 'طلب جديد',
-        notification.body ?? 'لديك طلب جديد يحتاج للمراجعة',
+        notification.title ?? '',
+        notification.body ?? '',
         platformChannelSpecifics,
         payload: message.data['order_id'],
       );
 
-      print('🔔 تم إرسال التنبيه: ${notification.title}');
+      print('🔔 Notification displayed: ${notification.title}');
     } catch (e) {
       print('⚠️ Error creating notification: $e');
       // Don't rethrow - allow app to continue
@@ -394,6 +361,32 @@ class NotificationController {
     _notifiedOrderIds.clear();
     await _saveNotifiedOrderIds();
     print('🔄 Reset notification history');
+  }
+
+  /// مسح جميع بيانات الإشعارات المخزنة
+  static Future<void> clearAllNotificationData() async {
+    try {
+      print('🗑️ Clearing all notification data...');
+
+      // 1. Clear notified order IDs
+      _notifiedOrderIds.clear();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('notified_order_ids');
+      print('✅ Cleared notified order IDs');
+
+      // 2. Clear FCM message ID
+      await prefs.remove('google.message_id');
+      print('✅ Cleared FCM message ID');
+
+      // 3. Cancel all pending notifications
+      await cancelNotifications();
+      print('✅ Cancelled all notifications');
+
+      print('✅ All notification data has been cleared successfully');
+    } catch (e) {
+      print('❌ Error clearing notification data: $e');
+      rethrow;
+    }
   }
 
   /// اختبار صوت الإشعار
