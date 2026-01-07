@@ -23,6 +23,7 @@ class OrderNotificationScreen extends StatefulWidget {
 class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
   late OrderController _con;
   AudioPlayer? _audioPlayer;
+  bool _isProcessing = false;
 
   _OrderNotificationScreenState() : super(OrderController()) {
     _con = (controller as OrderController?)!;
@@ -299,61 +300,371 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                                 ),
                               ),
                               color: Colors.redAccent,
-                              onPressed: () async {
-                                _stopNotificationSound();
-                                try {
-                                  if (orderId.isNotEmpty) {
-                                    await _con.rejectOrder(orderId);
-                                  }
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    '/Pages',
-                                    (Route<dynamic> route) => false,
-                                  );
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString())),
-                                  );
-                                }
-                              },
+                              onPressed: _isProcessing
+                                  ? null
+                                  : () async {
+                                      if (orderId.isEmpty) return;
+
+                                      _stopNotificationSound();
+
+                                      setState(() {
+                                        _isProcessing = true;
+                                      });
+
+                                      try {
+                                        final result = await _con.rejectOrder(orderId);
+
+                                        if (!mounted) return;
+
+                                        if (result['success']) {
+                                          // Show success message
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(Icons.cancel, color: Colors.orange, size: 16),
+                                                  ),
+                                                  SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Order rejected',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'Order #$orderId has been rejected',
+                                                          style: TextStyle(
+                                                            color: Colors.white70,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: Colors.orange[600],
+                                              duration: Duration(seconds: 2),
+                                              behavior: SnackBarBehavior.floating,
+                                              margin: EdgeInsets.all(16),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          );
+
+                                          // Navigate back to home
+                                          Navigator.pushNamedAndRemoveUntil(
+                                            context,
+                                            '/Pages',
+                                            (Route<dynamic> route) => false,
+                                          );
+                                        } else {
+                                          // Show error and stay on screen
+                                          setState(() {
+                                            _isProcessing = false;
+                                          });
+
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  Icon(Icons.error_outline, color: Colors.white, size: 20),
+                                                  SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Failed to reject order',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          result['message'] ?? 'Unknown error occurred',
+                                                          style: TextStyle(
+                                                            color: Colors.white70,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: Colors.red[600],
+                                              duration: Duration(seconds: 5),
+                                              behavior: SnackBarBehavior.floating,
+                                              margin: EdgeInsets.all(16),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (!mounted) return;
+
+                                        setState(() {
+                                          _isProcessing = false;
+                                        });
+
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Row(
+                                              children: [
+                                                Icon(Icons.wifi_off, color: Colors.white, size: 20),
+                                                SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Connection error. Please try again.',
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            backgroundColor: Colors.orange[600],
+                                            duration: Duration(seconds: 4),
+                                            behavior: SnackBarBehavior.floating,
+                                            margin: EdgeInsets.all(16),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                             ),
                           ),
                           SizedBox(width: 16),
                           Expanded(
                             child: BlockButtonWidget(
                               padding: EdgeInsets.symmetric(vertical: 14),
-                              text: Text(
-                                "Accept",
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: Colors.blue.shade700,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              text: _isProcessing
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "Processing...",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      "Accept",
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        color: Colors.blue.shade700,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                               color: Colors.white,
-                              onPressed: () async {
-                                _stopNotificationSound();
-                                try {
-                                  if (orderId.isNotEmpty) {
-                                    await _con.acceptOrder(orderId);
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      '/Pages',
-                                      (Route<dynamic> route) => false,
-                                    );
-                                    Navigator.of(context).pushNamed(
-                                      '/OrderDetails',
-                                      arguments: RouteArgument(id: orderId),
-                                    );
-                                  }
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString())),
-                                  );
-                                }
-                              },
+                              onPressed: _isProcessing
+                                  ? null
+                                  : () async {
+                                      if (orderId.isEmpty) return;
+
+                                      _stopNotificationSound();
+
+                                      setState(() {
+                                        _isProcessing = true;
+                                      });
+
+                                      try {
+                                        final result = await _con.acceptOrder(orderId);
+
+                                        if (!mounted) return;
+
+                                        if (result['success']) {
+                                          // Show success message
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(Icons.check, color: Colors.green, size: 16),
+                                                  ),
+                                                  SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          '🎉 Order accepted successfully!',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'Order #$orderId - You can now start delivery',
+                                                          style: TextStyle(
+                                                            color: Colors.white70,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: Colors.green[600],
+                                              duration: Duration(seconds: 3),
+                                              behavior: SnackBarBehavior.floating,
+                                              margin: EdgeInsets.all(16),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          );
+
+                                          // Navigate to order details only on success
+                                          Navigator.pushNamedAndRemoveUntil(
+                                            context,
+                                            '/Pages',
+                                            (Route<dynamic> route) => false,
+                                          );
+                                          Navigator.of(context).pushNamed(
+                                            '/OrderDetails',
+                                            arguments: RouteArgument(id: orderId),
+                                          );
+                                        } else {
+                                          // Show error message and stay on screen
+                                          setState(() {
+                                            _isProcessing = false;
+                                          });
+
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  Icon(Icons.error_outline, color: Colors.white, size: 20),
+                                                  SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Failed to accept order',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          result['message'] ?? 'Unknown error occurred',
+                                                          style: TextStyle(
+                                                            color: Colors.white70,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: Colors.red[600],
+                                              duration: Duration(seconds: 5),
+                                              behavior: SnackBarBehavior.floating,
+                                              margin: EdgeInsets.all(16),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (!mounted) return;
+
+                                        setState(() {
+                                          _isProcessing = false;
+                                        });
+
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Row(
+                                              children: [
+                                                Icon(Icons.wifi_off, color: Colors.white, size: 20),
+                                                SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        'Connection Error',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Please check your internet connection and try again',
+                                                        style: TextStyle(
+                                                          color: Colors.white70,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            backgroundColor: Colors.orange[600],
+                                            duration: Duration(seconds: 4),
+                                            behavior: SnackBarBehavior.floating,
+                                            margin: EdgeInsets.all(16),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                             ),
                           ),
                         ],

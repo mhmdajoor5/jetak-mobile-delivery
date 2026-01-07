@@ -8,6 +8,13 @@ class PusherHelper {
   static PusherChannelsFlutter pusher = PusherChannelsFlutter.getInstance();
   static bool _isInitialized = false;
 
+  // Cache to prevent duplicate event processing
+  static final Set<String> _processedOrders = {};
+  static final Map<String, DateTime> _eventTimestamps = {};
+
+  // Debounce duration (ignore events for same order within this time)
+  static const Duration _debounceDuration = Duration(seconds: 5);
+
   static Future<void> initPusher() async {
     if (userRepo.currentUser.value.id == null) {
       print("⚠️ Pusher: Cannot initialize, user ID is null");
@@ -56,31 +63,60 @@ class PusherHelper {
     print("🔔 Received Pusher Event: ${event.eventName}");
     print("📨 Channel: ${event.channelName} | User: ${event.userId}");
     print("📋 Raw Event Data: ${event.data}");
-    
+
     // تنفيذ الكود في إطار العمل الرئيسي لضمان ظهور الشاشة فوراً
     Future.delayed(Duration.zero, () {
       try {
         // التحقق من اسم الحدث (Laravel يرسله أحياناً بالاسم الكامل للفئة)
-        if (event.eventName.contains('order.new') || 
+        if (event.eventName.contains('order.new') ||
             event.eventName.contains('NewOrderForDriver')) {
-          
+
           final dynamic decoded = json.decode(event.data);
           Map<String, dynamic> data;
-          
+
           if (decoded is Map) {
             data = Map<String, dynamic>.from(decoded);
           } else {
             print("⚠️ Pusher Data is not a Map, skipping...");
             return;
           }
-          
+
+          // Extract order ID
+          final String orderId = data['order_id']?.toString() ?? '';
+
+          if (orderId.isEmpty) {
+            print("⚠️ Order ID is missing in Pusher event, skipping...");
+            return;
+          }
+
+          // Check if order is already processed (accepted/rejected)
+          if (_processedOrders.contains(orderId)) {
+            print("⏭️ Order $orderId already processed (accepted/rejected), ignoring duplicate event");
+            return;
+          }
+
+          // Check if we received this event recently (debounce)
+          if (_eventTimestamps.containsKey(orderId)) {
+            final lastEvent = _eventTimestamps[orderId]!;
+            final timeSinceLastEvent = DateTime.now().difference(lastEvent);
+
+            if (timeSinceLastEvent < _debounceDuration) {
+              print("⏭️ Debouncing event for order $orderId (last event ${timeSinceLastEvent.inSeconds}s ago)");
+              return;
+            }
+          }
+
+          // Update timestamp for this order
+          _eventTimestamps[orderId] = DateTime.now();
+          print("✅ Processing new order event for order $orderId");
+
           showNewOrderNotification(data);
         } else {
           print("ℹ️ Pusher event ignored (name not matched): ${event.eventName}");
         }
       } catch (e) {
         print("❌ Error in Pusher onEvent: $e");
-          }
+      }
     });
   }
 
@@ -133,6 +169,55 @@ class PusherHelper {
       print("🔌 Pusher disconnected");
     } catch (e) {
       print("❌ Error disconnecting Pusher: $e");
+    }
+  }
+
+  /// Mark an order as processed (accepted or rejected)
+  /// This prevents the same order from triggering notifications again
+  static void markOrderAsProcessed(String orderId) {
+    _processedOrders.add(orderId);
+    print("✅ Order $orderId marked as processed");
+
+    // Clean up old timestamps to prevent memory leaks
+    _cleanupOldTimestamps();
+  }
+
+  /// Remove an order from the processed list
+  /// Use this if you need to reprocess an order
+  static void unmarkOrderAsProcessed(String orderId) {
+    _processedOrders.remove(orderId);
+    print("🔄 Order $orderId unmarked from processed list");
+  }
+
+  /// Clear all processed orders and timestamps
+  /// Useful for testing or when starting a new session
+  static void clearProcessedOrders() {
+    _processedOrders.clear();
+    _eventTimestamps.clear();
+    print("🗑️ Cleared all processed orders and timestamps");
+  }
+
+  /// Clean up old timestamps to prevent memory leaks
+  /// Removes timestamps older than 1 hour
+  static void _cleanupOldTimestamps() {
+    final now = DateTime.now();
+    final oneHourAgo = now.subtract(Duration(hours: 1));
+
+    _eventTimestamps.removeWhere((orderId, timestamp) {
+      final isOld = timestamp.isBefore(oneHourAgo);
+      if (isOld) {
+        print("🗑️ Removing old timestamp for order $orderId");
+      }
+      return isOld;
+    });
+
+    // Also limit the size of processed orders cache
+    // Keep only the last 100 processed orders to prevent unlimited growth
+    if (_processedOrders.length > 100) {
+      final excess = _processedOrders.length - 100;
+      final ordersToRemove = _processedOrders.take(excess).toList();
+      _processedOrders.removeAll(ordersToRemove);
+      print("🗑️ Removed $excess old processed orders from cache");
     }
   }
 }
