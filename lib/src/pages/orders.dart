@@ -596,10 +596,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     ),
                                                   ),
                                                   child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
                                                       Icon(Icons.check_circle, size: 20),
-                                                      SizedBox(width: 8),
+                                                      SizedBox(width: 6),
                                                       Text(
                                                         'قبول',
                                                         style: TextStyle(
@@ -631,10 +632,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                     ),
                                                   ),
                                                   child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
                                                       Icon(Icons.cancel, size: 20),
-                                                      SizedBox(width: 8),
+                                                      SizedBox(width: 6),
                                                       Text(
                                                         'رفض',
                                                         style: TextStyle(

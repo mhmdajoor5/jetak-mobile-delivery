@@ -18,9 +18,12 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
     // استخدام API endpoint الصحيح للطلبات المعلقة
     final baseUrl = GlobalConfiguration().getValue('api_base_url');
     final url = '${baseUrl}driver/driver-candidate-orders/$driverId';
+    final uri = Uri.parse(url).replace(queryParameters: {
+      'api_token': user.apiToken!,
+    });
     
     final response = await http.post(
-      Uri.parse(url),
+      uri,
       body: json.encode({
         'api_token': user.apiToken!,
         'with': 'user;foodOrders;foodOrders.food;orderStatus;deliveryAddress;payment',
@@ -35,51 +38,69 @@ Future<Map<String, dynamic>> getPendingOrders({required String driverId}) async 
       headers: {'Content-Type': 'application/json'},
     );
 
-    print('🔍 API URL: $url');
+    print('🔍 API URL: $uri');
     print('🔍 API Response Status: ${response.statusCode}');
     print('🔍 API Response Headers: ${response.headers}');
     
     if (response.statusCode == 200) {
       print('✅ getPendingOrders: success');
-      
-      final jsonData = json.decode(response.body);
-      print('📦 Raw JSON Response:');
-      print(jsonData);
-      
-      // تحويل البيانات لتتناسب مع PendingOrderModel
-      final ordersData = jsonData['orders'] ?? [];
-      
-      if (ordersData is List) {
-        print('📋 Found ${ordersData.length} pending orders');
-        
-        // تحويل البيانات لصيغة PendingOrderModel
-        final convertedOrders = ordersData.map((order) {
-          print('🔍 Converting Order ${order['order_id']}:');
-          print('  - User: ${order['user']}');
-          print('  - Delivery Address: ${order['delivery_address']}');
-          
-          return {
-            'order_id': order['order_id'],
-            'tax': (order['tax'] ?? 0.0).toDouble(),
-            'delivery_fee': (order['delivery_fee'] ?? 0.0).toDouble(),
-            'hint': order['hint'],
-            'updated_at': order['updated_at'] ?? DateTime.now().toIso8601String(),
-            'order_status': order['order_status'] ?? {'id': 1, 'status': 'Pending'},
-            'user': order['user'] ?? {},
-            'food_orders': order['food_orders'] ?? [],
-            'delivery_address': order['delivery_address'],
-          };
-        }).toList();
-        
-        return {'orders': convertedOrders};
-      } else {
-        print('❌ Unexpected data structure: $ordersData');
+
+      final contentType = response.headers['content-type'] ?? '';
+      final body = response.body;
+      final trimmedBody = body.trimLeft();
+
+      // Sometimes backend returns HTML error page with 200; avoid crashing on decode
+      if (!contentType.contains('application/json') ||
+          trimmedBody.startsWith('<!DOCTYPE') ||
+          trimmedBody.startsWith('<html')) {
+        print('⚠️ Non-JSON response received, skipping parse. Content-Type: $contentType');
+        print('⚠️ Response snippet: ${trimmedBody.substring(0, trimmedBody.length.clamp(0, 200))}');
+        return {'orders': []};
+      }
+
+      try {
+        final jsonData = json.decode(body);
+        print('📦 Raw JSON Response:');
+        print(jsonData);
+
+        // تحويل البيانات لتتناسب مع PendingOrderModel
+        final ordersData = jsonData['orders'] ?? [];
+
+        if (ordersData is List) {
+          print('📋 Found ${ordersData.length} pending orders');
+
+          // تحويل البيانات لصيغة PendingOrderModel
+          final convertedOrders = ordersData.map((order) {
+            print('🔍 Converting Order ${order['order_id']}:');
+            print('  - User: ${order['user']}');
+            print('  - Delivery Address: ${order['delivery_address']}');
+
+            return {
+              'order_id': order['order_id'],
+              'tax': (order['tax'] ?? 0.0).toDouble(),
+              'delivery_fee': (order['delivery_fee'] ?? 0.0).toDouble(),
+              'hint': order['hint'],
+              'updated_at': order['updated_at'] ?? DateTime.now().toIso8601String(),
+              'order_status': order['order_status'] ?? {'id': 1, 'status': 'Pending'},
+              'user': order['user'] ?? {},
+              'food_orders': order['food_orders'] ?? [],
+              'delivery_address': order['delivery_address'],
+            };
+          }).toList();
+
+          return {'orders': convertedOrders};
+        } else {
+          print('❌ Unexpected data structure: $ordersData');
+          return {'orders': []};
+        }
+      } on FormatException catch (fe) {
+        print('❌ JSON format error: $fe');
         return {'orders': []};
       }
     } else {
       print('❌ getPendingOrders: error ${response.statusCode}');
       print('❌ Response body: ${response.body}');
-      
+
       // إرجاع بيانات وهمية للاختبار
       return {};
     }

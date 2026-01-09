@@ -121,7 +121,15 @@ class NotificationController {
       final response = await pendingRepo.getPendingOrders(
         driverId: user.id.toString(),
       );
-      
+      if (response == null) {
+        print('⚠️ Pending orders response is null, skipping');
+        return;
+      }
+      if (response is! Map<String, dynamic>) {
+        print('⚠️ Unexpected pending orders response type: ${response.runtimeType}');
+        return;
+      }
+
       final parsedOrders = PendingOrdersModel.fromJson(response);
       
       print('📋 Found ${parsedOrders.orders.length} pending orders');
