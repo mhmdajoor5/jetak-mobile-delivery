@@ -3,6 +3,7 @@ import 'package:mvc_pattern/mvc_pattern.dart';
 
 import '../../generated/l10n.dart';
 import '../helpers/driver_status_helper.dart';
+import '../helpers/PusherHelper.dart';
 import '../models/order.dart';
 import '../models/pending_order_model.dart';
 import '../repository/order_repository.dart' as orderRepo;
@@ -143,353 +144,120 @@ class OrderController extends ControllerMVC {
     }
   }
 
-  Future<void> acceptOrder(String orderID) async {
-    if (isAcceptingOrder) return; // Prevent multiple simultaneous accepts
-    
+  Future<Map<String, dynamic>> acceptOrder(String orderID) async {
+    if (isAcceptingOrder) {
+      return {
+        'success': false,
+        'message': 'Request already in progress',
+      };
+    }
+
     setState(() {
       isAcceptingOrder = true;
     });
 
     try {
-      
+      print('📤 Accepting order $orderID...');
+
       final result = await orderRepo.acceptOrderWithId(orderID);
 
       if (result['success']) {
-        
+        print('✅ Order $orderID accepted successfully');
+
+        // Mark order as processed in Pusher to prevent duplicate notifications
+        PusherHelper.markOrderAsProcessed(orderID);
+
         // Remove the order from pending list
         setState(() {
           pendingOrdersModel.removeWhere((order) => order.orderId.toString() == orderID);
-          isAcceptingOrder = false;
         });
-        
-        final context = scaffoldKey.currentContext;
-        if (context != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.check, color: Colors.green, size: 16),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '🎉 تم قبول الطلب بنجاح!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'طلب #$orderID - يمكنك الآن البدء في التوصيل',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.green[600],
-              duration: Duration(seconds: 4),
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          );
-        }
-        
+
         // Refresh orders list
         await refreshOrders();
+
+        return {
+          'success': true,
+          'message': 'Order accepted successfully',
+          'data': result['data'],
+        };
       } else {
         print('❌ Failed to accept order $orderID: ${result['message']}');
-        setState(() {
-          isAcceptingOrder = false;
-        });
-        
-        final context = scaffoldKey.currentContext;
-        if (context != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '❌ فشل في قبول الطلب',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        result['message'] ?? 'خطأ غير معروف',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red[600],
-            duration: Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      }
+
+        return {
+          'success': false,
+          'message': result['message'] ?? 'Failed to accept order',
+        };
       }
     } catch (e) {
       print('❌ Error accepting order $orderID: $e');
+
+      return {
+        'success': false,
+        'message': 'Network error. Please check your connection and try again.',
+        'error': e.toString(),
+      };
+    } finally {
       setState(() {
         isAcceptingOrder = false;
       });
-      
-      final context = scaffoldKey.currentContext;
-      if (context != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.wifi_off, color: Colors.white, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '🌐 خطأ في الاتصال',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'تحقق من اتصال الإنترنت وحاول مرة أخرى',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.orange[600],
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      }
     }
   }
 
-  Future<void> rejectOrder(String orderID) async {
-    if (isRejectingOrder) return; // Prevent multiple simultaneous rejects
-    
+  Future<Map<String, dynamic>> rejectOrder(String orderID) async {
+    if (isRejectingOrder) {
+      return {
+        'success': false,
+        'message': 'Request already in progress',
+      };
+    }
+
     setState(() {
       isRejectingOrder = true;
     });
 
     try {
-      print('🚫 Controller - Starting reject process for order $orderID');
-      
+      print('🚫 Rejecting order $orderID...');
+
       final result = await orderRepo.rejectOrderWithId(orderID);
 
       if (result['success']) {
-        print('✅ Controller - Order $orderID rejected successfully');
-        
+        print('✅ Order $orderID rejected successfully');
+
+        // Mark order as processed in Pusher to prevent duplicate notifications
+        PusherHelper.markOrderAsProcessed(orderID);
+
         // Remove the order from pending list
         setState(() {
           pendingOrdersModel.removeWhere((order) => order.orderId.toString() == orderID);
-          isRejectingOrder = false;
         });
 
-        final context = scaffoldKey.currentContext;
-        if (context != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.cancel, color: Colors.orange, size: 16),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '🚫 تم رفض الطلب',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'طلب #$orderID - تم إشعار العميل بالرفض',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.orange[600],
-              duration: Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          );
-        }
-        
         // Refresh orders list
         await refreshOrders();
+
+        return {
+          'success': true,
+          'message': 'Order rejected successfully',
+        };
       } else {
         print('❌ Failed to reject order $orderID: ${result['message']}');
-        setState(() {
-          isRejectingOrder = false;
-        });
-        
-        final context = scaffoldKey.currentContext;
-        if (context != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.error_outline, color: Colors.white, size: 20),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '❌ فشل في رفض الطلب',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          result['message'] ?? 'خطأ غير معروف',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.red[600],
-              duration: Duration(seconds: 5),
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          );
-        }
+
+        return {
+          'success': false,
+          'message': result['message'] ?? 'Failed to reject order',
+        };
       }
     } catch (e) {
       print('❌ Error rejecting order $orderID: $e');
+
+      return {
+        'success': false,
+        'message': 'Network error. Please check your connection and try again.',
+        'error': e.toString(),
+      };
+    } finally {
       setState(() {
         isRejectingOrder = false;
       });
-      
-      final context = scaffoldKey.currentContext;
-      if (context != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.wifi_off, color: Colors.white, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '🌐 خطأ في الاتصال',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'تحقق من اتصال الإنترنت وحاول مرة أخرى',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.orange[600],
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      }
     }
   }
 
