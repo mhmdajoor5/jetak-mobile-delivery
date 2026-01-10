@@ -11,10 +11,12 @@ import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 
 import '../repository/user_repository.dart' as userRepo;
+import '../repository/orders/assigned_order_repo.dart' as assignedRepo;
 import '../helpers/FirebaseUtils.dart';
 
 import '../../generated/l10n.dart';
 import '../elements/DrawerWidget.dart';
+import '../models/pending_order_model.dart';
 import '../models/route_argument.dart';
 import '../pages/orders.dart';
 import '../pages/orders_history.dart';
@@ -131,10 +133,9 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       await _saveLocationLocally(position.latitude, position.longitude);
       
       // إرسال الموقع للخادم
-      final prefs = await SharedPreferences.getInstance();
-      final int? orderId = prefs.getInt('last_order_id');
+      final int? orderId = await _getActiveAssignedOrderId();
       if (orderId == null || orderId == 0) {
-        print('⚠️ Skipping location update: no active order_id');
+        print('⚠️ Skipping location update: no active assigned order');
         return;
       }
       await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId);
@@ -167,17 +168,16 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         double lng = prefs.getDouble('last_lng') ?? 0.0;
         int lastTime = prefs.getInt('last_location_time') ?? 0;
         
-        int? orderId = prefs.getInt('last_order_id');
         // استخدم آخر موقع فقط إذا كان حديث (أقل من 5 دقائق)
         int timeDiff = DateTime.now().millisecondsSinceEpoch - lastTime;
         if (timeDiff < 300000) { // 5 دقائق
           print('📍 Using last known location: lat=$lat, lng=$lng');
          
+         final int? orderId = await _getActiveAssignedOrderId();
          if (orderId == null || orderId == 0) {
-           print('⚠️ Skipping location update: no active order_id');
+           print('⚠️ Skipping location update: no active assigned order');
            return;
          }
-         // Use the order_id from shared preferences if available
          await userRepo.updateDriverLocation(lat, lng, orderId);
      // Use the order_id from shared preferences if available
          // await userRepo.updateDriverLocation(lat, lng, order_id ?? 0);
@@ -187,6 +187,68 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       }
     } catch (e) {
       print('❌ Error using last known location: $e');
+    }
+  }
+
+  PendingOrderModel? _selectActiveAssignedOrder(List<PendingOrderModel> orders) {
+    const preferredStatusIds = ['4', '3', '2', '6'];
+    for (final statusId in preferredStatusIds) {
+      for (final order in orders) {
+        if (order.orderStatus.id == statusId) {
+          return order;
+        }
+      }
+    }
+
+    const preferredStatusNames = [
+      'on the way',
+      'in delivery',
+      'ready',
+      'ready for pickup',
+      'preparing',
+      'accepted',
+    ];
+    for (final statusName in preferredStatusNames) {
+      for (final order in orders) {
+        if (order.orderStatus.status?.toLowerCase() == statusName) {
+          return order;
+        }
+      }
+    }
+
+    if (orders.length == 1) {
+      return orders.first;
+    }
+
+    return null;
+  }
+
+  Future<int?> _getActiveAssignedOrderId() async {
+    try {
+      final user = userRepo.currentUser.value;
+      final driverId = user.id?.toString();
+      if (driverId == null || driverId.isEmpty) {
+        print('⚠️ Missing driver_id for assigned orders lookup');
+        return null;
+      }
+
+      final response = await assignedRepo.getAssignedOrders(driverId: driverId);
+      final orders = PendingOrdersModel.fromJson(response).orders;
+      if (orders.isEmpty) {
+        print('ℹ️ No assigned orders found for driver $driverId');
+        return null;
+      }
+
+      final activeOrder = _selectActiveAssignedOrder(orders);
+      if (activeOrder == null || activeOrder.orderId == 0) {
+        print('⚠️ No active assigned order selected from ${orders.length} orders');
+        return null;
+      }
+
+      return activeOrder.orderId;
+    } catch (e) {
+      print('❌ Error selecting active assigned order: $e');
+      return null;
     }
   }
 
