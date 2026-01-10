@@ -133,11 +133,25 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       await _saveLocationLocally(position.latitude, position.longitude);
       
       // إرسال الموقع للخادم
-      final int? orderId = await _getActiveAssignedOrderId();
+      final prefs = await SharedPreferences.getInstance();
+
+      int? orderId = await _getActiveAssignedOrderId();
+      if (orderId == null || orderId == 0) {
+        // حاول استخدام آخر order_id محفوظ
+        // orderId = prefs.getInt('last_order_id');
+        if (orderId != null && orderId > 0) {
+          print('ℹ️ Using last_order_id fallback for location update: $orderId');
+        }
+      }
+
       if (orderId == null || orderId == 0) {
         print('⚠️ Skipping location update: no active assigned order');
         return;
       }
+
+      // حفظ آخر order_id مستخدم للإرسال
+      await prefs.setInt('last_order_id', orderId);
+
       await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId);
 
       
@@ -173,11 +187,22 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         if (timeDiff < 300000) { // 5 دقائق
           print('📍 Using last known location: lat=$lat, lng=$lng');
          
-         final int? orderId = await _getActiveAssignedOrderId();
+         int? orderId = await _getActiveAssignedOrderId();
+         if (orderId == null || orderId == 0) {
+           // حاول استخدام آخر order_id محفوظ
+           orderId = prefs.getInt('last_order_id');
+           if (orderId != null && orderId > 0) {
+             print('ℹ️ Using last_order_id fallback for cached location update: $orderId');
+           }
+         }
          if (orderId == null || orderId == 0) {
            print('⚠️ Skipping location update: no active assigned order');
            return;
          }
+
+         // حفظ آخر order_id مستخدم للإرسال
+         await prefs.setInt('last_order_id', orderId);
+
          await userRepo.updateDriverLocation(lat, lng, orderId);
      // Use the order_id from shared preferences if available
          // await userRepo.updateDriverLocation(lat, lng, order_id ?? 0);

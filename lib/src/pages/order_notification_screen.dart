@@ -301,7 +301,7 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                               ),
                               color: Colors.redAccent,
                               onPressed: _isProcessing
-                                  ? null
+                                  ? () {}
                                   : () async {
                                       if (orderId.isEmpty) return;
 
@@ -458,29 +458,15 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                             child: BlockButtonWidget(
                               padding: EdgeInsets.symmetric(vertical: 14),
                               text: _isProcessing
-                                  ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
-                                          ),
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          "Processing...",
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                            color: Colors.blue.shade700,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                                  ? Text(
+                                      "Processing...",
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        color: Colors.blue.shade700,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     )
                                   : Text(
                                       "Accept",
@@ -494,7 +480,7 @@ class _OrderNotificationScreenState extends StateMVC<OrderNotificationScreen> {
                                     ),
                               color: Colors.white,
                               onPressed: _isProcessing
-                                  ? null
+                                  ? () {}
                                   : () async {
                                       if (orderId.isEmpty) return;
 

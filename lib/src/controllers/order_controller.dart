@@ -9,6 +9,7 @@ import '../models/pending_order_model.dart';
 import '../repository/order_repository.dart' as orderRepo;
 import '../repository/orders/pending_order_repo.dart' as pendingRepo;
 import '../repository/user_repository.dart' as userRepo;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderController extends ControllerMVC {
   List<Order> orders = <Order>[];
@@ -166,6 +167,31 @@ class OrderController extends ControllerMVC {
 
         // Mark order as processed in Pusher to prevent duplicate notifications
         PusherHelper.markOrderAsProcessed(orderID);
+
+        // Save order id (and status if available) for location updates
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('last_order_id', int.tryParse(orderID) ?? 0);
+
+          final dynamic statusRaw = result['data']?['order_status_id'] ??
+              result['data']?['order_status']?['id'] ??
+              result['data']?['orderStatus']?['id'];
+          final int? statusId = statusRaw is int
+              ? statusRaw
+              : int.tryParse(statusRaw?.toString() ?? '');
+
+          if (statusId != null) {
+            await prefs.setInt('last_order_status_id', statusId);
+            print('✅ Saved last_order_status_id: $statusId to SharedPreferences');
+          } else {
+            await prefs.remove('last_order_status_id');
+            print('ℹ️ No order_status_id found in acceptOrder response; cleared stored status');
+          }
+
+          print('✅ Saved last_order_id: $orderID to SharedPreferences');
+        } catch (e) {
+          print('❌ Error saving last_order_id/status to SharedPreferences: $e');
+        }
 
         // Remove the order from pending list
         setState(() {
