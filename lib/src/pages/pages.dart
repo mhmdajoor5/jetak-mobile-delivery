@@ -194,6 +194,9 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     const preferredStatusIds = ['4', '3', '2', '6'];
     for (final statusId in preferredStatusIds) {
       for (final order in orders) {
+        if (order.orderStatus.id == '4') {
+          continue;
+        }
         if (order.orderStatus.id == statusId) {
           return order;
         }
@@ -210,6 +213,9 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     ];
     for (final statusName in preferredStatusNames) {
       for (final order in orders) {
+        if (order.orderStatus.id == '4') {
+          continue;
+        }
         if (order.orderStatus.status?.toLowerCase() == statusName) {
           return order;
         }
@@ -217,7 +223,7 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
     }
 
     if (orders.length == 1) {
-      return orders.first;
+      return orders.first.orderStatus.id == '4' ? null : orders.first;
     }
 
     return null;

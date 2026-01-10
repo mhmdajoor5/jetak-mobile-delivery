@@ -221,7 +221,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
     try {
       final response = await assignedRepo.getAssignedOrders(driverId: driverId);
-      return PendingOrdersModel.fromJson(response).orders;
+      final orders = PendingOrdersModel.fromJson(response).orders;
+      orders.removeWhere((order) => order.orderStatus.id == '4');
+      return orders;
     } catch (e) {
       print('Error fetching assigned orders: $e');
       rethrow;
