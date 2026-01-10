@@ -133,6 +133,10 @@ Future<void> updateDriverLocation(double lat, double lng, int orderId) async {
     print('❌ updateDriverLocation: User not authenticated');
     return;
   }
+  if (orderId == 0) {
+    print('⚠️ updateDriverLocation: Missing order_id, skipping request');
+    return;
+  }
   
   print('📍 Updating driver location: lat=$lat, lng=$lng, orderId=$orderId');
   

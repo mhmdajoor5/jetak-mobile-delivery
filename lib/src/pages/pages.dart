@@ -133,7 +133,11 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
       // إرسال الموقع للخادم
       final prefs = await SharedPreferences.getInstance();
       final int? orderId = prefs.getInt('last_order_id');
-      await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId ?? 0);
+      if (orderId == null || orderId == 0) {
+        print('⚠️ Skipping location update: no active order_id');
+        return;
+      }
+      await userRepo.updateDriverLocation(position.latitude, position.longitude, orderId);
 
       
     } catch (e) {
@@ -169,8 +173,12 @@ class _PagesTestWidgetState extends State<PagesTestWidget> {
         if (timeDiff < 300000) { // 5 دقائق
           print('📍 Using last known location: lat=$lat, lng=$lng');
          
+         if (orderId == null || orderId == 0) {
+           print('⚠️ Skipping location update: no active order_id');
+           return;
+         }
          // Use the order_id from shared preferences if available
-         await userRepo.updateDriverLocation(lat, lng, orderId ?? 0);
+         await userRepo.updateDriverLocation(lat, lng, orderId);
      // Use the order_id from shared preferences if available
          // await userRepo.updateDriverLocation(lat, lng, order_id ?? 0);
         } else {

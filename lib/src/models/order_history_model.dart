@@ -169,6 +169,54 @@ class OrderHistoryModel {
         "date": date?.toIso8601String(),
       };
 
+  double _extraPrice(dynamic extra) {
+    if (extra == null) return 0;
+    if (extra is Map) {
+      final value = extra['price'];
+      if (value is num) return value.toDouble();
+      return double.tryParse(value?.toString() ?? '') ?? 0;
+    }
+    try {
+      final value = (extra as dynamic).price;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value?.toString() ?? '') ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  double _foodOrderTotal(FoodOrder foodOrder) {
+    final basePrice = foodOrder.price ?? 0;
+    final quantity = foodOrder.quantity ?? 1;
+    double extrasTotal = 0;
+    foodOrder.extras?.forEach((extra) {
+      extrasTotal += _extraPrice(extra);
+    });
+    return (basePrice + extrasTotal) * quantity;
+  }
+
+  double get calculatedSubTotal {
+    if (foodOrders != null && foodOrders!.isNotEmpty) {
+      double total = 0;
+      for (final foodOrder in foodOrders!) {
+        total += _foodOrderTotal(foodOrder);
+      }
+      return total;
+    }
+    return foodTotal ?? 0;
+  }
+
+  double get calculatedTotal {
+    final baseTotal = calculatedSubTotal + (deliveryFee ?? 0);
+    final taxPercent = tax ?? 0;
+    return baseTotal + (taxPercent * baseTotal / 100);
+  }
+
+  double get extraFee {
+    if (amount == null) return 0;
+    return amount! - calculatedTotal;
+  }
+
   // Formatted date string
   String get formattedDate {
     try {
@@ -181,6 +229,14 @@ class OrderHistoryModel {
   // Formatted amount with currency
   String get formattedAmount {
     return '${amount?.toStringAsFixed(2)} ₪';
+  }
+
+  String get formattedCalculatedTotal {
+    return '${calculatedTotal.toStringAsFixed(2)} ₪';
+  }
+
+  String get formattedExtraFee {
+    return '${extraFee.toStringAsFixed(2)} ₪';
   }
 
   // Short date for compact display

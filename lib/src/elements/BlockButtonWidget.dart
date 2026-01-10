@@ -9,8 +9,8 @@ class BlockButtonWidget extends StatelessWidget {
       this.padding});
 
   final Color color;
-  final Text text;
-  final VoidCallback onPressed;
+  final Widget text;
+  final VoidCallback? onPressed;
   final EdgeInsetsGeometry? padding;
 
   @override

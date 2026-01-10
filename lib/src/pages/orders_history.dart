@@ -497,6 +497,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         border: Border.all(color: color.withValues(alpha: .6)),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: color, size: 24),
           SizedBox(height: 8),
@@ -508,11 +509,17 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               color: color,
             ),
           ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
+          SizedBox(height: 6),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
             ),
           ),
         ],
@@ -638,9 +645,22 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         margin: EdgeInsets.only(bottom: 12),
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            final orderId = order.id?.toString();
+            if (orderId == null || orderId.isEmpty) return;
+            Navigator.of(context).pushNamed(
+              '/OrderDetails',
+              arguments: RouteArgument(
+                id: orderId,
+                param: {'order': order},
+              ),
+            );
+          },
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Row
@@ -741,13 +761,26 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                       ),
                     ],
                   ),
-                  Text(
-                    order.formattedAmount,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[600],
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        order.formattedCalculatedTotal,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[600],
+                        ),
+                      ),
+                      if (order.extraFee > 0.01)
+                        Text(
+                          '${_tr(context, ar: 'رسوم إضافية', he: 'עמלה נוספת', en: 'Extra fee')}: ${order.formattedExtraFee}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -765,6 +798,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   ),
                 ),
             ],
+          ),
           ),
         ),
       );
