@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 import '../models/user.dart' as UserModel;
 import '../repository/user_repository.dart' as userRepo;
@@ -87,6 +87,13 @@ class FirebaseUtil {
         provisional: false,
         sound: true,
       );
+
+      debugPrint('Notif permission: ${settings.authorizationStatus}');
+      final fcm = await FirebaseMessaging.instance.getToken();
+      debugPrint('FCM TOKEN: $fcm');
+
+      final apns = await FirebaseMessaging.instance.getAPNSToken();
+      debugPrint('APNS TOKEN: $apns');
 
       print('📱 Permission status: ${settings.authorizationStatus}');
 
