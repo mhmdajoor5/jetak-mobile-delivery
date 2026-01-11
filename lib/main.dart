@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'src/helpers/intercom_helper.dart';
 import 'src/helpers/FirebaseUtils.dart';
+import 'firebase_options.dart';
 
 import 'generated/l10n.dart';
 import 'route_generator.dart';
@@ -23,7 +24,9 @@ import 'src/repository/user_repository.dart' as userRepo;
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in your background handlers,
   // such as Firestore, make sure to call `initializeApp` before using them.
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   print('');
   print('╔═══════════════════════════════════════════════════════════════╗');
@@ -68,32 +71,25 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
-  await Firebase.initializeApp();
-  // void main() async {
-    await FCMConfig.instance
-        .init(
-      onBackgroundMessage:_firebaseMessagingBackgroundHandler,
-      defaultAndroidForegroundIcon: '@mipmap/ic_launcher', //default is @mipmap/ic_launcher
-      defaultAndroidChannel: AndroidNotificationChannel(
-        'high_importance_channel',// same as value from android setup
-        'Fcm config',
-        importance: Importance.high,
-        sound: RawResourceAndroidNotificationSound('notification'),
-      ),
-    );
-    // runApp(MaterialApp(
-    //   home: MyHomePage(),
-    // ));
-  // }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  // Register background message handler ONCE using official Firebase API
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  // Initialize FCM Config for local notifications only (no duplicate background handler)
+  await FCMConfig.instance.init(
+    // Do NOT pass onBackgroundMessage here - already registered above
+    defaultAndroidForegroundIcon: '@mipmap/ic_launcher',
+    defaultAndroidChannel: AndroidNotificationChannel(
+      'high_importance_channel',
+      'Fcm config',
+      importance: Importance.high,
+      sound: RawResourceAndroidNotificationSound('notification'),
+    ),
+  );
 
-
-  // void main() async {
-  //   runApp(MaterialApp(
-  //     home: MyHomePage(),
-  //   ));
-  // }
   // Initialize Intercom
   await IntercomHelper.initialize();
 
@@ -105,7 +101,6 @@ void main() async {
   FirebaseUtil.setupTokenRefreshListener();
 
   await NotificationController.getDeviceToken();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await NotificationController.initializeLocalNotifications();
 
   // Clear all notification data (remove this line after running once)
@@ -126,18 +121,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    // Test notification removed - notifications will come from Backend/Firebase only
-    // NotificationController.createNewNotification(
-    //   RemoteMessage(
-    //     senderId: "123456789",
-    //     messageId: "619045",
-    //     data: {"key": "value", 'order_id': "123"},
-    //     notification: RemoteNotification(
-    //       title: "Test Notification",
-    //       body: "This is a test notification",
-    //     ),
-    //   ),
-    // );
 
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
@@ -207,52 +190,6 @@ class _MyAppState extends State<MyApp> {
                     focusColor: config.Colors().accentColor(1),
                     hintColor: config.Colors().secondColor(1),
                     textTheme: TextTheme(
-                      // headline5: TextStyle(
-                      //     fontSize: 20.0,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // headline4: TextStyle(
-                      //     fontSize: 18.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // headline3: TextStyle(
-                      //     fontSize: 20.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // headline2: TextStyle(
-                      //     fontSize: 22.0,
-                      //     fontWeight: FontWeight.w700,
-                      //     color: config.Colors().mainColor(1),
-                      //     height: 1.35),
-                      // headline1: TextStyle(
-                      //     fontSize: 22.0,
-                      //     fontWeight: FontWeight.w300,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.5),
-                      // subtitle1: TextStyle(
-                      //     fontSize: 15.0,
-                      //     fontWeight: FontWeight.w500,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // headline6: TextStyle(
-                      //     fontSize: 16.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().mainColor(1),
-                      //     height: 1.35),
-                      // bodyText2: TextStyle(
-                      //     fontSize: 12.0,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // bodyText1: TextStyle(
-                      //     fontSize: 14.0,
-                      //     color: config.Colors().secondColor(1),
-                      //     height: 1.35),
-                      // caption: TextStyle(
-                      //     fontSize: 12.0,
-                      //     color: config.Colors().accentColor(1),
-                      //     height: 1.35),
                     ),
                   )
                   : ThemeData(
@@ -265,52 +202,6 @@ class _MyAppState extends State<MyApp> {
                     hintColor: config.Colors().secondDarkColor(1),
                     focusColor: config.Colors().accentDarkColor(1),
                     textTheme: TextTheme(
-                      // headline5: TextStyle(
-                      //     fontSize: 20.0,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // headline4: TextStyle(
-                      //     fontSize: 18.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // headline3: TextStyle(
-                      //     fontSize: 20.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // headline2: TextStyle(
-                      //     fontSize: 22.0,
-                      //     fontWeight: FontWeight.w700,
-                      //     color: config.Colors().mainDarkColor(1),
-                      //     height: 1.35),
-                      // headline1: TextStyle(
-                      //     fontSize: 22.0,
-                      //     fontWeight: FontWeight.w300,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.5),
-                      // subtitle1: TextStyle(
-                      //     fontSize: 15.0,
-                      //     fontWeight: FontWeight.w500,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // headline6: TextStyle(
-                      //     fontSize: 16.0,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: config.Colors().mainDarkColor(1),
-                      //     height: 1.35),
-                      // bodyText2: TextStyle(
-                      //     fontSize: 12.0,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // bodyText1: TextStyle(
-                      //     fontSize: 14.0,
-                      //     color: config.Colors().secondDarkColor(1),
-                      //     height: 1.35),
-                      // caption: TextStyle(
-                      //     fontSize: 12.0,
-                      //     color: config.Colors().secondDarkColor(0.6),
-                      //     height: 1.35),
                     ),
                   ),
         );
@@ -327,21 +218,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-// // // TODO: Define the background message handler
-// // Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-// //   await Firebase.initializeApp();
-
-// //   _showNotificationWithButton(message);
-
-// //   if (kDebugMode) {
-// //     print("Handling a background message: ${message.messageId}");
-// //     print('Message data: ${message.data}');
-// //     print('Message notification: ${message.notification?.title}');
-// //     print('Message notification: ${message.notification?.body}');
-// //   }
-// // }
-
-// void _showNotificationWithButton(RemoteMessage message) {
-//   NotificationController.createNewNotification(message);
-// }

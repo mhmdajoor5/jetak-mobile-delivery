@@ -231,6 +231,33 @@ class NotificationController {
 
       if (Theme.of(settingRepo.navigatorKey.currentContext!).platform ==
           TargetPlatform.iOS) {
+        print('📱 Requesting iOS notification permissions...');
+
+        // Request Firebase Messaging permissions
+        NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        );
+
+        // iOS Debug Logs - Print permission status
+        print('');
+        print('╔═══════════════════════════════════════════════════════════════╗');
+        print('║         iOS NOTIFICATION PERMISSION STATUS                   ║');
+        print('╚═══════════════════════════════════════════════════════════════╝');
+        print('🔐 Authorization Status: ${settings.authorizationStatus}');
+        print('   ${settings.authorizationStatus == AuthorizationStatus.authorized ? "✅ AUTHORIZED" : settings.authorizationStatus == AuthorizationStatus.provisional ? "⚠️ PROVISIONAL" : "❌ DENIED/NOT DETERMINED"}');
+        print('🔔 Alert Setting: ${settings.alertSetting}');
+        print('🔕 Badge Setting: ${settings.badgeSetting}');
+        print('🔊 Sound Setting: ${settings.soundSetting}');
+        print('╚═══════════════════════════════════════════════════════════════╝');
+        print('');
+
+        // Also request local notification permissions
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin
@@ -334,26 +361,54 @@ class NotificationController {
   static Future<void> getDeviceToken() async {
     try {
       print('🔑 Getting FCM Device Token from NotificationController...');
-      
+
       if (Platform.isIOS) {
+        print('');
+        print('╔═══════════════════════════════════════════════════════════════╗');
+        print('║              iOS FCM TOKEN RETRIEVAL                          ║');
+        print('╚═══════════════════════════════════════════════════════════════╝');
+
+        // Wait for APNs token first (required for iOS)
         String? apnsToken;
         int retries = 0;
         while (apnsToken == null && retries < 10) {
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
           if (apnsToken == null) {
-            print('⏳ Waiting for APNS token (attempt ${retries + 1}/10)...');
+            print('⏳ Waiting for APNs token (attempt ${retries + 1}/10)...');
             await Future.delayed(Duration(seconds: 2));
             retries++;
           }
         }
-        print('📱 APNS Token retrieved: ${apnsToken != null ? "SUCCESS" : "FAILED"}');
+
+        if (apnsToken != null) {
+          print('✅ APNs Token: $apnsToken');
+        } else {
+          print('❌ FAILED to get APNs token after ${retries} attempts');
+          print('⚠️  Without APNs token, FCM will not work on iOS!');
+          print('⚠️  Check: Push Notifications capability in Xcode');
+        }
+        print('');
       }
-      
+
+      // Get FCM token
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        print('🔑 FCM Token: $token');
+        print('✅ FCM Registration Token:');
+        print('   $token');
+        print('');
+        print('📋 Use this token to test notifications from Firebase Console');
+        print('╚═══════════════════════════════════════════════════════════════╝');
+        print('');
       } else {
         print('❌ Failed to get FCM token');
+        if (Platform.isIOS) {
+          print('⚠️  For iOS, this is likely because:');
+          print('   1. APNs token is missing (check above)');
+          print('   2. Push Notifications capability not enabled in Xcode');
+          print('   3. App not signed with proper provisioning profile');
+        }
+        print('╚═══════════════════════════════════════════════════════════════╝');
+        print('');
       }
     } catch (e) {
       print('❌ Error getting FCM token: $e');
