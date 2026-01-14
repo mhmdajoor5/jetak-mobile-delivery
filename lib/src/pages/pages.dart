@@ -50,19 +50,13 @@ class PagesTestWidget extends StatefulWidget {
   }
 }
 
-class _PagesTestWidgetState extends State<PagesTestWidget>
-    with WidgetsBindingObserver {
+class _PagesTestWidgetState extends State<PagesTestWidget> {
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
-  StreamSubscription<Position>? _positionSubscription;
-  Timer? _activeOrderCheckTimer;
-  int? _activeOrderId;
-  bool _isTrackingActive = false;
-  bool _isPermissionDialogVisible = false;
+  Timer? timer;
 
   @override
   initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _initializeApp();
   }
 
@@ -73,176 +67,21 @@ class _PagesTestWidgetState extends State<PagesTestWidget>
     await registerFCM();
     await userRepo.updateDriverAvailability(true);
     await _getCurrentPosition();
-    await _checkPermissionStatus();
     _selectTab(widget.currentTab);
-
-    await _syncTrackingState();
-    _activeOrderCheckTimer?.cancel();
-    _activeOrderCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      _syncTrackingState();
-    });
-  }
-
-  Future<void> _startLocationTracking() async {
-    final LocationSettings locationSettings;
-    if (Platform.isAndroid) {
-      locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-        intervalDuration: const Duration(seconds: 30),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationTitle: 'Location tracking active',
-          notificationText: 'Updating delivery location in the background',
-          enableWakeLock: true,
-        ),
-      );
-    } else if (Platform.isIOS) {
-      locationSettings = AppleSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 10,
-        allowBackgroundLocationUpdates: true,
-        pauseLocationUpdatesAutomatically: false,
-      );
-    } else {
-      locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-      );
-    }
-
-    _positionSubscription?.cancel();
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (position) async {
-        if (!mounted) {
-          return;
-        }
-        if (userRepo.currentUser.value.id == null) {
-          print('⚠️ User not authenticated, skipping location update');
-          return;
-        }
-
-        await _saveLocationLocally(position.latitude, position.longitude);
-
-        final orderId = _activeOrderId;
-        if (orderId == null || orderId == 0) {
-          print('⚠️ Skipping location update: no active assigned order');
-          return;
-        }
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('last_order_id', orderId);
-        await userRepo.updateDriverLocation(
-          position.latitude,
-          position.longitude,
-          orderId,
-        );
-      },
-      onError: (e) async {
-        print('❌ Position stream error: $e');
-        await _useLastKnownLocation();
-      },
-      cancelOnError: false,
-    );
-
-    _isTrackingActive = true;
-  }
-
-  Future<void> _stopLocationTracking() async {
-    if (_positionSubscription != null) {
-      await _positionSubscription?.cancel();
-      _positionSubscription = null;
-    }
-    _isTrackingActive = false;
-    _activeOrderId = null;
-  }
-
-  Future<void> _syncTrackingState() async {
-    final activeOrderId = await _getActiveAssignedOrderId();
-    if (!mounted) {
-      return;
-    }
-
-    if (activeOrderId == null || activeOrderId == 0) {
-      if (_isTrackingActive) {
-        print('ℹ️ No active order. Stopping location tracking.');
-        await _stopLocationTracking();
+    
+    // تحديث الموقع كل 30 ثانية بدلاً من 15 لتوفير البطارية
+    timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
+      if (!mounted) {
+        t.cancel();
+        return;
       }
-      return;
-    }
 
-    _activeOrderId = activeOrderId;
-
-    final hasAlwaysPermission = await _ensureAlwaysPermissionForTracking();
-    if (!hasAlwaysPermission) {
-      await _stopLocationTracking();
-      return;
-    }
-
-    if (!_isTrackingActive) {
-      print('✅ Active order detected. Starting location tracking.');
-      await _startLocationTracking();
-    }
-  }
-
-  Future<bool> _ensureAlwaysPermissionForTracking() async {
-    LocationPermission permission = await _geolocatorPlatform.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await _geolocatorPlatform.requestPermission();
-    }
-    if (permission == LocationPermission.deniedForever) {
-      _showAlwaysPermissionDialog();
-      return false;
-    }
-    if (permission == LocationPermission.whileInUse) {
-      final upgraded = await _geolocatorPlatform.requestPermission();
-      if (upgraded != LocationPermission.always) {
-        _showAlwaysPermissionDialog();
-        return false;
+      if (userRepo.currentUser.value.id != null) {
+        print("📍 Auto-updating location at ${DateTime.now().toString()}");
+        _getCurrentPosition();
+      } else {
+        print("⚠️ User not authenticated, skipping location update");
       }
-      permission = upgraded;
-    }
-    return permission == LocationPermission.always;
-  }
-
-  Future<void> _checkPermissionStatus() async {
-    await _geolocatorPlatform.checkPermission();
-  }
-
-  void _showAlwaysPermissionDialog() {
-    if (!mounted || _isPermissionDialogVisible) {
-      return;
-    }
-    _isPermissionDialogVisible = true;
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Enable Always Location'),
-          content: const Text(
-            'Background tracking during an active delivery requires '
-            '"Always" location permission. Please enable it in Settings.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Not now'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await Geolocator.openAppSettings();
-              },
-              child: const Text('Go to Settings'),
-            ),
-          ],
-        );
-      },
-    ).whenComplete(() {
-      _isPermissionDialogVisible = false;
     });
   }
 
@@ -728,25 +567,14 @@ class _PagesTestWidgetState extends State<PagesTestWidget>
       return false;
     }
 
-    if (permission == LocationPermission.whileInUse) {
-      final upgraded = await _geolocatorPlatform.requestPermission();
-      if (upgraded == LocationPermission.always) {
-        permission = upgraded;
-      } else {
-        print('⚠️ Background location not granted (always)');
-      }
-    }
-
     return true;
   }
 
   @override
   void dispose() {
-    _positionSubscription?.cancel();
-    _positionSubscription = null;
-    _activeOrderCheckTimer?.cancel();
-    _activeOrderCheckTimer = null;
-    WidgetsBinding.instance.removeObserver(this);
+    // Cancel timer to prevent memory leaks
+    timer?.cancel();
+    timer = null;
 
     // Update driver availability when disposing
     userRepo.updateDriverAvailability(false).catchError((error) {
@@ -754,13 +582,5 @@ class _PagesTestWidgetState extends State<PagesTestWidget>
     });
 
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkPermissionStatus();
-      _syncTrackingState();
-    }
   }
 }

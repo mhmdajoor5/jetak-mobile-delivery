@@ -251,9 +251,9 @@ class NotificationController {
         print('╚═══════════════════════════════════════════════════════════════╝');
         print('🔐 Authorization Status: ${settings.authorizationStatus}');
         print('   ${settings.authorizationStatus == AuthorizationStatus.authorized ? "✅ AUTHORIZED" : settings.authorizationStatus == AuthorizationStatus.provisional ? "⚠️ PROVISIONAL" : "❌ DENIED/NOT DETERMINED"}');
-        print('🔔 Alert Setting: ${settings.alert}');
-        print('🔕 Badge Setting: ${settings.badge}');
-        print('🔊 Sound Setting: ${settings.sound}');
+        print('🔔 Alert Setting: ${settings.alertSetting}');
+        print('🔕 Badge Setting: ${settings.badgeSetting}');
+        print('🔊 Sound Setting: ${settings.soundSetting}');
         print('╚═══════════════════════════════════════════════════════════════╝');
         print('');
 
