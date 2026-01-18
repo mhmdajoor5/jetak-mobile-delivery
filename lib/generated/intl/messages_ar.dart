@@ -414,6 +414,16 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("لديك أمر معين لك"),
         "your_reset_link_has_been_sent_to_your_email":
             MessageLookupByLibrary.simpleMessage(
-                "تم إرسال رابط إعادة تعيين إلى البريد الإلكتروني الخاص بك")
+                "تم إرسال رابط إعادة تعيين إلى البريد الإلكتروني الخاص بك"),
+        "notification_on_new_order": MessageLookupByLibrary.simpleMessage(
+            "ستحصل على إشعار فور وصول طلب جديد"),
+        "tips_for_more_orders": MessageLookupByLibrary.simpleMessage(
+            "نصائح للحصول على المزيد من الطلبات"),
+        "tip_update_location": MessageLookupByLibrary.simpleMessage(
+            "تأكد من تحديث موقعك بانتظام"),
+        "tip_enable_notifications": MessageLookupByLibrary.simpleMessage(
+            "فعّل الإشعارات لتلقي الطلبات فوراً"),
+        "tip_be_available_peak_hours":
+            MessageLookupByLibrary.simpleMessage("كن متاحاً في أوقات الذروة")
       };
 }

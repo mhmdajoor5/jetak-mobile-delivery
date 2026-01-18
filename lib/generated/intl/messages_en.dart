@@ -416,6 +416,16 @@ class MessageLookup extends MessageLookupByLibrary {
                 "Your have an order assigned to you"),
         "your_reset_link_has_been_sent_to_your_email":
             MessageLookupByLibrary.simpleMessage(
-                "Your reset link has been sent to your email")
+                "Your reset link has been sent to your email"),
+        "notification_on_new_order": MessageLookupByLibrary.simpleMessage(
+            "You will receive a notification as soon as a new order arrives"),
+        "tips_for_more_orders":
+            MessageLookupByLibrary.simpleMessage("Tips for getting more orders"),
+        "tip_update_location": MessageLookupByLibrary.simpleMessage(
+            "Make sure to update your location regularly"),
+        "tip_enable_notifications": MessageLookupByLibrary.simpleMessage(
+            "Enable notifications to receive orders immediately"),
+        "tip_be_available_peak_hours":
+            MessageLookupByLibrary.simpleMessage("Be available during peak hours")
       };
 }

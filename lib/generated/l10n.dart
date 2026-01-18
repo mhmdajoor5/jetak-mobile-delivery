@@ -2931,6 +2931,56 @@ class S {
       args: [],
     );
   }
+
+  /// `You will receive a notification as soon as a new order arrives`
+  String get notification_on_new_order {
+    return Intl.message(
+      'You will receive a notification as soon as a new order arrives',
+      name: 'notification_on_new_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tips for getting more orders`
+  String get tips_for_more_orders {
+    return Intl.message(
+      'Tips for getting more orders',
+      name: 'tips_for_more_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Make sure to update your location regularly`
+  String get tip_update_location {
+    return Intl.message(
+      'Make sure to update your location regularly',
+      name: 'tip_update_location',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable notifications to receive orders immediately`
+  String get tip_enable_notifications {
+    return Intl.message(
+      'Enable notifications to receive orders immediately',
+      name: 'tip_enable_notifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Be available during peak hours`
+  String get tip_be_available_peak_hours {
+    return Intl.message(
+      'Be available during peak hours',
+      name: 'tip_be_available_peak_hours',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

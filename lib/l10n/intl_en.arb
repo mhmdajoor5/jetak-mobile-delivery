@@ -294,5 +294,10 @@
   "contact_support_intercom": "Contact Support",
   "logout_from_intercom": "Logout from Intercom",
   "intercom_help": "Help",
-  "live_chat_support_subtitle": "Direct chat with support team"
+  "live_chat_support_subtitle": "Direct chat with support team",
+  "notification_on_new_order": "You will receive a notification as soon as a new order arrives",
+  "tips_for_more_orders": "Tips for getting more orders",
+  "tip_update_location": "Make sure to update your location regularly",
+  "tip_enable_notifications": "Enable notifications to receive orders immediately",
+  "tip_be_available_peak_hours": "Be available during peak hours"
 }

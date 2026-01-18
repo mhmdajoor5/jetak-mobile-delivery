@@ -60,11 +60,11 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return 'הרגע';
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
+      return 'לפני ${difference.inMinutes} דקות';
     } else {
-      return '${difference.inHours}h ago';
+      return 'לפני ${difference.inHours} שעות';
     }
   }
 
@@ -355,7 +355,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Order #${order.orderId}',
+                                                'הזמנה #${order.orderId}',
                                                 style: TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
@@ -363,7 +363,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                 ),
                                               ),
                                               Text(
-                                                'طلب جديد • ${order.foodOrders.length} عنصر',
+                                                'הזמנה חדשה • ${order.foodOrders.length} פריטים',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.green[600],
@@ -435,7 +435,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      order.customerName ?? "اسم غير متوفر",
+                                                      order.customerName ?? "שם לא זמין",
                                                       style: TextStyle(
                                                         fontSize: 14,
                                                         fontWeight: FontWeight.w600,
@@ -511,7 +511,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                               SizedBox(width: 10),
                                               Expanded(
                                                 child: Text(
-                                                  order.address ?? "عنوان غير متوفر",
+                                                  order.address ?? "כתובת לא זמינה",
                                                   style: TextStyle(
                                                     fontSize: 13,
                                                     color: order.address != "Address not available"
@@ -602,7 +602,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                       Icon(Icons.check_circle, size: 20),
                                                       SizedBox(width: 6),
                                                       Text(
-                                                        'قبول',
+                                                        'אשר',
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight: FontWeight.bold,
@@ -638,7 +638,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                                                       Icon(Icons.cancel, size: 20),
                                                       SizedBox(width: 6),
                                                       Text(
-                                                        'رفض',
+                                                        'דחה',
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight: FontWeight.bold,
@@ -678,7 +678,7 @@ class _OrdersWidgetState extends StateMVC<OrdersWidget> {
                   });
                 },
                 backgroundColor: Colors.green,
-                tooltip: 'Refresh pendingOrdersModel',
+                tooltip: 'רענן הזמנות ממתינות',
                 child: Icon(Icons.refresh, color: Colors.white),
               ),
     );
@@ -735,7 +735,7 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'قبول الطلب',
+                        'אישור הזמנה',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
@@ -743,7 +743,7 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
                         ),
                       ),
                       Text(
-                        'تأكيد قبول طلب العميل',
+                        'אישור קבלת הזמנת הלקוח',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -767,11 +767,11 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
             ),
             child: Column(
               children: [
-                _buildInfoRow('رقم الطلب', '#${order.orderId}', Colors.green[700]),
+                _buildInfoRow('מספר הזמנה', '#${order.orderId}', Colors.green[700]),
                 SizedBox(height: 12),
-                _buildInfoRow('العميل', order.customerName ?? 'غير محدد', Colors.black87),
+                _buildInfoRow('הלקוח', order.customerName ?? 'לא צוין', Colors.black87),
                 SizedBox(height: 12),
-                _buildInfoRow('المبلغ', '${(order.tax + order.deliveryFee).toStringAsFixed(2)} ₪', Colors.green[700]),
+                _buildInfoRow('סכום', '${(order.tax + order.deliveryFee).toStringAsFixed(2)} ₪', Colors.green[700]),
               ],
             ),
           ),
@@ -791,7 +791,7 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
                       ),
                     ),
                     child: Text(
-                      'إلغاء',
+                      'ביטול',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -820,7 +820,7 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
                         Icon(Icons.check, size: 20),
                         SizedBox(width: 8),
                         Text(
-                          'قبول الطلب',
+                          'אשר הזמנה',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -839,7 +839,7 @@ void _showAcceptBottomSheet(BuildContext context, PendingOrderModel order) async
   );
 
   if (result == true) {
-    _showLoadingBottomSheet(context, 'جاري قبول الطلب...');
+    _showLoadingBottomSheet(context, 'מאשר את ההזמנה...');
     await _con.acceptOrder(order.orderId.toString());
     Navigator.of(context).pop(); // Close loading bottom sheet
   }
@@ -897,7 +897,7 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'رفض الطلب',
+                        'דחיית הזמנה',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
@@ -905,7 +905,7 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
                         ),
                       ),
                       Text(
-                        'سيتم إشعار العميل برفض الطلب',
+                        'הלקוח יקבל הודעה על דחיית ההזמנה',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -929,9 +929,9 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
             ),
             child: Column(
               children: [
-                _buildInfoRow('رقم الطلب', '#${order.orderId}', Colors.red[700]),
+                _buildInfoRow('מספר הזמנה', '#${order.orderId}', Colors.red[700]),
                 SizedBox(height: 12),
-                _buildInfoRow('العميل', order.customerName ?? 'غير محدد', Colors.black87),
+                _buildInfoRow('הלקוח', order.customerName ?? 'לא צוין', Colors.black87),
               ],
             ),
           ),
@@ -951,7 +951,7 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
                       ),
                     ),
                     child: Text(
-                      'إلغاء',
+                      'ביטול',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -980,7 +980,7 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
                         Icon(Icons.close, size: 20),
                         SizedBox(width: 8),
                         Text(
-                          'رفض الطلب',
+                          'דחה הזמנה',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -999,7 +999,7 @@ void _showRejectBottomSheet(BuildContext context, PendingOrderModel order) async
   );
 
   if (result == true) {
-    _showLoadingBottomSheet(context, 'جاري رفض الطلب...');
+    _showLoadingBottomSheet(context, 'דוחה את ההזמנה...');
     await _con.rejectOrder(order.orderId.toString());
     Navigator.of(context).pop(); // Close loading bottom sheet
   }
@@ -1130,7 +1130,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'تفاصيل الطلب #${order.orderId}',
+                          'פרטי הזמנה #${order.orderId}',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -1176,18 +1176,18 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                   children: [
                     // Customer Information
                     _buildSectionCard(
-                      title: 'معلومات العميل',
+                      title: 'פרטי הלקוח',
                       icon: Icons.person_outline,
                       color: Colors.blue,
                       children: [
-                        _buildDetailRow('الاسم', order.customerName ?? 'غير محدد'),
+                        _buildDetailRow('שם', order.customerName ?? 'לא צוין'),
                         if (order.user.phone != null) ...[
                           SizedBox(height: 12),
-                          _buildDetailRow('الهاتف', order.user.phone!),
+                          _buildDetailRow('טלפון', order.user.phone!),
                         ],
                         ...[
                         SizedBox(height: 12),
-                        _buildDetailRow('البريد الإلكتروني', order.user.email),
+                        _buildDetailRow('דוא"ל', order.user.email),
                       ],
                       ],
                     ),
@@ -1196,14 +1196,14 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                     
                     // Delivery Information
                     _buildSectionCard(
-                      title: 'معلومات التوصيل',
+                      title: 'פרטי משלוח',
                       icon: Icons.location_on_outlined,
                       color: Colors.orange,
                       children: [
-                        _buildDetailRow('العنوان', order.deliveryAddress?.address ?? 'غير محدد'),
+                        _buildDetailRow('כתובת', order.deliveryAddress?.address ?? 'לא צוין'),
                         if (order.hint != null) ...[
                           SizedBox(height: 12),
-                          _buildDetailRow('ملاحظات التوصيل', order.hint!),
+                          _buildDetailRow('הערות משלוח', order.hint!),
                         ],
                         // SizedBox(height: 12),
                         // _buildDetailRow('وقت التوصيل المطلوب', order. ?? 'في أقرب وقت'),
@@ -1214,7 +1214,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                     
                     // Order Items
                     _buildSectionCard(
-                      title: 'عناصر الطلب',
+                      title: 'פריטי ההזמנה',
                       icon: Icons.shopping_bag_outlined,
                       color: Colors.green,
                       children: [
@@ -1235,7 +1235,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                           }),
                         ] else ...[
                           Text(
-                            'لا توجد عناصر في الطلب',
+                            'אין פריטים בהזמנה',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -1250,18 +1250,18 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                     
                     // Payment Summary
                     _buildSectionCard(
-                      title: 'ملخص الدفع',
+                      title: 'סיכום תשלום',
                       icon: Icons.payment_outlined,
                       color: Colors.purple,
                       children: [
-                        _buildDetailRow('المجموع الفرعي', '${order.foodOrders.fold<double>(0, (sum, order) => sum + (order.price??0) * (order.quantity??1)).toStringAsFixed(2)} ₪'),
+                        _buildDetailRow('סכום ביניים', '${order.foodOrders.fold<double>(0, (sum, order) => sum + (order.price??0) * (order.quantity??1)).toStringAsFixed(2)} ₪'),
                         SizedBox(height: 12),
-                        _buildDetailRow('الضريبة', '${order.tax.toStringAsFixed(2)} ₪'),
+                        _buildDetailRow('מס', '${order.tax.toStringAsFixed(2)} ₪'),
                         SizedBox(height: 12),
-                        _buildDetailRow('رسوم التوصيل', '${order.deliveryFee.toStringAsFixed(2)} ₪'),
+                        _buildDetailRow('דמי משלוח', '${order.deliveryFee.toStringAsFixed(2)} ₪'),
                         if (order.deliveryFee > 0) ...[
                           SizedBox(height: 12),
-                          _buildDetailRow('الضريبة', '-${order.tax.toStringAsFixed(2)} ₪', 
+                          _buildDetailRow('מס', '-${order.tax.toStringAsFixed(2)} ₪', 
                             valueColor: Colors.green[600]),
                         ],
                         SizedBox(height: 16),
@@ -1276,7 +1276,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'المجموع الكلي',
+                                'סה"כ',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -1300,7 +1300,7 @@ void _showOrderDetailsBottomSheet(BuildContext context, PendingOrderModel order)
                     if (order.hint != null) ...[
                       SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'ملاحظات إضافية',
+                        title: 'הערות נוספות',
                         icon: Icons.note_outlined,
                         color: Colors.grey,
                         children: [
@@ -1443,7 +1443,7 @@ Widget _buildOrderItem(FoodOrder item) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.food?.name ?? 'عنصر غير محدد',
+                  item.food?.name ?? 'פריט לא מוגדר',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1461,7 +1461,7 @@ Widget _buildOrderItem(FoodOrder item) {
             Row(
               children: [
                 Text(
-                  'الكمية: ${item.quantity ?? 1}',
+                  'כמות: ${item.quantity ?? 1}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -1502,28 +1502,28 @@ Color _getStatusColor(String? status) {
 String _getStatusText(String? status) {
   switch (status?.toLowerCase()) {
     case 'pending':
-      return 'في الانتظار';
+      return 'ממתין';
     case 'accepted':
-      return 'مقبول';
+      return 'אושרה';
     case 'rejected':
-      return 'مرفوض';
+      return 'נדחתה';
     case 'delivered':
-      return 'تم التوصيل';
+      return 'נמסרה';
     default:
-      return 'غير محدد';
+      return 'לא מוגדר';
   }
 }
 
 String _formatOrderDate(DateTime? date) {
-  if (date == null) return 'تاريخ غير محدد';
+  if (date == null) return 'תאריך לא זמין';
   
   final now = DateTime.now();
   final difference = now.difference(date);
   
   if (difference.inDays == 0) {
-    return 'اليوم ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    return 'היום ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   } else if (difference.inDays == 1) {
-    return 'أمس ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    return 'אתמול ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   } else {
     return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }

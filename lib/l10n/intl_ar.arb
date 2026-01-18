@@ -295,5 +295,10 @@
   "vehicle_type_required": "يرجى إدخال نوع المركبة",
   "referral_code_optional": "رمز الإحالة لشريك التوصيل (اختياري)",
   "motorcycle": "دراجة نارية",
-  "electric_motorcycle": "دراجة نارية كهربائية"
+  "electric_motorcycle": "دراجة نارية كهربائية",
+  "notification_on_new_order": "ستحصل على إشعار فور وصول طلب جديد",
+  "tips_for_more_orders": "نصائح للحصول على المزيد من الطلبات",
+  "tip_update_location": "تأكد من تحديث موقعك بانتظام",
+  "tip_enable_notifications": "فعّل الإشعارات لتلقي الطلبات فوراً",
+  "tip_be_available_peak_hours": "كن متاحاً في أوقات الذروة"
 }

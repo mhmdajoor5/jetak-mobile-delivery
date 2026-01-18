@@ -397,6 +397,16 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("הוזנה לך הזמנה"),
         "your_reset_link_has_been_sent_to_your_email":
             MessageLookupByLibrary.simpleMessage(
-                "קישור האיפוס נשלח לאימייל שלך")
+                "קישור האיפוס נשלח לאימייל שלך"),
+        "notification_on_new_order": MessageLookupByLibrary.simpleMessage(
+            "תקבל התראה ברגע שתגיע הזמנה חדשה"),
+        "tips_for_more_orders":
+            MessageLookupByLibrary.simpleMessage("טיפים לקבלת הזמנות נוספות"),
+        "tip_update_location": MessageLookupByLibrary.simpleMessage(
+            "הקפד לעדכן את המיקום שלך באופן קבוע"),
+        "tip_enable_notifications": MessageLookupByLibrary.simpleMessage(
+            "הפעל התראות כדי לקבל הזמנות מייד"),
+        "tip_be_available_peak_hours":
+            MessageLookupByLibrary.simpleMessage("היה זמין בשעות העומס")
       };
 }

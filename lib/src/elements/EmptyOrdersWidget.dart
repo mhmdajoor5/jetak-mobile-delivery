@@ -165,7 +165,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
             ),
             SizedBox(height: 16),
             Text(
-              'ستحصل على إشعار فور وصول طلب جديد',
+              S.of(context).notification_on_new_order,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -189,7 +189,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
                       Icon(Icons.tips_and_updates, color: Colors.blue[600], size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'نصائح للحصول على المزيد من الطلبات:',
+                        '${S.of(context).tips_for_more_orders}:',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -205,7 +205,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'تأكد من تحديث موقعك بانتظام',
+                          S.of(context).tip_update_location,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue[700],
@@ -221,7 +221,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'فعّل الإشعارات لتلقي الطلبات فوراً',
+                          S.of(context).tip_enable_notifications,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue[700],
@@ -237,7 +237,7 @@ class _EmptyOrdersWidgetState extends State<EmptyOrdersWidget>
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'كن متاحاً في أوقات الذروة (12-3 ظهراً، 6-9 مساءً)',
+                          S.of(context).tip_be_available_peak_hours,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue[700],

@@ -296,5 +296,10 @@
   "vehicle_type_required": "אנא הזן סוג רכב",
   "referral_code_optional": "קוד הפניה לשותף שליחים (אופציונלי)",
   "motorcycle": "אופנוע",
-  "electric_motorcycle": "אופנוע חשמלי"
+  "electric_motorcycle": "אופנוע חשמלי",
+  "notification_on_new_order": "תקבל התראה ברגע שתגיע הזמנה חדשה",
+  "tips_for_more_orders": "טיפים לקבלת הזמנות נוספות",
+  "tip_update_location": "הקפד לעדכן את המיקום שלך באופן קבוע",
+  "tip_enable_notifications": "הפעל התראות כדי לקבל הזמנות מייד",
+  "tip_be_available_peak_hours": "היה זמין בשעות העומס"
 }

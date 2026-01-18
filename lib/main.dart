@@ -18,92 +18,99 @@ import 'src/helpers/custom_trace.dart';
 import 'src/models/setting.dart';
 import 'src/repository/settings_repository.dart' as settingRepo;
 import 'src/repository/user_repository.dart' as userRepo;
-// This must be a top-level function, outside of any class.
-// It is called when the app is in the background or terminated.
+// זו חייבת להיות פונקציה ברמה העליונה, מחוץ לכל מחלקה.
+// היא נקראת כאשר האפליקציה ברקע או סגורה.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in your background handlers,
-  // such as Firestore, make sure to call `initializeApp` before using them.
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Firebase מאותחל אוטומטית על ידי Flutter עבור מטפלי רקע
+  // אל תקרא ל-Firebase.initializeApp() כאן כי זה גורם לשגיאת duplicate-app
 
   print('');
   print('╔═══════════════════════════════════════════════════════════════╗');
-  print('║  🔔 BACKGROUND MESSAGE HANDLER CALLED (FROM MAIN.DART)       ║');
+  print('║  🔔 מטפל הודעות רקע נקרא (מ-MAIN.DART)                      ║');
   print('╚═══════════════════════════════════════════════════════════════╝');
-  print('📬 Message ID: ${message.messageId}');
-  print('📬 Sent Time: ${message.sentTime}');
-  print('📬 From: ${message.from}');
+  print('📬 מזהה הודעה: ${message.messageId}');
+  print('📬 זמן שליחה: ${message.sentTime}');
+  print('📬 מאת: ${message.from}');
   print('');
-  print('🔔 Notification Object:');
+  print('🔔 אובייקט התראה:');
   if (message.notification != null) {
-    print('   ✅ Has notification object (GOOD - iOS can handle this)');
-    print('   📝 Title: ${message.notification!.title}');
-    print('   📝 Body: ${message.notification!.body}');
+    print('   ✅ יש אובייקט התראה (טוב - iOS יכול לטפל בזה)');
+    print('   📝 כותרת: ${message.notification!.title}');
+    print('   📝 תוכן: ${message.notification!.body}');
     print('   🍎 Apple: ${message.notification!.apple}');
     print('   🤖 Android: ${message.notification!.android}');
   } else {
-    print('   ❌ NO notification object (BAD - iOS will reject in background!)');
-    print('   ⚠️  This is likely why notifications don\'t appear in background!');
+    print('   ❌ אין אובייקט התראה (רע - iOS ידחה ברקע!)');
+    print('   ⚠️  זו כנראה הסיבה שהתראות לא מופיעות ברקע!');
   }
   print('');
-  print('📦 Data Payload:');
+  print('📦 מטען נתונים:');
   if (message.data.isNotEmpty) {
-    print('   ✅ Has data: ${message.data}');
+    print('   ✅ יש נתונים: ${message.data}');
     message.data.forEach((key, value) {
       print('   - $key: $value');
     });
   } else {
-    print('   ℹ️  No data payload');
+    print('   ℹ️  אין מטען נתונים');
   }
   print('');
-  print('🔧 Message Category: ${message.category}');
-  print('🔧 Content Available: ${message.contentAvailable}');
-  print('🔧 Message Type: ${message.messageType}');
+  print('🔧 קטגוריית הודעה: ${message.category}');
+  print('🔧 תוכן זמין: ${message.contentAvailable}');
+  print('🔧 סוג הודעה: ${message.messageType}');
   print('╚═══════════════════════════════════════════════════════════════╝');
   print('');
 
-  // Call your NotificationController to create a local notification
+  // קרא ל-NotificationController כדי ליצור התראה מקומית
   NotificationController.createNewNotification(message);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GlobalConfiguration().loadFromAsset("configurations");
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  // Register background message handler ONCE using official Firebase API
+  // אתחול Firebase רק אם לא אותחל כבר
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      print('ℹ️ Firebase כבר אותחל, מדלג...');
+    } else {
+      rethrow; // זרוק שגיאות אחרות מחדש
+    }
+  }
+
+  // רישום מטפל הודעות רקע פעם אחת בלבד באמצעות Firebase API הרשמי
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Initialize FCM Config for local notifications only (no duplicate background handler)
+  // אתחול FCM Config להתראות מקומיות בלבד (ללא מטפל רקע כפול)
   await FCMConfig.instance.init(
-    // Do NOT pass onBackgroundMessage here - already registered above
+    // אל תעביר onBackgroundMessage כאן - כבר נרשם למעלה
     defaultAndroidForegroundIcon: '@mipmap/ic_launcher',
     defaultAndroidChannel: AndroidNotificationChannel(
       'high_importance_channel',
-      'Fcm config',
+      'הגדרות Fcm',
       importance: Importance.high,
       sound: RawResourceAndroidNotificationSound('notification'),
     ),
   );
 
-  // Initialize Intercom
+  // אתחול Intercom
   await IntercomHelper.initialize();
 
-  // Login unidentified user for Intercom (for visitors/guests)
+  // התחברות משתמש לא מזוהה ל-Intercom (למבקרים/אורחים)
   await IntercomHelper.loginUnidentifiedUser();
 
-  // Setup FCM token refresh listener early (before getting token)
-  print('🚀 Setting up FCM token refresh listener at app startup...');
+  // הגדרת מאזין רענון טוקן FCM מוקדם (לפני קבלת הטוקן)
+  print('🚀 מגדיר מאזין רענון טוקן FCM בעת הפעלת האפליקציה...');
   FirebaseUtil.setupTokenRefreshListener();
 
   await NotificationController.getDeviceToken();
   await NotificationController.initializeLocalNotifications();
 
-  // Clear all notification data (remove this line after running once)
+  // ניקוי כל נתוני ההתראות (הסר שורה זו לאחר הרצה אחת)
   await NotificationController.clearAllNotificationData();
 
   runApp(MyApp());
@@ -125,24 +132,24 @@ class _MyAppState extends State<MyApp> {
     settingRepo.initSettings();
     settingRepo.getCurrentLocation();
     userRepo.getCurrentUser();
-    
-    // Set Hebrew as default language if not already set
+
+    // הגדר עברית כשפת ברירת מחדל אם לא הוגדרה כבר
     if (settingRepo.setting.value.mobileLanguage.value.languageCode != 'he') {
       settingRepo.setting.value.mobileLanguage.value = Locale('he', '');
       settingRepo.setDefaultLanguage('he');
-      // Force rebuild to apply language change
+      // אילוץ בנייה מחדש כדי להחיל את שינוי השפה
       settingRepo.setting.notifyListeners();
     }
     // NotificationController.startListeningNotificationEvents();
 
-    // Listen to messages when app is in foreground
+    // האזן להודעות כאשר האפליקציה בחזית
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('📩 onMessage: ${message.notification?.title}');
       showLocalNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('📲 App opened from notification: ${message.data}');
+      print('📲 אפליקציה נפתחה מהתראה: ${message.data}');
     });
     super.initState();
   }
@@ -206,7 +213,7 @@ class _MyAppState extends State<MyApp> {
                   ),
         );
 
-        // Global tap-to-dismiss keyboard wrapper
+        // עטיפה גלובלית להסתרת מקלדת בלחיצה
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
