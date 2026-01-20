@@ -609,9 +609,54 @@ Future<void> logout() async {
   currentUser.value = UserModel.User();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove('current_user');
-  
+
   // Disconnect Pusher upon logout
   PusherHelper.disconnect();
+}
+
+/// Deletes the user account permanently.
+/// Returns a Map with 'success' (bool) and 'message' (String).
+Future<Map<String, dynamic>> deleteAccount() async {
+  final String apiToken = currentUser.value.apiToken ?? '';
+  final String url = '${GlobalConfiguration().getValue('api_base_url')}users/delete-account';
+
+  final client = http.Client();
+  try {
+    final response = await client.post(
+      Uri.parse(url),
+      headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.acceptHeader: 'application/json',
+      },
+      body: json.encode({'api_token': apiToken}),
+    );
+
+    print('🔍 Delete Account Response Status: ${response.statusCode}');
+    print('🔍 Delete Account Response Body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      // Clear local user data on successful deletion
+      await logout();
+      return {
+        'success': true,
+        'message': 'Account deleted successfully',
+      };
+    } else {
+      final responseData = json.decode(response.body);
+      return {
+        'success': false,
+        'message': responseData['message'] ?? 'Failed to delete account',
+      };
+    }
+  } catch (e) {
+    print('❌ Delete Account Error: $e');
+    return {
+      'success': false,
+      'message': 'Network error. Please try again.',
+    };
+  } finally {
+    client.close();
+  }
 }
 
 void setCurrentUser(jsonString) async {

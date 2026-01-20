@@ -44,6 +44,83 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
     );
   }
 
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: ColorsManager.error, size: 28),
+            SizedBox(width: 8),
+            Text('האם אתה בטוח?'),
+          ],
+        ),
+        content: Text(
+          'פעולה זו תמחק את החשבון שלך לצמיתות. לא ניתן לבטל פעולה זו.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('ביטול'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close confirmation dialog
+              _performAccountDeletion();
+            },
+            child: Text('מחק', style: TextStyle(color: ColorsManager.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _performAccountDeletion() async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text('Deleting account...'),
+          ],
+        ),
+      ),
+    );
+
+    // Call delete API
+    final result = await userRepo.deleteAccount();
+
+    // Close loading dialog
+    if (mounted) Navigator.pop(context);
+
+    if (result['success'] == true) {
+      // Navigate to login screen
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/Login', (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account deleted successfully'),
+            backgroundColor: ColorsManager.success,
+          ),
+        );
+      }
+    } else {
+      // Show error snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to delete account'),
+            backgroundColor: ColorsManager.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     User user = userRepo.currentUser.value;
@@ -433,6 +510,24 @@ class _ProfileWidgetState extends StateMVC<ProfileWidget> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorsManager.error,
                 foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          // Delete Account Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showDeleteAccountDialog(),
+              icon: Icon(Icons.delete_forever, size: 18),
+              label: Text('מחיקת חשבון'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: ColorsManager.error,
+                side: BorderSide(color: ColorsManager.error),
                 padding: EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),

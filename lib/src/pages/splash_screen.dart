@@ -136,19 +136,25 @@ class SplashScreenState extends StateMVC<SplashScreen> {
   Widget build(BuildContext context) {
     // Only print video status once during initialization
     try {
-      return Scaffold(
-        key: _con.scaffoldKey,
-        body: _buildVideoSplash(),
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          key: _con.scaffoldKey,
+          body: _buildVideoSplash(),
+        ),
       );
         } catch (e) {
       print('❌ Error in build: $e');
       // Fallback to video screen
-      return Scaffold(
-        key: _con.scaffoldKey,
-        body: Container(
-          color: Colors.black,
-          child: Center(
-            child: VideoPlayer(VideoPlayerController.asset('assets/img/splach.mp4')),
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          key: _con.scaffoldKey,
+          body: Container(
+            color: Colors.black,
+            child: Center(
+              child: VideoPlayer(VideoPlayerController.asset('assets/img/splach.mp4')),
+            ),
           ),
         ),
       );

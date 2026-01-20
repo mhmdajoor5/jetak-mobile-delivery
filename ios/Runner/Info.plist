@@ -87,11 +87,11 @@
 		<key>NSContactsUsageDescription</key>
 		<string>Contacts access not used but required by permissions API.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>LocationAlways access not used but required by permissions API.</string>
+		<string>The app uses your location to navigate you to pickup and delivery points accurately, and to share your real-time location with customers waiting for their orders.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>LocationAlwaysAndWhenInUse access is used to update delivery boy location while delivering the order</string>
+		<string>The app uses your location to navigate you to pickup and delivery points accurately, and to share your real-time location with customers waiting for their orders even when the app is in the background.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>LocationWhenInUse access not used but required by permissions API.</string>
+		<string>The app uses your location to navigate you to pickup and delivery points accurately, and to show nearby available orders on the map.</string>
 		<key>NSMotionUsageDescription</key>
 		<string>Motion access not used but required by permissions API.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
